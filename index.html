@@ -837,61 +837,81 @@
         // --- FIXED WORDCLOUD ---
         const WordCloud = ({ activeProject, onHoverSkill, activeSkill }) => {
             const prefersReducedMotion = useReducedMotion();
-            
-            // Generate positions with better bounds (10% to 90% to avoid clipping)
+            const prioritySkills = useMemo(() => new Set([
+                "Python", "Java", "JavaScript", "TypeScript", "React", "SQL", "Node.js", "Next.js", "Azure", "GCP"
+            ]), []);
+
+            const clamp = (value, margin = 8) => Math.min(100 - margin, Math.max(margin, value));
+
+            // Golden-angle spiral keeps the words evenly spread without clumping
             const cloudData = useMemo(() => {
-                return RAW_SKILLS.map((skill, i) => ({
-                    id: i,
-                    text: skill,
-                    // Use a more spread out random distribution
-                    x: Math.random() * 80 + 10, 
-                    y: Math.random() * 80 + 10,
-                    // Determine visual weight
-                    isMajor: Math.random() > 0.6,
-                    floatDuration: 4 + Math.random() * 4,
-                    floatDelay: Math.random() * 2
-                }));
-            }, []);
+                const total = RAW_SKILLS.length;
+                const maxRadius = 42;
+                const goldenAngle = 137.5 * (Math.PI / 180);
+
+                return RAW_SKILLS.map((skill, index) => {
+                    const angle = goldenAngle * index;
+                    const radius = Math.sqrt((index + 1) / total) * maxRadius;
+                    const jitterX = (Math.random() - 0.5) * 3;
+                    const jitterY = (Math.random() - 0.5) * 3;
+                    const weight = prioritySkills.has(skill) ? 3 : skill.length > 7 ? 2 : 1;
+                    const widthMargin = Math.min(18, skill.length * (weight === 3 ? 0.9 : weight === 2 ? 0.75 : 0.6));
+
+                    return {
+                        id: index,
+                        text: skill,
+                        x: clamp(50 + radius * Math.cos(angle) + jitterX, widthMargin),
+                        y: clamp(50 + radius * Math.sin(angle) + jitterY, 8),
+                        weight,
+                        floatDuration: 4.5 + Math.random() * 3.5,
+                        floatDelay: Math.random() * 1.5
+                    };
+                });
+            }, [prioritySkills]);
 
             return (
                 <div className="relative w-full h-[600px] bg-card rounded-2xl border border-white/5 overflow-hidden flex items-center justify-center">
-                    {/* Background Grid - pointer events none to ensure clicks pass through to words */}
                     <div className="absolute inset-0 opacity-10 pointer-events-none" 
                          style={{ backgroundImage: 'radial-gradient(circle, #444 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
                     <div className="relative w-full h-full z-10">
                         {cloudData.map((item) => {
-                            // Interaction Logic
                             const isHoveredByProject = activeProject?.stack?.includes(item.text);
                             const isThisSkillActive = activeSkill === item.text;
+                            const isMajor = item.weight === 3;
+                            const isMid = item.weight === 2;
                             
-                            // Determine style state
                             let opacity = 1;
                             let scale = 1;
-                            let colorClass = isThisSkillActive ? "text-accent" : (item.isMajor ? "text-white" : "text-gray-400");
-                            let fontWeight = item.isMajor ? "font-bold" : "font-medium";
-                            let fontSize = item.isMajor ? "text-xl md:text-2xl" : "text-base md:text-lg";
-                            let shadow = "";
+                            let colorClass = isThisSkillActive ? "text-accent" : (isMajor ? "text-white" : "text-gray-400");
+                            let fontWeight = isMajor ? "font-extrabold" : isMid ? "font-semibold" : "font-medium";
+                            let fontSize = isMajor ? "text-2xl md:text-3xl" : isMid ? "text-lg md:text-xl" : "text-sm md:text-base";
+                            let shadow = isMajor ? "drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]" : "";
+                            let zIndex = isMajor ? 5 : 3;
                             
-                            // Handle Active States
                             if (activeProject) {
                                 if (isHoveredByProject) {
                                     opacity = 1;
-                                    scale = 1.4;
+                                    scale = 1.35;
                                     colorClass = "text-white";
-                                    shadow = "drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]";
+                                    shadow = "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]";
+                                    zIndex = 15;
                                 } else {
-                                    opacity = 0.1;
-                                    scale = 0.8;
+                                    opacity = 0.18;
+                                    scale = 0.9;
+                                    zIndex = 1;
                                 }
                             } else if (activeSkill) {
                                 if (isThisSkillActive) {
                                     opacity = 1;
-                                    scale = 1.5;
+                                    scale = 1.55;
                                     colorClass = "text-accent";
-                                    shadow = "drop-shadow-[0_0_12px_rgba(139,92,246,0.8)]";
+                                    shadow = "drop-shadow-[0_0_12px_rgba(139,92,246,0.9)]";
+                                    zIndex = 20;
                                 } else {
-                                    opacity = 0.15;
+                                    opacity = 0.2;
+                                    scale = 0.9;
+                                    zIndex = 1;
                                 }
                             }
 
@@ -899,19 +919,19 @@
                                 <motion.span
                                     key={item.id}
                                     className={`absolute cursor-pointer transition-colors select-none ${colorClass} ${fontWeight} ${fontSize} ${shadow}`}
-                                    style={{ left: `${item.x}%`, top: `${item.y}%` }}
+                                    style={{ left: `${item.x}%`, top: `${item.y}%`, zIndex }}
                                     initial={{ opacity: 0, scale: 0 }}
                                     animate={{
                                         opacity,
                                         scale,
-                                        // Only float if nothing is active (to keep interactions clean)
                                         y: (!activeProject && !activeSkill && !prefersReducedMotion) 
-                                            ? [0, -10, 0] 
+                                            ? [0, -8, 0] 
                                             : 0
                                     }}
+                                    whileHover={{ scale: activeProject || activeSkill ? scale : 1.12 }}
                                     transition={{
-                                        opacity: { duration: 0.3 },
-                                        scale: { duration: 0.3 },
+                                        opacity: { duration: 0.25 },
+                                        scale: { duration: 0.25 },
                                         ...(prefersReducedMotion ? {} : { 
                                             y: { 
                                                 repeat: Infinity, 
@@ -930,7 +950,6 @@
                         })}
                     </div>
                     
-                    {/* Footer hint */}
                     <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                         <span className="px-3 py-1 bg-black/50 rounded-full text-xs text-gray-400 border border-white/10 backdrop-blur-sm">
                             Hover skills to find projects • Hover projects to find skills
