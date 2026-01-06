@@ -1193,35 +1193,37 @@
                                 <div className="absolute inset-0 opacity-10 pointer-events-none"
                                      style={{ backgroundImage: 'radial-gradient(circle, #444 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
-                                <div className="relative w-full h-full p-8">
-                                    {RAW_SKILLS.map((skill, index) => {
-                                        const isSelected = selectedSkills.includes(skill);
-                                        const angle = (index / RAW_SKILLS.length) * Math.PI * 2;
-                                        const radius = 35;
-                                        const x = 50 + radius * Math.cos(angle);
-                                        const y = 50 + radius * Math.sin(angle);
+                                <div className="relative w-full h-full p-4 overflow-auto">
+                                    <div className="absolute inset-0 flex flex-wrap gap-2 p-4 justify-center items-center content-center">
+                                        {RAW_SKILLS.map((skill) => {
+                                            const isSelected = selectedSkills.includes(skill);
 
-                                        return (
-                                            <motion.button
-                                                key={skill}
-                                                className={`absolute cursor-pointer px-3 py-1.5 rounded-lg font-medium transition-all select-none ${
-                                                    isSelected
-                                                        ? 'bg-accent text-white border-2 border-accent shadow-[0_0_20px_rgba(139,92,246,0.6)] z-20'
-                                                        : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-accent/50'
-                                                }`}
-                                                style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-                                                onClick={() => handleSkillClick(skill)}
-                                                animate={isSelected ? {
-                                                    scale: [1, 1.1, 1],
-                                                    boxShadow: ['0 0 20px rgba(139,92,246,0.6)', '0 0 30px rgba(139,92,246,0.8)', '0 0 20px rgba(139,92,246,0.6)']
-                                                } : {}}
-                                                transition={{ duration: 0.3 }}
-                                                whileHover={!isSelected ? { scale: 1.05 } : {}}
-                                            >
-                                                {skill}
-                                            </motion.button>
-                                        );
-                                    })}
+                                            return (
+                                                <motion.button
+                                                    key={skill}
+                                                    className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-all select-none whitespace-nowrap text-sm ${
+                                                        isSelected
+                                                            ? 'bg-accent text-white border-2 border-accent shadow-[0_0_20px_rgba(139,92,246,0.6)] z-20'
+                                                            : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-accent/50'
+                                                    }`}
+                                                    onClick={() => handleSkillClick(skill)}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={isSelected ? {
+                                                        opacity: 1,
+                                                        scale: [1, 1.1, 1],
+                                                        boxShadow: ['0 0 20px rgba(139,92,246,0.6)', '0 0 30px rgba(139,92,246,0.8)', '0 0 20px rgba(139,92,246,0.6)']
+                                                    } : {
+                                                        opacity: 1,
+                                                        scale: 1
+                                                    }}
+                                                    transition={{ duration: 0.3 }}
+                                                    whileHover={!isSelected ? { scale: 1.05 } : {}}
+                                                >
+                                                    {skill}
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
                                 {isUnlocked && (
