@@ -53,20 +53,75 @@ async function fetchReadme(repoName) {
     }
 }
 
+function extractLiveUrl(readmeContent, repoHomepage) {
+    // First check if repo has a homepage set
+    if (repoHomepage && repoHomepage.trim()) {
+        return repoHomepage;
+    }
+
+    if (!readmeContent) return null;
+
+    // Look for Vercel URLs in README
+    const vercelPatterns = [
+        /https?:\/\/[a-zA-Z0-9-]+\.vercel\.app\b/gi,
+        /https?:\/\/[a-zA-Z0-9-]+\.netlify\.app\b/gi,
+        /https?:\/\/[a-zA-Z0-9-]+\.herokuapp\.com\b/gi,
+        /https?:\/\/[a-zA-Z0-9-]+\.github\.io\b/gi,
+    ];
+
+    for (const pattern of vercelPatterns) {
+        const matches = readmeContent.match(pattern);
+        if (matches && matches.length > 0) {
+            return matches[0];
+        }
+    }
+
+    // Look for "Live Demo" or "Demo" links in markdown format
+    const demoLinkPattern = /\[(?:live\s*demo|demo|live|website|app|try it)\]\((https?:\/\/[^\)]+)\)/gi;
+    const demoMatch = demoLinkPattern.exec(readmeContent);
+    if (demoMatch) {
+        return demoMatch[1];
+    }
+
+    return null;
+}
+
 async function generateDescriptionWithGrok(repoName, readmeContent, existingDescription) {
     const grokApiKey = process.env.GROK_API_KEY;
 
+    // If no README and no existing description, return a basic one
+    if (!readmeContent && !existingDescription) {
+        return `${repoName} - View repository for details.`;
+    }
+
+    // If no API key, use existing description or extract from README
     if (!grokApiKey) {
-        console.warn('GROK_API_KEY not set, using existing description');
-        return existingDescription || `${repoName} - View repository for details.`;
+        console.warn('GROK_API_KEY not set');
+        if (existingDescription) return existingDescription;
+        // Try to get first meaningful paragraph from README
+        if (readmeContent) {
+            const lines = readmeContent.split('\n').filter(line =>
+                line.trim() &&
+                !line.startsWith('#') &&
+                !line.startsWith('!') &&
+                !line.startsWith('[') &&
+                !line.startsWith('```') &&
+                line.length > 20
+            );
+            if (lines.length > 0) {
+                return lines[0].substring(0, 200).trim();
+            }
+        }
+        return `${repoName} - View repository for details.`;
     }
 
     const prompt = `Based on this README content, write a concise 1-2 sentence project description for a portfolio website.
 Focus on what the project does and its key features. Keep it professional and engaging.
 Do not include any markdown formatting, just plain text.
+Do not start with "This project" - be more creative.
 
 README Content:
-${readmeContent?.substring(0, 2000) || 'No README available'}
+${readmeContent?.substring(0, 3000) || existingDescription || 'No description available'}
 
 Project name: ${repoName}`;
 
@@ -82,7 +137,7 @@ Project name: ${repoName}`;
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write in third person, be specific about what the project does.'
+                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write in third person, be specific about what the project does. Keep it under 2 sentences.'
                     },
                     {
                         role: 'user',
@@ -97,13 +152,20 @@ Project name: ${repoName}`;
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Grok API error:', response.status, errorText);
+            // Fallback to existing description
             return existingDescription || `${repoName} - View repository for details.`;
         }
 
         const data = await response.json();
-        return data.choices[0]?.message?.content?.trim() || existingDescription;
+        const generatedDescription = data.choices[0]?.message?.content?.trim();
+
+        if (generatedDescription && generatedDescription.length > 10) {
+            return generatedDescription;
+        }
+
+        return existingDescription || `${repoName} - View repository for details.`;
     } catch (error) {
-        console.error('Grok API call failed:', error);
+        console.error('Grok API call failed:', error.message);
         return existingDescription || `${repoName} - View repository for details.`;
     }
 }
@@ -203,18 +265,19 @@ export default async function handler(req, res) {
             const stack = inferStack(repo, readmeContent);
             const tags = inferTags(repo, readmeContent);
 
-            // Determine live URL (assume Vercel deployment)
-            const liveUrl = `https://${repo.name.toLowerCase().replace(/_/g, '')}.vercel.app`;
+            // Extract live URL from README or repo homepage
+            const liveUrl = extractLiveUrl(readmeContent, repo.homepage);
 
             return {
                 name: repo.name,
                 repoUrl: repo.html_url,
-                liveUrl: liveUrl,
+                liveUrl: liveUrl,  // Will be null if not found
                 description: description,
                 language: repo.language || 'JavaScript',
                 stack: stack,
                 tags: tags,
                 updatedAt: repo.updated_at,
+                pushedAt: repo.pushed_at,
                 stars: repo.stargazers_count
             };
         }));
