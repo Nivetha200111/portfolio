@@ -1,6 +1,22 @@
-// Vercel Serverless Function to refresh projects from GitHub and generate descriptions with Grok AI
+// Vercel Serverless Function to refresh projects from GitHub
+// Descriptions are loaded from data/descriptions.json (generated locally)
+
+import fs from 'fs';
+import path from 'path';
 
 const GITHUB_USERNAME = 'Nivetha200111';
+
+// Load saved descriptions from JSON file
+function loadDescriptions() {
+    try {
+        const filePath = path.join(process.cwd(), 'data', 'descriptions.json');
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        return data.descriptions || {};
+    } catch (e) {
+        console.log('No descriptions.json found');
+        return {};
+    }
+}
 
 // Repos to exclude (forks, configs, etc.)
 const EXCLUDED_REPOS = [
@@ -117,112 +133,6 @@ function extractLiveUrl(readmeContent, repoHomepage) {
     return null;
 }
 
-async function generateDescriptionWithGrok(repoName, readmeContent, existingDescription) {
-    const grokApiKey = process.env.GROK_API_KEY;
-
-    // If no README and no existing description, return a basic one
-    if (!readmeContent && !existingDescription) {
-        return `${repoName} - View repository for details.`;
-    }
-
-    // If no API key, use existing description or extract from README
-    if (!grokApiKey) {
-        console.warn('GROK_API_KEY not set');
-
-        // Try to get meaningful description from README first
-        if (readmeContent) {
-            // Remove badges, images, and links at the start
-            const cleanedContent = readmeContent
-                .replace(/^\s*(\[!\[.*?\]\(.*?\)\]\(.*?\)|\!\[.*?\]\(.*?\)|\[.*?\]\(.*?\))\s*/gm, '')
-                .replace(/^#+\s+.+$/gm, '') // Remove headers
-                .trim();
-
-            const lines = cleanedContent.split('\n').filter(line => {
-                const trimmed = line.trim();
-                return trimmed &&
-                    !trimmed.startsWith('!') &&
-                    !trimmed.startsWith('[') &&
-                    !trimmed.startsWith('```') &&
-                    !trimmed.startsWith('|') &&
-                    !trimmed.startsWith('-') &&
-                    !trimmed.startsWith('*') &&
-                    !trimmed.startsWith('>') &&
-                    trimmed.length > 30;
-            });
-
-            if (lines.length > 0) {
-                // Get first meaningful paragraph
-                let desc = lines[0].trim();
-                // Clean up any remaining markdown
-                desc = desc.replace(/\*\*/g, '').replace(/`/g, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-                if (desc.length > 200) {
-                    desc = desc.substring(0, 197) + '...';
-                }
-                return desc;
-            }
-        }
-
-        // Fall back to GitHub repo description
-        if (existingDescription) return existingDescription;
-
-        return `${repoName} - View repository for details.`;
-    }
-
-    const prompt = `Based on this README content, write a concise 1-2 sentence project description for a portfolio website.
-Focus on what the project does and its key features. Keep it professional and engaging.
-Do not include any markdown formatting, just plain text.
-Do not start with "This project" - be more creative.
-
-README Content:
-${readmeContent?.substring(0, 3000) || existingDescription || 'No description available'}
-
-Project name: ${repoName}`;
-
-    try {
-        const response = await fetch('https://api.x.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${grokApiKey}`
-            },
-            body: JSON.stringify({
-                model: 'grok-4-latest',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write in third person, be specific about what the project does. Keep it under 2 sentences.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                stream: false,
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Grok API error:', response.status, errorText);
-            // Fallback to existing description
-            return existingDescription || `${repoName} - View repository for details.`;
-        }
-
-        const data = await response.json();
-        const generatedDescription = data.choices[0]?.message?.content?.trim();
-
-        if (generatedDescription && generatedDescription.length > 10) {
-            return generatedDescription;
-        }
-
-        return existingDescription || `${repoName} - View repository for details.`;
-    } catch (error) {
-        console.error('Grok API call failed:', error.message);
-        return existingDescription || `${repoName} - View repository for details.`;
-    }
-}
-
 function inferStack(repo, readmeContent) {
     const stack = new Set();
     const language = repo.language;
@@ -296,24 +206,21 @@ function inferTags(repo, readmeContent) {
 export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    if (req.method !== 'GET' && req.method !== 'POST') {
+    if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Get cached descriptions from request body (if POST)
-    let cachedDescriptions = {};
-    if (req.method === 'POST' && req.body?.cachedDescriptions) {
-        cachedDescriptions = req.body.cachedDescriptions;
-    }
-
     try {
+        // Load saved descriptions from JSON file
+        const savedDescriptions = loadDescriptions();
+
         // Fetch repos from GitHub
         const allRepos = await fetchGitHubRepos();
 
@@ -324,13 +231,8 @@ export default async function handler(req, res) {
         const projects = await Promise.all(repos.map(async (repo) => {
             const readmeContent = await fetchReadme(repo.name);
 
-            // Use cached description if available, otherwise generate new one
-            let description;
-            if (cachedDescriptions[repo.name]) {
-                description = cachedDescriptions[repo.name];
-            } else {
-                description = await generateDescriptionWithGrok(repo.name, readmeContent, repo.description);
-            }
+            // Use saved description from JSON, fall back to GitHub description
+            const description = savedDescriptions[repo.name] || repo.description || `${repo.name} - View repository for details.`;
 
             const stack = inferStack(repo, readmeContent);
             const tags = inferTags(repo, readmeContent);
@@ -341,15 +243,14 @@ export default async function handler(req, res) {
             return {
                 name: repo.name,
                 repoUrl: repo.html_url,
-                liveUrl: liveUrl,  // Will be null if not found
+                liveUrl: liveUrl,
                 description: description,
                 language: repo.language || 'JavaScript',
                 stack: stack,
                 tags: tags,
                 updatedAt: repo.updated_at,
                 pushedAt: repo.pushed_at,
-                stars: repo.stargazers_count,
-                descriptionCached: !!cachedDescriptions[repo.name]
+                stars: repo.stargazers_count
             };
         }));
 
