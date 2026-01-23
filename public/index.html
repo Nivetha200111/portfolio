@@ -1341,9 +1341,25 @@
             const refreshProjects = async () => {
                 setRefreshing(true);
                 try {
-                    const response = await fetch('/api/refresh-projects');
+                    // Get cached descriptions from localStorage
+                    const cachedDescriptions = JSON.parse(localStorage.getItem('projectDescriptions') || '{}');
+
+                    const response = await fetch('/api/refresh-projects', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cachedDescriptions })
+                    });
                     const data = await response.json();
                     if (data.success && data.projects) {
+                        // Save new descriptions to localStorage
+                        const newDescriptions = { ...cachedDescriptions };
+                        data.projects.forEach(p => {
+                            if (p.description && !p.description.includes('View repository for details')) {
+                                newDescriptions[p.name] = p.description;
+                            }
+                        });
+                        localStorage.setItem('projectDescriptions', JSON.stringify(newDescriptions));
+
                         setProjects(data.projects);
                         setLastRefreshed(new Date().toLocaleTimeString());
                     } else {

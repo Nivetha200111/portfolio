@@ -296,15 +296,21 @@ function inferTags(repo, readmeContent) {
 export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    if (req.method !== 'GET') {
+    if (req.method !== 'GET' && req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Get cached descriptions from request body (if POST)
+    let cachedDescriptions = {};
+    if (req.method === 'POST' && req.body?.cachedDescriptions) {
+        cachedDescriptions = req.body.cachedDescriptions;
     }
 
     try {
@@ -317,7 +323,15 @@ export default async function handler(req, res) {
         // Process each repo
         const projects = await Promise.all(repos.map(async (repo) => {
             const readmeContent = await fetchReadme(repo.name);
-            const description = await generateDescriptionWithGrok(repo.name, readmeContent, repo.description);
+
+            // Use cached description if available, otherwise generate new one
+            let description;
+            if (cachedDescriptions[repo.name]) {
+                description = cachedDescriptions[repo.name];
+            } else {
+                description = await generateDescriptionWithGrok(repo.name, readmeContent, repo.description);
+            }
+
             const stack = inferStack(repo, readmeContent);
             const tags = inferTags(repo, readmeContent);
 
@@ -334,7 +348,8 @@ export default async function handler(req, res) {
                 tags: tags,
                 updatedAt: repo.updated_at,
                 pushedAt: repo.pushed_at,
-                stars: repo.stargazers_count
+                stars: repo.stargazers_count,
+                descriptionCached: !!cachedDescriptions[repo.name]
             };
         }));
 
