@@ -1,20 +1,91 @@
 // Vercel Serverless Function to refresh projects from GitHub
-// Descriptions are loaded from data/descriptions.json (generated locally)
+// Descriptions are stored in Vercel KV and generated on-demand with Grok AI
 
-import fs from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
 const GITHUB_USERNAME = 'Nivetha200111';
+const DESCRIPTIONS_KEY = 'project_descriptions';
 
-// Load saved descriptions from JSON file
-function loadDescriptions() {
+// Load saved descriptions from Vercel KV
+async function loadDescriptions() {
     try {
-        const filePath = path.join(process.cwd(), 'data', 'descriptions.json');
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        return data.descriptions || {};
+        const descriptions = await kv.get(DESCRIPTIONS_KEY);
+        return descriptions || {};
     } catch (e) {
-        console.log('No descriptions.json found');
+        console.log('KV not available or empty');
         return {};
+    }
+}
+
+// Save description to Vercel KV
+async function saveDescription(repoName, description) {
+    try {
+        const existing = await loadDescriptions();
+        existing[repoName] = description;
+        await kv.set(DESCRIPTIONS_KEY, existing);
+        return true;
+    } catch (e) {
+        console.error('Failed to save to KV:', e);
+        return false;
+    }
+}
+
+// Generate description with Grok AI
+async function generateDescriptionWithGrok(repoName, readmeContent, existingDescription) {
+    const grokApiKey = process.env.GROK_API_KEY;
+
+    if (!grokApiKey) {
+        return existingDescription || `${repoName} - View repository for details.`;
+    }
+
+    if (!readmeContent && !existingDescription) {
+        return `${repoName} - View repository for details.`;
+    }
+
+    const prompt = `Based on this README content, write a concise 1-2 sentence project description for a portfolio website.
+Focus on what the project does and its key features. Keep it professional and engaging.
+Do not include any markdown formatting, just plain text.
+Do not start with "This project" - be more creative.
+
+README Content:
+${readmeContent?.substring(0, 3000) || existingDescription || 'No description available'}
+
+Project name: ${repoName}`;
+
+    try {
+        const response = await fetch('https://api.x.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${grokApiKey}`
+            },
+            body: JSON.stringify({
+                model: 'grok-4-latest',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write in third person, be specific about what the project does. Keep it under 2 sentences.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                stream: false,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            return existingDescription || `${repoName} - View repository for details.`;
+        }
+
+        const data = await response.json();
+        const generated = data.choices[0]?.message?.content?.trim();
+        return generated || existingDescription || `${repoName} - View repository for details.`;
+    } catch (error) {
+        console.error('Grok API failed:', error.message);
+        return existingDescription || `${repoName} - View repository for details.`;
     }
 }
 
@@ -231,8 +302,22 @@ export default async function handler(req, res) {
         const projects = await Promise.all(repos.map(async (repo) => {
             const readmeContent = await fetchReadme(repo.name);
 
-            // Use saved description from JSON, fall back to GitHub description
-            const description = savedDescriptions[repo.name] || repo.description || `${repo.name} - View repository for details.`;
+            let description;
+            let isNew = false;
+
+            // Check if we have a saved description
+            if (savedDescriptions[repo.name]) {
+                description = savedDescriptions[repo.name];
+            } else {
+                // Generate new description with Grok AI
+                description = await generateDescriptionWithGrok(repo.name, readmeContent, repo.description);
+
+                // Save to KV if it's a real description (not the fallback)
+                if (description && !description.includes('View repository for details')) {
+                    await saveDescription(repo.name, description);
+                    isNew = true;
+                }
+            }
 
             const stack = inferStack(repo, readmeContent);
             const tags = inferTags(repo, readmeContent);
@@ -250,7 +335,8 @@ export default async function handler(req, res) {
                 tags: tags,
                 updatedAt: repo.updated_at,
                 pushedAt: repo.pushed_at,
-                stars: repo.stargazers_count
+                stars: repo.stargazers_count,
+                newlyGenerated: isNew
             };
         }));
 
