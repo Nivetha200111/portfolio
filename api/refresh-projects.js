@@ -335,7 +335,12 @@ export default async function handler(req, res) {
                 tags: tags,
                 updatedAt: repo.updated_at,
                 pushedAt: repo.pushed_at,
-                stars: repo.stargazers_count,
+                // GitHub stats
+                stars: repo.stargazers_count || 0,
+                forks: repo.forks_count || 0,
+                watchers: repo.watchers_count || 0,
+                openIssues: repo.open_issues_count || 0,
+                size: repo.size || 0,
                 newlyGenerated: isNew
             };
         }));
