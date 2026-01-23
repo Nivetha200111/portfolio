@@ -8,12 +8,14 @@ const EXCLUDED_REPOS = [
     'portfolio'  // Don't include the portfolio itself
 ];
 
-// Normalize repo name for deduplication (remove common suffixes)
+// Normalize repo name for deduplication
 function normalizeRepoName(name) {
-    return name
+    // Get the base name (first segment before any separator)
+    const baseName = name
         .toLowerCase()
-        .replace(/[-_](vercel|app|web|site|frontend|backend|api|dev|prod|main|v2|v3)$/g, '')
-        .replace(/[-_]/g, '');
+        .split(/[-_]/)[0];  // Split by - or _ and take first part
+
+    return baseName;
 }
 
 // Deduplicate repos with similar names, keeping the most recently pushed
