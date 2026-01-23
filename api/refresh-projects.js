@@ -1,31 +1,51 @@
 // Vercel Serverless Function to refresh projects from GitHub
-// Descriptions are stored in Vercel KV and generated on-demand with Grok AI
+// Descriptions are stored in Upstash Redis and generated on-demand with Grok AI
 
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 
 const GITHUB_USERNAME = 'Nivetha200111';
 const DESCRIPTIONS_KEY = 'project_descriptions';
 
-// Load saved descriptions from Vercel KV
+// Initialize Redis client
+function getRedis() {
+    // Support both STORAGE_ prefix (Vercel integration) and UPSTASH_ prefix
+    const url = process.env.STORAGE_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+    const token = process.env.STORAGE_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+    if (!url || !token) {
+        console.log('Redis not configured');
+        return null;
+    }
+
+    return new Redis({ url, token });
+}
+
+// Load saved descriptions from Redis
 async function loadDescriptions() {
     try {
-        const descriptions = await kv.get(DESCRIPTIONS_KEY);
+        const redis = getRedis();
+        if (!redis) return {};
+
+        const descriptions = await redis.get(DESCRIPTIONS_KEY);
         return descriptions || {};
     } catch (e) {
-        console.log('KV not available or empty');
+        console.log('Redis not available or empty:', e.message);
         return {};
     }
 }
 
-// Save description to Vercel KV
+// Save description to Redis
 async function saveDescription(repoName, description) {
     try {
+        const redis = getRedis();
+        if (!redis) return false;
+
         const existing = await loadDescriptions();
         existing[repoName] = description;
-        await kv.set(DESCRIPTIONS_KEY, existing);
+        await redis.set(DESCRIPTIONS_KEY, existing);
         return true;
     } catch (e) {
-        console.error('Failed to save to KV:', e);
+        console.error('Failed to save to Redis:', e);
         return false;
     }
 }
