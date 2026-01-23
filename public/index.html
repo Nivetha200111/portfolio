@@ -1356,9 +1356,11 @@
                 }
             };
 
-            const featuredNames = ["ApplyX", "problemstosolve", "servicenowplanner", "goggins-study", "dwight"];
-            const featuredProjects = projects.filter(p => featuredNames.includes(p.name));
-            const otherProjects = projects.filter(p => !featuredNames.includes(p.name));
+            // Use featured flag from API, or fall back to first 5 projects by recency
+            const featuredProjects = projects.filter(p => p.featured === true).length > 0
+                ? projects.filter(p => p.featured === true)
+                : projects.slice(0, 5);
+            const otherProjects = projects.filter(p => !featuredProjects.includes(p));
 
             return (
                 <div className="min-h-screen selection:bg-accent selection:text-white pb-20 text-gray-200">

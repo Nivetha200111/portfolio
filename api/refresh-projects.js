@@ -2,27 +2,14 @@
 
 const GITHUB_USERNAME = 'Nivetha200111';
 
-// Projects to include (repo names)
-const INCLUDED_REPOS = [
-    'applyx',
-    'problemstosolve',
-    'servicenowplanner',
-    'goggins-study',
-    'Bindora',
-    'LunchTube',
-    'dwight_vercel'
+// Repos to exclude (forks, configs, etc.)
+const EXCLUDED_REPOS = [
+    '.github',
+    'portfolio'  // Don't include the portfolio itself
 ];
 
-// Language to stack mapping for common technologies
-const LANGUAGE_STACK_MAP = {
-    'TypeScript': ['TypeScript', 'Git'],
-    'JavaScript': ['JavaScript', 'Git'],
-    'Python': ['Python', 'Git'],
-    'HTML': ['HTML', 'CSS', 'Git'],
-};
-
 async function fetchGitHubRepos() {
-    const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`, {
+    const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=pushed&direction=desc`, {
         headers: {
             'Accept': 'application/vnd.github.v3+json',
             'User-Agent': 'Portfolio-Refresh'
@@ -34,8 +21,12 @@ async function fetchGitHubRepos() {
     }
 
     const repos = await response.json();
+
+    // Filter out forks, excluded repos, and empty repos
     return repos.filter(repo =>
-        INCLUDED_REPOS.some(name => repo.name.toLowerCase() === name.toLowerCase())
+        !repo.fork &&
+        !EXCLUDED_REPOS.includes(repo.name) &&
+        repo.size > 0
     );
 }
 
@@ -231,9 +222,16 @@ export default async function handler(req, res) {
         // Sort by most recently updated
         projects.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
+        // Mark first 5 as featured
+        const projectsWithFeatured = projects.map((project, index) => ({
+            ...project,
+            featured: index < 5
+        }));
+
         return res.status(200).json({
             success: true,
-            projects: projects,
+            projects: projectsWithFeatured,
+            featuredNames: projectsWithFeatured.filter(p => p.featured).map(p => p.name),
             refreshedAt: new Date().toISOString()
         });
 
