@@ -834,7 +834,8 @@
                 arrowUpRight: <path d="M7 17L17 7M17 7H7M17 7V17"></path>,
                 award: <circle cx="12" cy="8" r="7"></circle>,
                 download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>,
-                refresh: <><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></>
+                refresh: <><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></>,
+                sparkle: <><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4L18.4 5.6"></path></>
             };
             return (
                 <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -842,6 +843,85 @@
                 </svg>
             );
         };
+
+        // --- CONFETTI BURST ---
+        const Confetti = ({ active }) => {
+            const [particles, setParticles] = useState([]);
+
+            useEffect(() => {
+                if (active) {
+                    const colors = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#fbbf24', '#34d399', '#f472b6'];
+                    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+                        id: i,
+                        x: Math.random() * 100,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        delay: Math.random() * 0.5,
+                        duration: 1 + Math.random() * 2
+                    }));
+                    setParticles(newParticles);
+                    setTimeout(() => setParticles([]), 3000);
+                }
+            }, [active]);
+
+            if (!active || particles.length === 0) return null;
+
+            return (
+                <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+                    {particles.map(p => (
+                        <motion.div
+                            key={p.id}
+                            className="absolute w-3 h-3 rounded-full"
+                            style={{ left: `${p.x}%`, top: '-10px', backgroundColor: p.color }}
+                            initial={{ y: 0, opacity: 1, rotate: 0 }}
+                            animate={{ y: '100vh', opacity: 0, rotate: 720 }}
+                            transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
+                        />
+                    ))}
+                </div>
+            );
+        };
+
+        // --- TYPING ANIMATION ---
+        const TypeWriter = ({ text, speed = 30, onComplete }) => {
+            const [displayed, setDisplayed] = useState('');
+            const [done, setDone] = useState(false);
+
+            useEffect(() => {
+                if (!text) return;
+                setDisplayed('');
+                setDone(false);
+                let i = 0;
+                const timer = setInterval(() => {
+                    if (i < text.length) {
+                        setDisplayed(text.slice(0, i + 1));
+                        i++;
+                    } else {
+                        clearInterval(timer);
+                        setDone(true);
+                        onComplete?.();
+                    }
+                }, speed);
+                return () => clearInterval(timer);
+            }, [text]);
+
+            return (
+                <span>
+                    {displayed}
+                    {!done && <span className="animate-pulse text-accent">|</span>}
+                </span>
+            );
+        };
+
+        // --- NEW BADGE ---
+        const NewBadge = () => (
+            <motion.span
+                initial={{ scale: 0, rotate: -12 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-accent to-pink-500 text-white rounded-full shadow-lg z-20"
+            >
+                NEW
+            </motion.span>
+        );
 
         // --- FIXED WORDCLOUD ---
         const WordCloud = ({ activeProject, onHoverSkill, activeSkill }) => {
@@ -968,10 +1048,11 @@
             );
         };
 
-        const ProjectCard = ({ project, onClick, activeSkill, onHoverProject }) => {
+        const ProjectCard = ({ project, onClick, activeSkill, onHoverProject, isNew }) => {
             const ref = useRef(null);
             const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
             const [isHovered, setIsHovered] = useState(false);
+            const [typingDone, setTypingDone] = useState(!isNew);
 
             const handleMouseMove = (e) => {
                 if (!ref.current) return;
@@ -999,23 +1080,37 @@
                         "--mouse-y": `${mousePosition.y}px`,
                         zIndex: isRelevant ? 10 : 1
                     }}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 30, scale: isNew ? 0.8 : 1 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
                     viewport={{ once: true, margin: "-50px" }}
                     whileHover={isRelevant ? { y: -5 } : {}}
                 >
+                    {/* NEW Badge */}
+                    {isNew && <NewBadge />}
+
                     <div className="relative h-full bg-card rounded-[15px] p-6 flex flex-col justify-between min-h-[260px] overflow-hidden">
-                        
+
+                        {/* Sparkle effect for new cards */}
+                        {isNew && (
+                            <motion.div
+                                className="absolute inset-0 bg-gradient-to-r from-accent/20 via-transparent to-pink-500/20 rounded-[15px]"
+                                initial={{ opacity: 0.8 }}
+                                animate={{ opacity: 0 }}
+                                transition={{ duration: 2 }}
+                            />
+                        )}
+
                         {/* Highlight border if relevant */}
                         {isRelevant && activeSkill && (
-                            <motion.div 
+                            <motion.div
                                 layoutId="active-border"
                                 className="absolute inset-0 border-2 border-accent rounded-[15px] pointer-events-none"
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                             />
                         )}
 
-                        <motion.div 
+                        <motion.div
                             className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                             animate={{
                                 background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 40%)`
@@ -1027,7 +1122,7 @@
                                 <h3 className="text-xl font-bold text-gray-100 group-hover:text-accent transition-colors">
                                     {project.name}
                                 </h3>
-                                <motion.div 
+                                <motion.div
                                     animate={{ x: isHovered ? 5 : 0, y: isHovered ? -5 : 0 }}
                                     transition={{ type: "spring", stiffness: 400 }}
                                 >
@@ -1035,7 +1130,11 @@
                                 </motion.div>
                             </div>
                             <p className="text-gray-400 text-sm line-clamp-3 mb-6 leading-relaxed">
-                                {project.description || "Details available in repository."}
+                                {isNew && !typingDone ? (
+                                    <TypeWriter text={project.description || "Details available in repository."} speed={20} onComplete={() => setTypingDone(true)} />
+                                ) : (
+                                    project.description || "Details available in repository."
+                                )}
                             </p>
                         </div>
 
@@ -1337,13 +1436,23 @@
             const [projects, setProjects] = useState(PROJECTS);
             const [refreshing, setRefreshing] = useState(false);
             const [lastRefreshed, setLastRefreshed] = useState(null);
+            const [showConfetti, setShowConfetti] = useState(false);
+            const [newProjectNames, setNewProjectNames] = useState(new Set());
 
             const refreshProjects = async () => {
                 setRefreshing(true);
+                setNewProjectNames(new Set());
                 try {
                     const response = await fetch('/api/refresh-projects');
                     const data = await response.json();
                     if (data.success && data.projects) {
+                        // Find newly generated projects
+                        const newOnes = data.projects.filter(p => p.newlyGenerated).map(p => p.name);
+                        if (newOnes.length > 0) {
+                            setNewProjectNames(new Set(newOnes));
+                            setShowConfetti(true);
+                            setTimeout(() => setShowConfetti(false), 3000);
+                        }
                         setProjects(data.projects);
                         setLastRefreshed(new Date().toLocaleTimeString());
                     } else {
@@ -1365,6 +1474,7 @@
             return (
                 <div className="min-h-screen selection:bg-accent selection:text-white pb-20 text-gray-200">
                     <div className="noise-bg" />
+                    <Confetti active={showConfetti} />
                     <Header onResumeClick={() => setShowSkillMatcher(true)} />
 
                     <main>
@@ -1405,14 +1515,14 @@
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
                                     {featuredProjects.map((project) => (
-                                        <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} />
+                                        <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} isNew={newProjectNames.has(project.name)} />
                                     ))}
                                 </div>
                                 <div className="border-t border-white/10 pt-16">
                                     <h3 className="text-2xl font-bold text-gray-400 mb-8">Other Projects</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {otherProjects.map((project) => (
-                                            <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} />
+                                            <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} isNew={newProjectNames.has(project.name)} />
                                         ))}
                                     </div>
                                 </div>
