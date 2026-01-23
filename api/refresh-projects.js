@@ -186,7 +186,7 @@ Project name: ${repoName}`;
                 'Authorization': `Bearer ${grokApiKey}`
             },
             body: JSON.stringify({
-                model: 'grok-2-latest',
+                model: 'grok-4-latest',
                 messages: [
                     {
                         role: 'system',
@@ -197,7 +197,7 @@ Project name: ${repoName}`;
                         content: prompt
                     }
                 ],
-                max_tokens: 150,
+                stream: false,
                 temperature: 0.7
             })
         });
