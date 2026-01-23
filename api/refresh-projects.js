@@ -8,6 +8,35 @@ const EXCLUDED_REPOS = [
     'portfolio'  // Don't include the portfolio itself
 ];
 
+// Normalize repo name for deduplication (remove common suffixes)
+function normalizeRepoName(name) {
+    return name
+        .toLowerCase()
+        .replace(/[-_](vercel|app|web|site|frontend|backend|api|dev|prod|main|v2|v3)$/g, '')
+        .replace(/[-_]/g, '');
+}
+
+// Deduplicate repos with similar names, keeping the most recently pushed
+function deduplicateRepos(repos) {
+    const groups = {};
+
+    for (const repo of repos) {
+        const normalizedName = normalizeRepoName(repo.name);
+
+        if (!groups[normalizedName]) {
+            groups[normalizedName] = repo;
+        } else {
+            // Keep the one that was pushed more recently
+            const existing = groups[normalizedName];
+            if (new Date(repo.pushed_at) > new Date(existing.pushed_at)) {
+                groups[normalizedName] = repo;
+            }
+        }
+    }
+
+    return Object.values(groups);
+}
+
 async function fetchGitHubRepos() {
     const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=pushed&direction=desc`, {
         headers: {
@@ -97,21 +126,43 @@ async function generateDescriptionWithGrok(repoName, readmeContent, existingDesc
     // If no API key, use existing description or extract from README
     if (!grokApiKey) {
         console.warn('GROK_API_KEY not set');
-        if (existingDescription) return existingDescription;
-        // Try to get first meaningful paragraph from README
+
+        // Try to get meaningful description from README first
         if (readmeContent) {
-            const lines = readmeContent.split('\n').filter(line =>
-                line.trim() &&
-                !line.startsWith('#') &&
-                !line.startsWith('!') &&
-                !line.startsWith('[') &&
-                !line.startsWith('```') &&
-                line.length > 20
-            );
+            // Remove badges, images, and links at the start
+            const cleanedContent = readmeContent
+                .replace(/^\s*(\[!\[.*?\]\(.*?\)\]\(.*?\)|\!\[.*?\]\(.*?\)|\[.*?\]\(.*?\))\s*/gm, '')
+                .replace(/^#+\s+.+$/gm, '') // Remove headers
+                .trim();
+
+            const lines = cleanedContent.split('\n').filter(line => {
+                const trimmed = line.trim();
+                return trimmed &&
+                    !trimmed.startsWith('!') &&
+                    !trimmed.startsWith('[') &&
+                    !trimmed.startsWith('```') &&
+                    !trimmed.startsWith('|') &&
+                    !trimmed.startsWith('-') &&
+                    !trimmed.startsWith('*') &&
+                    !trimmed.startsWith('>') &&
+                    trimmed.length > 30;
+            });
+
             if (lines.length > 0) {
-                return lines[0].substring(0, 200).trim();
+                // Get first meaningful paragraph
+                let desc = lines[0].trim();
+                // Clean up any remaining markdown
+                desc = desc.replace(/\*\*/g, '').replace(/`/g, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+                if (desc.length > 200) {
+                    desc = desc.substring(0, 197) + '...';
+                }
+                return desc;
             }
         }
+
+        // Fall back to GitHub repo description
+        if (existingDescription) return existingDescription;
+
         return `${repoName} - View repository for details.`;
     }
 
@@ -256,7 +307,10 @@ export default async function handler(req, res) {
 
     try {
         // Fetch repos from GitHub
-        const repos = await fetchGitHubRepos();
+        const allRepos = await fetchGitHubRepos();
+
+        // Remove duplicates (e.g., "dwight" and "dwight_vercel")
+        const repos = deduplicateRepos(allRepos);
 
         // Process each repo
         const projects = await Promise.all(repos.map(async (repo) => {
