@@ -309,8 +309,9 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Load saved descriptions from JSON file
-        const savedDescriptions = loadDescriptions();
+        // Load saved descriptions from Redis
+        const savedDescriptions = await loadDescriptions();
+        console.log('Loaded descriptions count:', Object.keys(savedDescriptions).length);
 
         // Fetch repos from GitHub
         const allRepos = await fetchGitHubRepos();
