@@ -844,6 +844,47 @@
             animation: blink 1s step-end infinite;
             vertical-align: text-bottom;
         }
+
+        /* Konami toast */
+        .konami-toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 92, 246, 0.95);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 99999;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 4.7s forwards;
+            white-space: nowrap;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        }
+
+        /* Party mode rainbow cycle */
+        @keyframes rainbow-hue {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        .party-mode { animation: rainbow-hue 0.5s linear infinite; }
+
+        /* Photo spin for konami */
+        @keyframes photoSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .photo-spin img { animation: photoSpin 1s ease-in-out; }
     </style>
 </head>
 <body>
@@ -1436,6 +1477,124 @@
             return <div ref={ref} className="cursor-glow hidden md:block" />;
         };
 
+        // --- SCROLL PROGRESS BAR ---
+        const ScrollProgress = () => {
+            const { scrollYProgress } = useScroll();
+            return (
+                <motion.div
+                    style={{
+                        scaleX: scrollYProgress,
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: 'linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd)',
+                        boxShadow: '0 0 10px rgba(139, 92, 246, 0.5), 0 0 5px rgba(139, 92, 246, 0.3)',
+                        zIndex: 99999,
+                        transformOrigin: '0%'
+                    }}
+                />
+            );
+        };
+
+        // --- SCRAMBLE TEXT EFFECT ---
+        const ScrambleText = ({ text, className = "" }) => {
+            const [displayText, setDisplayText] = useState(text);
+            const [hasAnimated, setHasAnimated] = useState(false);
+            const ref = useRef(null);
+            const chars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+            useEffect(() => {
+                if (!ref.current) return;
+                const observer = new IntersectionObserver(([entry]) => {
+                    if (entry.isIntersecting && !hasAnimated) {
+                        setHasAnimated(true);
+                        let iteration = 0;
+                        const maxIterations = text.length * 3;
+                        const interval = setInterval(() => {
+                            setDisplayText(
+                                text.split("").map((char, i) => {
+                                    if (char === " ") return " ";
+                                    if (i < iteration / 3) return text[i];
+                                    return chars[Math.floor(Math.random() * chars.length)];
+                                }).join("")
+                            );
+                            iteration++;
+                            if (iteration > maxIterations) {
+                                clearInterval(interval);
+                                setDisplayText(text);
+                            }
+                        }, 30);
+                    }
+                }, { threshold: 0.3 });
+                observer.observe(ref.current);
+                return () => observer.disconnect();
+            }, [text, hasAnimated]);
+
+            return <span ref={ref} className={className}>{displayText}</span>;
+        };
+
+        // --- KONAMI CODE EASTER EGG ---
+        const KonamiCode = ({ onActivate }) => {
+            const callbackRef = useRef(onActivate);
+            callbackRef.current = onActivate;
+
+            useEffect(() => {
+                const sequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+                let pos = 0;
+                const handler = (e) => {
+                    if (e.keyCode === sequence[pos]) {
+                        pos++;
+                        if (pos === sequence.length) {
+                            pos = 0;
+                            callbackRef.current();
+                        }
+                    } else {
+                        pos = 0;
+                    }
+                };
+                window.addEventListener('keydown', handler);
+                return () => window.removeEventListener('keydown', handler);
+            }, []);
+            return null;
+        };
+
+        // --- MAGNETIC BUTTON ---
+        const MagneticButton = ({ children, onClick, className = "" }) => {
+            const ref = useRef(null);
+            const [position, setPosition] = useState({ x: 0, y: 0 });
+
+            const handleMouseMove = (e) => {
+                if (!ref.current || window.innerWidth < 768) return;
+                const rect = ref.current.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                setPosition({
+                    x: (e.clientX - centerX) * 0.3,
+                    y: (e.clientY - centerY) * 0.3
+                });
+            };
+
+            return (
+                <motion.div
+                    ref={ref}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={() => setPosition({ x: 0, y: 0 })}
+                    className="inline-block p-2 -m-2"
+                >
+                    <motion.button
+                        onClick={onClick}
+                        animate={{ x: position.x, y: position.y }}
+                        transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+                        className={className}
+                    >
+                        {children}
+                    </motion.button>
+                </motion.div>
+            );
+        };
+
         const Header = () => {
             const [scrolled, setScrolled] = useState(false);
             useEffect(() => {
@@ -1476,6 +1635,82 @@
             const [lastRefreshed, setLastRefreshed] = useState(null);
             const [showConfetti, setShowConfetti] = useState(false);
             const [newProjectNames, setNewProjectNames] = useState(new Set());
+            const [partyMode, setPartyMode] = useState(false);
+            const photoRef = useRef(null);
+
+            // --- TIME-AWARE GREETING ---
+            const timeGreeting = useMemo(() => {
+                const hour = new Date().getHours();
+                if (hour >= 6 && hour < 12) return "Good morning — I'm available for opportunities ☀️";
+                if (hour >= 12 && hour < 18) return "Good afternoon — open to new roles 🚀";
+                if (hour >= 18 && hour < 22) return "Evening coding session — still open for opportunities 🌙";
+                const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                return `Coding at ${displayHour}${ampm} — yes, even now I'm available 🦉`;
+            }, []);
+
+            // --- RANDOM FOOTER QUOTE ---
+            const footerQuote = useMemo(() => {
+                const quotes = [
+                    "// it works on my machine ¯\\_(ツ)_/¯",
+                    "// there are no bugs, only undocumented features",
+                    "// I don't always test my code, but when I do, I do it in production",
+                    "// 99 little bugs in the code... fix one, 127 little bugs in the code",
+                    "// the code is self-documenting, trust me",
+                    "// TODO: refactor this before anyone sees it"
+                ];
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            }, []);
+
+            // --- TAB TITLE TRICKERY ---
+            useEffect(() => {
+                const originalTitle = document.title;
+                const handleVisibility = () => {
+                    if (document.hidden) {
+                        document.title = "Hey, come back! 👀";
+                    } else {
+                        document.title = "Welcome back! ✨";
+                        setTimeout(() => { document.title = originalTitle; }, 2000);
+                    }
+                };
+                document.addEventListener('visibilitychange', handleVisibility);
+                return () => document.removeEventListener('visibilitychange', handleVisibility);
+            }, []);
+
+            // --- CONSOLE ASCII ART ---
+            useEffect(() => {
+                console.log(
+                    "%c" +
+                    "███╗   ██╗███████╗\n" +
+                    "████╗  ██║██╔════╝\n" +
+                    "██╔██╗ ██║███████╗\n" +
+                    "██║╚██╗██║╚════██║\n" +
+                    "██║ ╚████║███████║\n" +
+                    "╚═╝  ╚═══╝╚══════╝",
+                    "color: #8b5cf6; font-size: 14px; font-weight: bold; font-family: monospace;"
+                );
+                console.log(
+                    "%cHey developer! 👋 Peeking under the hood?\nI like your style. Let's connect!",
+                    "color: #a78bfa; font-size: 13px; font-family: sans-serif;"
+                );
+            }, []);
+
+            // --- KONAMI CODE HANDLER ---
+            const handleKonami = () => {
+                setPartyMode(true);
+                setShowConfetti(true);
+                if (photoRef.current) photoRef.current.classList.add('photo-spin');
+                const toast = document.createElement('div');
+                toast.className = 'konami-toast';
+                toast.textContent = 'You found the secret! 🎉';
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    setPartyMode(false);
+                    setShowConfetti(false);
+                    if (photoRef.current) photoRef.current.classList.remove('photo-spin');
+                    toast.remove();
+                }, 5000);
+            };
 
             const refreshProjects = async () => {
                 setRefreshing(true);
@@ -1510,7 +1745,9 @@
             const otherProjects = projects.filter(p => !featuredProjects.includes(p));
 
             return (
-                <div className="min-h-screen selection:bg-accent selection:text-white pb-20 text-gray-200">
+                <div className={`min-h-screen selection:bg-accent selection:text-white pb-20 text-gray-200 ${partyMode ? 'party-mode' : ''}`}>
+                    <ScrollProgress />
+                    <KonamiCode onActivate={handleKonami} />
                     <div className="noise-bg" />
                     <CursorGlow />
                     <Confetti active={showConfetti} />
@@ -1526,6 +1763,7 @@
                             <motion.div className="z-10 max-w-5xl mx-auto" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}>
                                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, type: "spring" }} className="mb-8">
                                     <motion.div
+                                        ref={photoRef}
                                         className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden border-2 border-white/10 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_50px_rgba(139,92,246,0.5)] transition-shadow cursor-pointer"
                                         whileHover={{ scale: 1.1, rotate: [0, -3, 3, 0] }}
                                         transition={{ duration: 0.4 }}
@@ -1534,13 +1772,13 @@
                                         <img src="/pfp.png" alt="Nivetha Sivakumar" className="w-full h-full object-cover" />
                                     </motion.div>
                                 </motion.div>
-                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-accent text-sm font-mono mb-8"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>Available for new opportunities</motion.div>
+                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-accent text-sm font-mono mb-8"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>{timeGreeting}</motion.div>
                                 <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 pb-2">Nivetha Sivakumar</h1>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl text-gray-400 font-light mb-6 font-mono"><TypingRole /></motion.p>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">Building full-stack apps and automation pipelines. <span className="text-gray-300"> 1.5 years of experience in enterprise modernization.</span></motion.p>
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
-                                    <button onClick={() => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform duration-200">View Projects</button>
-                                    <button onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-200">Contact Me</button>
+                                    <MagneticButton onClick={() => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform duration-200">View Projects</MagneticButton>
+                                    <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
                                 </motion.div>
                             </motion.div>
                         </section>
@@ -1549,7 +1787,7 @@
                         <section id="projects" className="py-32 px-6 relative">
                             <div className="container mx-auto max-w-7xl">
                                 <div className="mb-16 flex flex-col md:flex-row justify-between items-end">
-                                    <div><h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">Featured Work</h2><div className="h-1 w-24 bg-accent rounded-full"></div></div>
+                                    <div><h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Featured Work" /></h2><div className="h-1 w-24 bg-accent rounded-full"></div></div>
                                     <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
                                         <button
                                             onClick={refreshProjects}
@@ -1635,7 +1873,7 @@
                         {/* EXPERIENCE */}
                         <section id="experience" className="py-32 px-6 bg-card border-y border-white/5">
                             <div className="container mx-auto max-w-4xl">
-                                <div className="mb-20"><h2 className="text-4xl md:text-6xl font-bold mb-4">Experience</h2><div className="h-1 w-24 bg-accent rounded-full"></div></div>
+                                <div className="mb-20"><h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text="Experience" /></h2><div className="h-1 w-24 bg-accent rounded-full"></div></div>
                                 <div className="relative border-l-2 border-white/10 ml-4 space-y-16">
                                     {EXPERIENCE.map((job, idx) => (
                                         <motion.div key={idx} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.2 }} className="relative pl-12">
@@ -1659,7 +1897,7 @@
                                 <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
                                         <div>
-                                            <h2 className="text-4xl md:text-6xl font-bold mb-4">Resume</h2>
+                                            <h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text="Resume" /></h2>
                                             <div className="h-1 w-24 bg-accent rounded-full"></div>
                                         </div>
                                         <motion.a
@@ -1695,7 +1933,7 @@
                         <section id="contact" className="py-32 px-6">
                             <div className="container mx-auto max-w-4xl text-center">
                                 <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                                    <h2 className="text-4xl md:text-6xl font-bold mb-8">Let's build something cool.</h2>
+                                    <h2 className="text-4xl md:text-6xl font-bold mb-8"><ScrambleText text="Let's build something cool." /></h2>
                                     <div className="flex flex-col sm:flex-row justify-center gap-6">
                                         <a href="mailto:nnivetha373@gmail.com" className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3"><Icon name="download" size={20} /> nnivetha373@gmail.com</a>
                                         <a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-full hover:bg-white/10 transition-colors flex items-center justify-center gap-3"><Icon name="linkedin" size={20} /> LinkedIn</a>
@@ -1704,7 +1942,7 @@
                             </div>
                         </section>
                     </main>
-                    <footer className="py-8 text-center text-gray-600 text-sm border-t border-white/5"><p>Crafted with <span className="text-accent animate-pulse inline-block">&#9829;</span> and mass amounts of coffee by Nivetha Sivakumar</p><p className="mt-2 text-gray-700 text-xs font-mono">// no bugs were left unfixed in the making of this site... probably</p></footer>
+                    <footer className="py-8 text-center text-gray-600 text-sm border-t border-white/5"><p>Crafted with <span className="text-accent animate-pulse inline-block">&#9829;</span> and mass amounts of coffee by Nivetha Sivakumar</p><p className="mt-2 text-gray-700 text-xs font-mono">{footerQuote}</p></footer>
                     <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
                 </div>
             );
