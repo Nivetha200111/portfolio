@@ -1703,18 +1703,8 @@
                 return `Coding at ${displayHour}${ampm} — yes, even now I'm available`;
             }, []);
 
-            // --- RANDOM FOOTER QUOTE ---
-            const footerQuote = useMemo(() => {
-                const quotes = [
-                    "// it works on my machine ¯\\_(ツ)_/¯",
-                    "// there are no bugs, only undocumented features",
-                    "// I don't always test my code, but when I do, I do it in production",
-                    "// 99 little bugs in the code... fix one, 127 little bugs in the code",
-                    "// the code is self-documenting, trust me",
-                    "// TODO: refactor this before anyone sees it"
-                ];
-                return quotes[Math.floor(Math.random() * quotes.length)];
-            }, []);
+            // --- FOOTER TAGLINE ---
+            const footerQuote = "// built with curiosity, caffeine, and clean code";
 
             // --- TAB TITLE TRICKERY ---
             useEffect(() => {
