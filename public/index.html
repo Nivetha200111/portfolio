@@ -1651,12 +1651,12 @@
             // --- TIME-AWARE GREETING ---
             const timeGreeting = useMemo(() => {
                 const hour = new Date().getHours();
-                if (hour >= 6 && hour < 12) return "Good morning — I'm available for opportunities ☀️";
-                if (hour >= 12 && hour < 18) return "Good afternoon — open to new roles 🚀";
-                if (hour >= 18 && hour < 22) return "Evening coding session — still open for opportunities 🌙";
+                if (hour >= 6 && hour < 12) return "Good morning — I'm available for opportunities";
+                if (hour >= 12 && hour < 18) return "Good afternoon — open to new roles";
+                if (hour >= 18 && hour < 22) return "Evening coding session — still open for opportunities";
                 const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
                 const ampm = hour >= 12 ? 'PM' : 'AM';
-                return `Coding at ${displayHour}${ampm} — yes, even now I'm available 🦉`;
+                return `Coding at ${displayHour}${ampm} — yes, even now I'm available`;
             }, []);
 
             // --- RANDOM FOOTER QUOTE ---
@@ -1677,9 +1677,9 @@
                 const originalTitle = document.title;
                 const handleVisibility = () => {
                     if (document.hidden) {
-                        document.title = "Hey, come back! 👀";
+                        document.title = "Hey, come back!";
                     } else {
-                        document.title = "Welcome back! ✨";
+                        document.title = "Welcome back!";
                         setTimeout(() => { document.title = originalTitle; }, 2000);
                     }
                 };
@@ -1700,7 +1700,7 @@
                     "color: #8b5cf6; font-size: 14px; font-weight: bold; font-family: monospace;"
                 );
                 console.log(
-                    "%cHey developer! 👋 Peeking under the hood?\nI like your style. Let's connect!",
+                    "%cHey developer! Peeking under the hood?\nI like your style. Let's connect!",
                     "color: #a78bfa; font-size: 13px; font-family: sans-serif;"
                 );
             }, []);
@@ -1712,7 +1712,7 @@
                 if (photoRef.current) photoRef.current.classList.add('photo-spin');
                 const toast = document.createElement('div');
                 toast.className = 'konami-toast';
-                toast.textContent = 'You found the secret! 🎉';
+                toast.textContent = 'You found the secret!';
                 document.body.appendChild(toast);
                 setTimeout(() => {
                     setPartyMode(false);
