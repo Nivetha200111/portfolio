@@ -1477,37 +1477,6 @@
             return <div ref={ref} className="cursor-glow hidden md:block" />;
         };
 
-        // --- LIVE EXPERIENCE COUNTER ---
-        const LiveExperience = () => {
-            const startDate = new Date('2024-10-01T09:00:00');
-            const [elapsed, setElapsed] = useState('');
-
-            useEffect(() => {
-                const tick = () => {
-                    const now = new Date();
-                    let diff = now - startDate;
-                    const years = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
-                    diff -= years * 365.25 * 24 * 60 * 60 * 1000;
-                    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-                    diff -= days * 24 * 60 * 60 * 1000;
-                    const hours = Math.floor(diff / (60 * 60 * 1000));
-                    diff -= hours * 60 * 60 * 1000;
-                    const mins = Math.floor(diff / (60 * 1000));
-                    diff -= mins * 60 * 1000;
-                    const secs = Math.floor(diff / 1000);
-                    const parts = [];
-                    if (years) parts.push(`${years}y`);
-                    parts.push(`${days}d`, `${hours}h`, `${mins}m`, `${secs}s`);
-                    setElapsed(parts.join(' '));
-                };
-                tick();
-                const id = setInterval(tick, 1000);
-                return () => clearInterval(id);
-            }, []);
-
-            return <span className="text-accent font-mono text-base">{elapsed}</span>;
-        };
-
         // --- SCRAMBLE TEXT EFFECT ---
         const ScrambleText = ({ text, className = "" }) => {
             const [displayText, setDisplayText] = useState(text);
@@ -1784,7 +1753,7 @@
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-accent text-sm font-mono mb-8"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>{timeGreeting}</motion.div>
                                 <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 pb-2">Nivetha Sivakumar</h1>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl text-gray-400 font-light mb-6 font-mono"><TypingRole /></motion.p>
-                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">Building full-stack apps and automation pipelines. <span className="text-gray-300"> <LiveExperience /> of experience in enterprise modernization.</span></motion.p>
+                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">Building full-stack apps and automation pipelines. <span className="text-gray-300"> 1.5 years of experience in enterprise modernization.</span></motion.p>
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
                                     <MagneticButton onClick={() => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform duration-200">View Projects</MagneticButton>
                                     <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
@@ -1853,15 +1822,6 @@
                                             src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=Nivetha200111&theme=github_dark"
                                             alt="GitHub Contribution Heatmap"
                                             className="w-full min-w-[600px]"
-                                        />
-                                    </div>
-
-                                    {/* Top Languages */}
-                                    <div className="flex justify-center">
-                                        <img
-                                            src="https://github-readme-stats.vercel.app/api/top-langs/?username=Nivetha200111&layout=compact&hide_border=true&bg_color=0d1117&title_color=8b5cf6&text_color=a0a0a0"
-                                            alt="Top Languages"
-                                            className="rounded-lg"
                                         />
                                     </div>
 
