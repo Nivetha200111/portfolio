@@ -1477,25 +1477,35 @@
             return <div ref={ref} className="cursor-glow hidden md:block" />;
         };
 
-        // --- SCROLL PROGRESS BAR ---
-        const ScrollProgress = () => {
-            const { scrollYProgress } = useScroll();
-            return (
-                <motion.div
-                    style={{
-                        scaleX: scrollYProgress,
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd)',
-                        boxShadow: '0 0 10px rgba(139, 92, 246, 0.5), 0 0 5px rgba(139, 92, 246, 0.3)',
-                        zIndex: 99999,
-                        transformOrigin: '0%'
-                    }}
-                />
-            );
+        // --- LIVE EXPERIENCE COUNTER ---
+        const LiveExperience = () => {
+            const startDate = new Date('2024-10-01T09:00:00');
+            const [elapsed, setElapsed] = useState('');
+
+            useEffect(() => {
+                const tick = () => {
+                    const now = new Date();
+                    let diff = now - startDate;
+                    const years = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+                    diff -= years * 365.25 * 24 * 60 * 60 * 1000;
+                    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+                    diff -= days * 24 * 60 * 60 * 1000;
+                    const hours = Math.floor(diff / (60 * 60 * 1000));
+                    diff -= hours * 60 * 60 * 1000;
+                    const mins = Math.floor(diff / (60 * 1000));
+                    diff -= mins * 60 * 1000;
+                    const secs = Math.floor(diff / 1000);
+                    const parts = [];
+                    if (years) parts.push(`${years}y`);
+                    parts.push(`${days}d`, `${hours}h`, `${mins}m`, `${secs}s`);
+                    setElapsed(parts.join(' '));
+                };
+                tick();
+                const id = setInterval(tick, 1000);
+                return () => clearInterval(id);
+            }, []);
+
+            return <span className="text-accent font-mono text-base">{elapsed}</span>;
         };
 
         // --- SCRAMBLE TEXT EFFECT ---
@@ -1746,7 +1756,6 @@
 
             return (
                 <div className={`min-h-screen selection:bg-accent selection:text-white pb-20 text-gray-200 ${partyMode ? 'party-mode' : ''}`}>
-                    <ScrollProgress />
                     <KonamiCode onActivate={handleKonami} />
                     <div className="noise-bg" />
                     <CursorGlow />
@@ -1775,7 +1784,7 @@
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-accent text-sm font-mono mb-8"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>{timeGreeting}</motion.div>
                                 <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 pb-2">Nivetha Sivakumar</h1>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl text-gray-400 font-light mb-6 font-mono"><TypingRole /></motion.p>
-                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">Building full-stack apps and automation pipelines. <span className="text-gray-300"> 1.5 years of experience in enterprise modernization.</span></motion.p>
+                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">Building full-stack apps and automation pipelines. <span className="text-gray-300"> <LiveExperience /> of experience in enterprise modernization.</span></motion.p>
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
                                     <MagneticButton onClick={() => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform duration-200">View Projects</MagneticButton>
                                     <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
