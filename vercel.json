@@ -1,10 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "has": [{ "type": "host", "value": "servicenow.nivetha.info" }],
-      "destination": "/servicenow.html"
-    },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/servicenow.html" }
   ]
 }
