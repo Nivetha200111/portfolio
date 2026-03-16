@@ -750,78 +750,84 @@
             const isDark = useIsDark();
             const prioritySkills = useMemo(() => new Set(ACTIVE_PRIORITY_SKILLS), []);
 
-            const clamp = (value, margin = 8) => Math.min(100 - margin, Math.max(margin, value));
+            // Deterministic pseudo-random based on index (no Math.random drift)
+            const seeded = (i) => {
+                const x = Math.sin(i * 9301 + 4927) * 49297;
+                return x - Math.floor(x);
+            };
 
-            // Golden-angle spiral keeps the words evenly spread without clumping
             const cloudData = useMemo(() => {
                 const total = ACTIVE_SKILLS.length;
-                const maxRadius = 42;
-                const goldenAngle = 137.5 * (Math.PI / 180);
+                const maxRadius = 38;
+                const goldenAngle = 137.508 * (Math.PI / 180);
 
                 return ACTIVE_SKILLS.map((skill, index) => {
+                    const weight = prioritySkills.has(skill) ? 3 : skill.length > 7 ? 2 : 1;
                     const angle = goldenAngle * index;
                     const radius = Math.sqrt((index + 1) / total) * maxRadius;
-                    const jitterX = (Math.random() - 0.5) * 3;
-                    const jitterY = (Math.random() - 0.5) * 3;
-                    const weight = prioritySkills.has(skill) ? 3 : skill.length > 7 ? 2 : 1;
-                    const widthMargin = Math.min(18, skill.length * (weight === 3 ? 0.9 : weight === 2 ? 0.75 : 0.6));
+                    const jitterX = (seeded(index) - 0.5) * 4;
+                    const jitterY = (seeded(index + 100) - 0.5) * 4;
 
                     return {
                         id: index,
                         text: skill,
-                        x: clamp(50 + radius * Math.cos(angle) + jitterX, widthMargin),
-                        y: clamp(50 + radius * Math.sin(angle) + jitterY, 8),
+                        x: 50 + radius * Math.cos(angle) + jitterX,
+                        y: 50 + radius * Math.sin(angle) + jitterY,
                         weight,
-                        floatDuration: 4.5 + Math.random() * 3.5,
-                        floatDelay: Math.random() * 1.5
+                        floatDuration: 4.5 + seeded(index + 200) * 3.5,
+                        floatDelay: seeded(index + 300) * 1.5
                     };
                 });
             }, [prioritySkills]);
 
             return (
-                <div className="relative w-full h-[600px] bg-card rounded-2xl border border-border overflow-hidden flex items-center justify-center">
+                <div className="relative w-full bg-card rounded-2xl border border-border overflow-hidden">
                     <div className="absolute inset-0 opacity-10 pointer-events-none"
                          style={{ backgroundImage: 'radial-gradient(circle, var(--dot-color) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-                    <div className="relative w-full h-full z-10">
+                    {/* Flowing tag layout */}
+                    <div className="relative z-10 flex flex-wrap justify-center items-center gap-3 px-6 py-12 md:px-10 md:py-16 min-h-[320px]">
                         {cloudData.map((item) => {
                             const isHoveredByProject = activeProject?.stack?.includes(item.text);
                             const isThisSkillActive = activeSkill === item.text;
                             const isMajor = item.weight === 3;
                             const isMid = item.weight === 2;
-                            
+
                             let opacity = 1;
                             let scale = 1;
                             let colorClass = isThisSkillActive ? "text-accent" : (isMajor ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-gray-400" : "text-gray-500"));
                             let fontWeight = isMajor ? "font-extrabold" : isMid ? "font-semibold" : "font-medium";
-                            let fontSize = isMajor ? "text-2xl md:text-3xl" : isMid ? "text-lg md:text-xl" : "text-sm md:text-base";
+                            let fontSize = isMajor ? "text-xl md:text-2xl" : isMid ? "text-base md:text-lg" : "text-sm";
                             let shadow = isMajor ? (isDark ? "drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]" : "drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]") : "";
                             let zIndex = isMajor ? 5 : 3;
-                            
+                            let bgClass = "";
+
                             if (activeProject) {
                                 if (isHoveredByProject) {
                                     opacity = 1;
-                                    scale = 1.35;
-                                    colorClass = isDark ? "text-white" : "text-gray-900";
-                                    shadow = isDark ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "drop-shadow-[0_0_10px_rgba(0,0,0,0.3)]";
+                                    scale = 1.15;
+                                    colorClass = "text-accent";
+                                    bgClass = "dark:bg-accent/10 bg-accent/10";
+                                    shadow = isDark ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" : "drop-shadow-[0_0_10px_rgba(0,0,0,0.2)]";
                                     zIndex = 15;
                                 } else {
-                                    opacity = 0.18;
-                                    scale = 0.9;
+                                    opacity = 0.25;
+                                    scale = 0.95;
                                     zIndex = 1;
                                 }
                             } else if (activeSkill) {
                                 if (isThisSkillActive) {
                                     opacity = 1;
-                                    scale = 1.55;
+                                    scale = 1.2;
                                     colorClass = "text-accent";
+                                    bgClass = "dark:bg-accent/15 bg-accent/15";
                                     shadow = IS_SERVICENOW
-                                        ? "drop-shadow-[0_0_12px_rgba(90,241,126,0.9)]"
-                                        : "drop-shadow-[0_0_12px_rgba(139,92,246,0.9)]";
+                                        ? "drop-shadow-[0_0_12px_rgba(90,241,126,0.7)]"
+                                        : "drop-shadow-[0_0_12px_rgba(139,92,246,0.7)]";
                                     zIndex = 20;
                                 } else {
-                                    opacity = 0.2;
-                                    scale = 0.9;
+                                    opacity = 0.25;
+                                    scale = 0.95;
                                     zIndex = 1;
                                 }
                             }
@@ -829,27 +835,27 @@
                             return (
                                 <motion.span
                                     key={item.id}
-                                    className={`absolute cursor-pointer transition-colors select-none ${colorClass} ${fontWeight} ${fontSize} ${shadow}`}
-                                    style={{ left: `${item.x}%`, top: `${item.y}%`, zIndex }}
+                                    className={`cursor-pointer select-none px-3 py-1.5 rounded-lg border border-transparent hover:border-accent/30 transition-colors ${colorClass} ${fontWeight} ${fontSize} ${shadow} ${bgClass}`}
+                                    style={{ zIndex }}
                                     initial={{ opacity: 0, scale: 0 }}
                                     animate={{
                                         opacity,
                                         scale,
-                                        y: (!activeProject && !activeSkill && !prefersReducedMotion) 
-                                            ? [0, -8, 0] 
+                                        y: (!activeProject && !activeSkill && !prefersReducedMotion)
+                                            ? [0, -4, 0]
                                             : 0
                                     }}
-                                    whileHover={{ scale: activeProject || activeSkill ? scale : 1.12 }}
+                                    whileHover={{ scale: activeProject || activeSkill ? scale : 1.08 }}
                                     transition={{
                                         opacity: { duration: 0.25 },
                                         scale: { duration: 0.25 },
-                                        ...(prefersReducedMotion ? {} : { 
-                                            y: { 
-                                                repeat: Infinity, 
-                                                duration: item.floatDuration, 
-                                                delay: item.floatDelay, 
-                                                ease: "easeInOut" 
-                                            } 
+                                        ...(prefersReducedMotion ? {} : {
+                                            y: {
+                                                repeat: Infinity,
+                                                duration: item.floatDuration,
+                                                delay: item.floatDelay,
+                                                ease: "easeInOut"
+                                            }
                                         })
                                     }}
                                     onMouseEnter={() => onHoverSkill(item.text)}
@@ -860,10 +866,10 @@
                             );
                         })}
                     </div>
-                    
-                    <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+
+                    <div className="relative z-10 pb-5 text-center pointer-events-none">
                         <span className="px-3 py-1 dark:bg-black/50 bg-white/70 rounded-full text-xs text-gray-400 border border-border backdrop-blur-sm">
-                            Hover skills to find projects • Hover projects to find skills
+                            Hover skills to find projects &bull; Hover projects to find skills
                         </span>
                     </div>
                 </div>
