@@ -78,67 +78,67 @@
 
         /* Light mode (default root) */
         :root {
-            --bg: #f8f8fa;
-            --surface: #f0f0f2;
-            --surface-rgb: 240 240 242;
-            --card: #ffffff;
-            --card-rgb: 255 255 255;
-            --text-primary: #1a1a2e;
-            --border: rgba(0,0,0,0.08);
-            --glass-bg: rgba(255,255,255,0.85);
-            --glass-border: rgba(0,0,0,0.08);
-            --spotlight-white: rgba(0,0,0,0.04);
-            --scrollbar-track: #f0f0f2;
-            --scrollbar-thumb: #c0c0c8;
-            --scrollbar-hover: #a0a0a8;
-            --dot-color: #ccc;
-            --accent-rgb: 139 92 246;
-            --accent-secondary-rgb: 236 72 153;
-            --hero-orb-a-rgb: 88 28 135;
-            --hero-orb-b-rgb: 30 64 175;
+            --bg: #EDEFF0;
+            --surface: #E6E6F0;
+            --surface-rgb: 230 230 240;
+            --card: #E2E3F6;
+            --card-rgb: 226 227 246;
+            --text-primary: #110C32;
+            --border: rgba(46,36,109,0.12);
+            --glass-bg: rgba(230,230,240,0.88);
+            --glass-border: rgba(46,36,109,0.10);
+            --spotlight-white: rgba(78,63,174,0.06);
+            --scrollbar-track: #DFDDE8;
+            --scrollbar-thumb: #B8B4CD;
+            --scrollbar-hover: #948CB4;
+            --dot-color: #BEBDD8;
+            --accent-rgb: 110 102 208;
+            --accent-secondary-rgb: 103 214 88;
+            --hero-orb-a-rgb: 46 36 109;
+            --hero-orb-b-rgb: 81 171 69;
         }
 
         /* Dark mode overrides */
         .dark {
-            --bg: #050507;
-            --surface: #0a0a0c;
-            --surface-rgb: 10 10 12;
-            --card: #121214;
-            --card-rgb: 18 18 20;
-            --text-primary: #ededed;
-            --border: rgba(255,255,255,0.05);
-            --glass-bg: rgba(5,5,7,0.8);
-            --glass-border: rgba(255,255,255,0.05);
-            --spotlight-white: rgba(255,255,255,0.06);
-            --scrollbar-track: #050507;
-            --scrollbar-thumb: #27272a;
-            --scrollbar-hover: #3f3f46;
-            --dot-color: #444;
-            --accent-rgb: 139 92 246;
-            --accent-secondary-rgb: 236 72 153;
-            --hero-orb-a-rgb: 88 28 135;
-            --hero-orb-b-rgb: 30 64 175;
+            --bg: #110C32;
+            --surface: #141228;
+            --surface-rgb: 20 18 40;
+            --card: #1E1A44;
+            --card-rgb: 30 26 68;
+            --text-primary: #E6E6F0;
+            --border: rgba(148,140,180,0.14);
+            --glass-bg: rgba(17,12,50,0.85);
+            --glass-border: rgba(148,140,180,0.12);
+            --spotlight-white: rgba(110,102,208,0.08);
+            --scrollbar-track: #110C32;
+            --scrollbar-thumb: #544E8B;
+            --scrollbar-hover: #7571AD;
+            --dot-color: #544E8B;
+            --accent-rgb: 110 102 208;
+            --accent-secondary-rgb: 103 214 88;
+            --hero-orb-a-rgb: 78 63 174;
+            --hero-orb-b-rgb: 62 134 52;
         }
 
         html[data-site="servicenow"] {
-            --bg: #020805;
-            --surface: #06110b;
-            --surface-rgb: 6 17 11;
-            --card: #0b1710;
-            --card-rgb: 11 23 16;
-            --text-primary: #edfff2;
-            --border: rgba(108,255,145,0.16);
-            --glass-bg: rgba(2,12,7,0.86);
-            --glass-border: rgba(108,255,145,0.12);
-            --spotlight-white: rgba(108,255,145,0.09);
-            --scrollbar-track: #020805;
-            --scrollbar-thumb: #175431;
-            --scrollbar-hover: #2a8e51;
-            --dot-color: rgba(108,255,145,0.18);
-            --accent-rgb: 90 241 126;
-            --accent-secondary-rgb: 204 255 120;
-            --hero-orb-a-rgb: 28 132 74;
-            --hero-orb-b-rgb: 5 72 42;
+            --bg: #051504;
+            --surface: #163811;
+            --surface-rgb: 22 56 17;
+            --card: #2A5F23;
+            --card-rgb: 42 95 35;
+            --text-primary: #A6F89A;
+            --border: rgba(103,214,88,0.18);
+            --glass-bg: rgba(5,21,4,0.88);
+            --glass-border: rgba(103,214,88,0.14);
+            --spotlight-white: rgba(103,214,88,0.09);
+            --scrollbar-track: #051504;
+            --scrollbar-thumb: #3E8634;
+            --scrollbar-hover: #51AB45;
+            --dot-color: rgba(103,214,88,0.20);
+            --accent-rgb: 103 214 88;
+            --accent-secondary-rgb: 166 248 154;
+            --hero-orb-a-rgb: 62 134 52;
+            --hero-orb-b-rgb: 42 95 35;
         }
 
         body {
@@ -153,7 +153,7 @@
             background-image:
                 radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.08), transparent 22%),
                 radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.12), transparent 24%),
-                linear-gradient(180deg, #020805 0%, #04110b 100%);
+                linear-gradient(180deg, #051504 0%, #163811 100%);
         }
 
         /* Custom Scrollbar */
@@ -1259,6 +1259,7 @@
                 ]
                 : [
                     { label: 'Projects', href: '#projects' },
+                    { label: 'Certifications', href: '#credentials' },
                     { label: 'Experience', href: '#experience' },
                     { label: 'Resume', href: '#resume' },
                     { label: 'Skills', href: '#skills' },
@@ -1365,10 +1366,12 @@
                 <section id="credentials" className="py-32 px-6 relative">
                     <div className="container mx-auto max-w-7xl">
                         <div className="mb-12">
-                            <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="ServiceNow Credentials" /></h2>
+                            <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text={IS_SERVICENOW ? "ServiceNow Credentials" : "Certifications"} /></h2>
                             <div className="h-1 w-24 bg-accent rounded-full"></div>
                             <p className="mt-4 text-gray-500 max-w-2xl">
-                                Mainline, suite, and micro credentials captured from your ServiceNow achievements.
+                                {IS_SERVICENOW
+                                    ? "Mainline, suite, and micro credentials captured from your ServiceNow achievements."
+                                    : "9 ServiceNow credentials spanning admin, development, integration, testing, and AI."}
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3 mb-10">
@@ -1378,8 +1381,8 @@
                                     onClick={() => setActiveTab(tab)}
                                     className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                                         activeTab === tab
-                                            ? 'bg-accent text-black border-accent'
-                                            : 'border-border dark:bg-white/5 bg-black/5 text-gray-400 hover:text-white'
+                                            ? 'bg-accent text-white border-accent'
+                                            : 'border-border dark:bg-white/5 bg-black/5 dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-gray-900'
                                     }`}
                                 >
                                     {tab}
@@ -1622,7 +1625,7 @@
                                     </motion.div>
                                 )}
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
-                                    <MagneticButton onClick={() => document.getElementById(IS_SERVICENOW ? 'credentials' : 'projects').scrollIntoView({ behavior: 'smooth' })} className={`px-8 py-4 bg-accent ${IS_SERVICENOW ? 'text-black' : 'text-white'} font-bold rounded-full hover:scale-105 transition-transform duration-200 accent-button-shadow`}>{IS_SERVICENOW ? 'View Credentials' : 'View Projects'}</MagneticButton>
+                                    <MagneticButton onClick={() => document.getElementById(IS_SERVICENOW ? 'credentials' : 'projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform duration-200 accent-button-shadow">{IS_SERVICENOW ? 'View Credentials' : 'View Projects'}</MagneticButton>
                                     <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border dark:border-white/20 border-black/10 dark:bg-white/5 bg-black/5 backdrop-blur-sm dark:text-white text-gray-900 font-medium rounded-full dark:hover:bg-white/10 hover:bg-black/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
                                 </motion.div>
                             </motion.div>
@@ -1630,9 +1633,7 @@
 
                         {IS_SERVICENOW && <ServiceNowStats />}
 
-                        {IS_SERVICENOW ? (
-                            <ServiceNowCredentialsSection activeSkill={activeSkill} onHoverProject={setHoveredProject} onSelectProject={setSelectedProject} />
-                        ) : (
+                        {!IS_SERVICENOW && (
                             <section id="projects" className="py-32 px-6 relative">
                                 <div className="container mx-auto max-w-7xl">
                                     <div className="mb-16 flex flex-col md:flex-row justify-between items-end">
@@ -1665,6 +1666,9 @@
                                 </div>
                             </section>
                         )}
+
+                        {/* CERTIFICATIONS / CREDENTIALS */}
+                        <ServiceNowCredentialsSection activeSkill={activeSkill} onHoverProject={setHoveredProject} onSelectProject={setSelectedProject} />
 
                         {/* SKILLS WORDCLOUD */}
                         <section id="skills" className="py-32 px-6">
@@ -1784,7 +1788,7 @@
                                     {activeAchievements.map((item, i) => (
                                         <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.02 }} className="p-6 rounded-xl bg-background border border-border hover:border-accent/30 transition-colors group">
                                             <div className="flex items-start gap-4">
-                                                <div className={`p-3 dark:bg-white/5 bg-black/5 rounded-lg text-accent group-hover:bg-accent ${IS_SERVICENOW ? 'group-hover:text-black' : 'group-hover:text-white'} transition-colors`}>
+                                                <div className="p-3 dark:bg-white/5 bg-black/5 rounded-lg text-accent group-hover:bg-accent group-hover:text-white transition-colors">
                                                     <Icon name={IS_SERVICENOW ? "layers" : "award"} size={24} />
                                                 </div>
                                                 <div>
@@ -1809,7 +1813,7 @@
                                             : "Open to software engineering, automation, platform, and product-minded full-stack roles."}
                                     </p>
                                     <div className="flex flex-col sm:flex-row justify-center gap-6">
-                                        <a href="mailto:nnivetha373@gmail.com" className={`px-8 py-4 bg-accent ${IS_SERVICENOW ? 'text-black' : 'text-white'} font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3 accent-button-shadow`}><Icon name="mail" size={20} /> nnivetha373@gmail.com</a>
+                                        <a href="mailto:nnivetha373@gmail.com" className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3 accent-button-shadow"><Icon name="mail" size={20} /> nnivetha373@gmail.com</a>
                                         <a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer" className="px-8 py-4 dark:bg-white/5 bg-black/5 border border-border dark:text-white text-gray-900 font-bold rounded-full dark:hover:bg-white/10 hover:bg-black/10 transition-colors flex items-center justify-center gap-3"><Icon name="linkedin" size={20} /> LinkedIn</a>
                                     </div>
                                 </motion.div>
