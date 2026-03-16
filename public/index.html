@@ -3,29 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
+    <title>Nivetha Sivakumar | ServiceNow Portfolio</title>
     <script>
-        if (window.location.hostname.toLowerCase() === 'servicenow.nivetha.info' || new URLSearchParams(window.location.search).get('site') === 'servicenow') {
-            document.title = 'Nivetha Sivakumar | ServiceNow Portfolio';
-        }
-    </script>
-
-    <!-- Theme init: prevent flash of wrong theme -->
-    <script>
-        (function() {
-            var params = new URLSearchParams(window.location.search);
-            var hostname = window.location.hostname.toLowerCase();
-            var isServiceNow = hostname === 'servicenow.nivetha.info' || params.get('site') === 'servicenow';
-            document.documentElement.dataset.site = isServiceNow ? 'servicenow' : 'portfolio';
-            if (isServiceNow) {
-                document.documentElement.classList.add('dark');
-                return;
-            }
-            var theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
+        document.title = 'Nivetha Sivakumar | ServiceNow Portfolio';
+        document.documentElement.dataset.site = 'servicenow';
+        document.documentElement.classList.add('dark');
     </script>
 
     <!-- Tailwind CSS -->
@@ -321,113 +303,9 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-        const { motion, useScroll, AnimatePresence, useMotionValue, useMotionTemplate, useReducedMotion } = window.Motion;
-        const SEARCH_PARAMS = new URLSearchParams(window.location.search);
-        const SITE_MODE = window.location.hostname.toLowerCase() === 'servicenow.nivetha.info' || SEARCH_PARAMS.get('site') === 'servicenow'
-            ? 'servicenow'
-            : 'portfolio';
-        const IS_SERVICENOW = SITE_MODE === 'servicenow';
+        const { motion, AnimatePresence, useReducedMotion } = window.Motion;
 
         // --- DATA ---
-
-        const PROJECTS = [
-            {
-                name: "ApplyX",
-                repoUrl: "https://github.com/Nivetha200111/applyx",
-                liveUrl: "https://applyx.vercel.app",
-                description: "AI-powered job application automation platform that streamlines the job search process by intelligently applying to relevant positions across multiple job boards based on your skills and preferences.",
-                language: "TypeScript",
-                stack: ["TypeScript", "Next.js", "React", "Python", "PostgreSQL", "Git", "Vercel", "OpenAI API"],
-                tags: ["Automation", "AI"]
-            },
-            {
-                name: "problemstosolve",
-                repoUrl: "https://github.com/Nivetha200111/problemstosolve",
-                liveUrl: "https://problemstosolve.vercel.app",
-                description: "A curated platform that discovers and showcases unique real-world problems waiting to be solved by innovators and entrepreneurs.",
-                language: "Python",
-                stack: ["Python", "Next.js", "React", "Vercel"],
-                tags: ["Web", "Algorithm"]
-            },
-            {
-                name: "servicenowplanner",
-                repoUrl: "https://github.com/Nivetha200111/servicenowplanner",
-                liveUrl: "https://servicenowplanner.vercel.app",
-                description: "ServiceNow-integrated planning tool that helps teams manage IT service management workflows and project timelines efficiently.",
-                language: "JavaScript",
-                stack: ["JavaScript", "React", "Node.js", "Git", "Vercel"],
-                tags: ["SaaS"]
-            },
-            {
-                name: "goggins-study",
-                repoUrl: "https://github.com/Nivetha200111/goggins-study",
-                liveUrl: "https://goggins-study.vercel.app",
-                description: "Productivity and discipline tracking app inspired by David Goggins' philosophy, helping users build mental toughness and accountability habits.",
-                language: "TypeScript",
-                stack: ["TypeScript", "React", "Vercel", "Git"],
-                tags: ["Productivity"]
-            },
-            {
-                name: "Bindora",
-                repoUrl: "https://github.com/Nivetha200111/Bindora",
-                liveUrl: "https://bindora.vercel.app",
-                description: "An intelligent digital binder and organizational platform designed to help students manage coursework, assignments, and study materials efficiently.",
-                language: "Python",
-                stack: ["Python", "Flask", "SQL", "Vercel", "Git"],
-                tags: ["Education"]
-            },
-            {
-                name: "LunchTube",
-                repoUrl: "https://github.com/Nivetha200111/LunchTube",
-                liveUrl: "https://lunch-tube.vercel.app",
-                description: "A fun decision-making tool that helps you discover what to eat by combining video content with meal recommendations.",
-                language: "TypeScript",
-                stack: ["TypeScript", "React", "Next.js", "Vercel", "Git"],
-                tags: ["Utility"]
-            },
-            {
-                name: "dwight",
-                repoUrl: "https://github.com/Nivetha200111/dwight_vercel",
-                liveUrl: "https://dwightvercel.vercel.app",
-                description: "Neural ACO Emergency Response Simulator combining neural-augmented ant-colony optimization, IoT sensor fusion, LSTM fire prediction, and Q-learning for smart-building evacuation scenarios.",
-                language: "Python",
-                stack: ["Python", "React", "Next.js", "Vercel", "Git"],
-                tags: ["Web"]
-            }
-        ];
-
-        const EXPERIENCE = [
-            {
-                company: "Tata Consultancy Services (TCS)",
-                title: "Systems Engineer (Prime)",
-                dates: "Oct 2024 to Feb 2026",
-                bullets: [
-                    "Modernized legacy systems at a Fortune 500 global FinTech firm using an in house RAG based agentic AI tool to generate optimized Java code from mainframe workflows",
-                    "Collaborated with cross functional agile teams to deliver high quality code",
-                    "Wrote scripts to automate data migration and backend tasks",
-                    "Utilized prompt engineering in Python and Java to accelerate code generation"
-                ],
-                awards: ["Star Performer", "Champion of Growth"]
-            }
-        ];
-
-        const RAW_SKILLS = [
-            "Python", "Java", "COBOL", "JCL", "JavaScript", "TypeScript", "SQL",
-            "React", "Flutter", "Flask", "Angular", "Node.js", "Next.js",
-            "Git", "Postman", "Power BI", "Pandas", "Figma",
-            "Azure", "GCP", "Vercel",
-            "DB2", "IMS", "MySQL", "PostgreSQL", "Cassandra",
-            "OpenAI API", "Llama3", "NLP"
-        ];
-
-        const ACHIEVEMENTS = [
-            { title: "Patent Holder", desc: "Smart glasses for Alzheimers" },
-            { title: "Copyright Grant", desc: "Gaming algorithm" },
-            { title: "Top 20", desc: "GUVI Hackathon" },
-            { title: "Hackathon Winner", desc: "HiLife AI Internal" },
-            { title: "Semi-Finalist", desc: "TNSI Ideathon" },
-            { title: "Open Source", desc: "GSSOC 2024" }
-        ];
 
         const SERVICENOW_ROLES = [
             "ServiceNow Developer",
@@ -609,21 +487,9 @@
             { title: "AI Signals", desc: "Predictive Intelligence, Agent Intelligence, and Agentic AI show a clear AI-adjacent platform direction." }
         ];
 
-        const ACTIVE_ROLES = IS_SERVICENOW
-            ? SERVICENOW_ROLES
-            : [
-                "Code Alchemist & Systems Tinkerer",
-                "Bug Whisperer",
-                "Ctrl+Z Enthusiast",
-                "Full-Stack Sorcerer",
-                "Pipeline Plumber",
-                "Chaos to Code Translator"
-            ];
-
-        const ACTIVE_SKILLS = IS_SERVICENOW ? SERVICENOW_SKILLS : RAW_SKILLS;
-        const ACTIVE_PRIORITY_SKILLS = IS_SERVICENOW ? SERVICENOW_PRIORITY_SKILLS : [
-            "Python", "Java", "JavaScript", "TypeScript", "React", "SQL", "Node.js", "Next.js", "Azure", "GCP"
-        ];
+        const ACTIVE_ROLES = SERVICENOW_ROLES;
+        const ACTIVE_SKILLS = SERVICENOW_SKILLS;
+        const ACTIVE_PRIORITY_SKILLS = SERVICENOW_PRIORITY_SKILLS;
         const formatDate = (value, options = { year: 'numeric', month: 'short', day: 'numeric' }) => {
             if (!value) return '';
             return new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options);
@@ -1252,24 +1118,14 @@
 
         const Header = () => {
             const [scrolled, setScrolled] = useState(false);
-            const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
             const [mobileOpen, setMobileOpen] = useState(false);
-            const navItems = IS_SERVICENOW
-                ? [
-                    { label: 'Credentials', href: '#credentials' },
-                    { label: 'Skills', href: '#skills' },
-                    { label: 'Journey', href: '#experience' },
-                    { label: 'Badges', href: '#resume' },
-                    { label: 'Contact', href: '#contact' }
-                ]
-                : [
-                    { label: 'Projects', href: '#projects' },
-                    { label: 'Certifications', href: '#credentials' },
-                    { label: 'Experience', href: '#experience' },
-                    { label: 'Resume', href: '#resume' },
-                    { label: 'Skills', href: '#skills' },
-                    { label: 'Contact', href: '#contact' }
-                ];
+            const navItems = [
+                { label: 'Credentials', href: '#credentials' },
+                { label: 'Skills', href: '#skills' },
+                { label: 'Journey', href: '#experience' },
+                { label: 'Badges', href: '#badges' },
+                { label: 'Contact', href: '#contact' }
+            ];
 
             useEffect(() => {
                 const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -1277,19 +1133,11 @@
                 return () => window.removeEventListener('scroll', handleScroll);
             }, []);
 
-            const toggleTheme = () => {
-                if (IS_SERVICENOW) return;
-                const html = document.documentElement;
-                const nowDark = html.classList.toggle('dark');
-                setIsDark(nowDark);
-                localStorage.setItem('theme', nowDark ? 'dark' : 'light');
-            };
-
             return (
                 <header className={`fixed top-0 w-full z-40 transition-all duration-300 ${scrolled ? 'glass-nav py-3' : 'bg-transparent py-6'}`}>
                     <div className="container mx-auto px-6 flex justify-between items-center">
                         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="font-mono text-xl font-bold tracking-tighter flex items-center gap-2 dark:text-white text-gray-900">
-                            <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>{IS_SERVICENOW ? 'NS/SNOW' : 'NS.'}
+                            <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>NS/SNOW
                         </motion.div>
                         <nav className="hidden md:flex items-center gap-8 text-sm font-medium dark:text-gray-400 text-gray-600">
                             {navItems.map((item) => (
@@ -1303,18 +1151,9 @@
                             </svg>
                         </button>
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
-                            {!IS_SERVICENOW && (
-                                <button
-                                    onClick={toggleTheme}
-                                    className="p-2 dark:hover:bg-white/10 hover:bg-black/10 rounded-full transition-colors dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-gray-900"
-                                    aria-label="Toggle theme"
-                                >
-                                    <Icon name={isDark ? "sun" : "moon"} size={20} />
-                                </button>
-                            )}
                             <a href="https://github.com/Nivetha200111" target="_blank" rel="noopener noreferrer" className="p-2 dark:hover:bg-white/10 hover:bg-black/10 rounded-full transition-colors dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-gray-900"><Icon name="github" size={20} /></a>
-                            <a href={IS_SERVICENOW ? "#resume" : "#resume"} className="hidden sm:flex items-center gap-2 text-sm dark:bg-white/5 bg-black/5 dark:hover:bg-white/10 hover:bg-black/10 px-4 py-2 rounded-full transition-colors border border-border dark:text-gray-400 text-gray-600">
-                                <Icon name={IS_SERVICENOW ? "award" : "download"} size={14} /> {IS_SERVICENOW ? 'Badge Wall' : 'Resume'}
+                            <a href="#badges" className="hidden sm:flex items-center gap-2 text-sm dark:bg-white/5 bg-black/5 dark:hover:bg-white/10 hover:bg-black/10 px-4 py-2 rounded-full transition-colors border border-border dark:text-gray-400 text-gray-600">
+                                <Icon name="award" size={14} /> Badge Wall
                             </a>
                         </motion.div>
                     </div>
@@ -1371,12 +1210,10 @@
                 <section id="credentials" className="py-32 px-6 relative">
                     <div className="container mx-auto max-w-7xl">
                         <div className="mb-12">
-                            <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text={IS_SERVICENOW ? "ServiceNow Credentials" : "Certifications"} /></h2>
+                            <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="ServiceNow Credentials" /></h2>
                             <div className="h-1 w-24 bg-accent rounded-full"></div>
                             <p className="mt-4 text-gray-500 max-w-2xl">
-                                {IS_SERVICENOW
-                                    ? "Mainline, suite, and micro credentials captured from your ServiceNow achievements."
-                                    : "9 ServiceNow credentials spanning admin, development, integration, testing, and AI."}
+                                Mainline, suite, and micro credentials captured from your ServiceNow achievements.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3 mb-10">
@@ -1415,7 +1252,7 @@
             const items = SERVICENOW_BADGE_PAGES[page];
 
             return (
-                <section id="resume" className="py-32 px-6 relative">
+                <section id="badges" className="py-32 px-6 relative">
                     <div className="container mx-auto max-w-7xl">
                         <div className="mb-12">
                             <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Badge Wall" /></h2>
@@ -1469,43 +1306,22 @@
             const [selectedProject, setSelectedProject] = useState(null);
             const [activeSkill, setActiveSkill] = useState(null);
             const [hoveredProject, setHoveredProject] = useState(null);
-
-            const [projects, setProjects] = useState(PROJECTS);
-            const [refreshing, setRefreshing] = useState(false);
-            const [lastRefreshed, setLastRefreshed] = useState(null);
             const [showConfetti, setShowConfetti] = useState(false);
-            const [newProjectNames, setNewProjectNames] = useState(new Set());
             const [partyMode, setPartyMode] = useState(false);
             const photoRef = useRef(null);
 
-            // --- TIME-AWARE GREETING ---
-            const timeGreeting = useMemo(() => {
-                if (IS_SERVICENOW) return "ServiceNow track: 9 credentials • 27 skills • 27 badges";
-                const hour = new Date().getHours();
-                if (hour >= 6 && hour < 12) return "Good morning — I'm available for opportunities";
-                if (hour >= 12 && hour < 18) return "Good afternoon — open to new roles";
-                if (hour >= 18 && hour < 22) return "Evening coding session — still open for opportunities";
-                const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                const ampm = hour >= 12 ? 'PM' : 'AM';
-                return `Coding at ${displayHour}${ampm} — yes, even now I'm available`;
-            }, []);
-
-            // --- FOOTER TAGLINE ---
-            const footerQuote = IS_SERVICENOW
-                ? "// admin depth, workflow logic, and platform polish"
-                : "// built with curiosity, caffeine, and clean code";
+            const timeGreeting = "ServiceNow track: 9 credentials • 27 skills • 27 badges";
+            const footerQuote = "// admin depth, workflow logic, and platform polish";
 
             // --- TAB TITLE TRICKERY ---
             useEffect(() => {
-                const originalTitle = IS_SERVICENOW
-                    ? "Nivetha Sivakumar | ServiceNow Portfolio"
-                    : "Nivetha Sivakumar | Code Alchemist & Systems Tinkerer";
+                const originalTitle = "Nivetha Sivakumar | ServiceNow Portfolio";
                 document.title = originalTitle;
                 const handleVisibility = () => {
                     if (document.hidden) {
-                        document.title = IS_SERVICENOW ? "ServiceNow track is waiting" : "Hey, come back!";
+                        document.title = "ServiceNow track is waiting";
                     } else {
-                        document.title = IS_SERVICENOW ? "Back to workflows" : "Welcome back!";
+                        document.title = "Back to workflows";
                         setTimeout(() => { document.title = originalTitle; }, 2000);
                     }
                 };
@@ -1540,7 +1356,7 @@
                 if (photoRef.current) photoRef.current.classList.add('photo-spin');
                 const toast = document.createElement('div');
                 toast.className = 'konami-toast';
-                toast.textContent = IS_SERVICENOW ? 'Workflow overdrive enabled.' : 'You found the secret!';
+                toast.textContent = 'Workflow overdrive enabled.';
                 document.body.appendChild(toast);
                 setTimeout(() => {
                     setPartyMode(false);
@@ -1549,41 +1365,8 @@
                     toast.remove();
                 }, 5000);
             };
-
-            const refreshProjects = async () => {
-                if (IS_SERVICENOW) return;
-                setRefreshing(true);
-                setNewProjectNames(new Set());
-                try {
-                    const response = await fetch('/api/refresh-projects');
-                    const data = await response.json();
-                    if (data.success && data.projects) {
-                        // Find newly generated projects
-                        const newOnes = data.projects.filter(p => p.newlyGenerated).map(p => p.name);
-                        if (newOnes.length > 0) {
-                            setNewProjectNames(new Set(newOnes));
-                            setShowConfetti(true);
-                            setTimeout(() => setShowConfetti(false), 3000);
-                        }
-                        setProjects(data.projects);
-                        setLastRefreshed(new Date().toLocaleTimeString());
-                    } else {
-                        console.error('Failed to refresh projects:', data.error);
-                    }
-                } catch (error) {
-                    console.error('Error refreshing projects:', error);
-                } finally {
-                    setRefreshing(false);
-                }
-            };
-
-            // Use featured flag from API, or fall back to first 5 projects by recency
-            const featuredProjects = projects.filter(p => p.featured === true).length > 0
-                ? projects.filter(p => p.featured === true)
-                : projects.slice(0, 5);
-            const otherProjects = projects.filter(p => !featuredProjects.includes(p));
-            const activeAchievements = IS_SERVICENOW ? SERVICENOW_HIGHLIGHTS : ACHIEVEMENTS;
-            const activeExperience = IS_SERVICENOW ? SERVICENOW_JOURNEY : EXPERIENCE;
+            const activeAchievements = SERVICENOW_HIGHLIGHTS;
+            const activeExperience = SERVICENOW_JOURNEY;
 
             return (
                 <div className={`min-h-screen selection:bg-accent selection:text-black pb-20 dark:text-gray-200 text-gray-700 ${partyMode ? 'party-mode' : ''}`}>
@@ -1616,61 +1399,23 @@
                                 <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b dark:from-white dark:to-white/40 from-gray-900 to-gray-900/50 pb-2">Nivetha Sivakumar</h1>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl dark:text-gray-400 text-gray-600 font-light mb-6 font-mono"><TypingRole /></motion.p>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-                                    {IS_SERVICENOW
-                                        ? "A black-and-green ServiceNow portfolio variant focused on certifications, badges, platform skills, and workflow depth. The layout stays close to the main portfolio while shifting the content toward ServiceNow achievements."
-                                        : <>Building full-stack apps and automation pipelines. <span className="dark:text-gray-300 text-gray-700">1.5 years of experience in enterprise modernization.</span></>}
+                                    A black-and-green ServiceNow portfolio focused on certifications, badges, platform skills, and workflow depth.
                                 </motion.p>
-                                {IS_SERVICENOW && (
-                                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="flex flex-wrap justify-center gap-3 mb-10">
-                                        {['Mainline', 'Suite', 'Micro', 'CSA', 'IntegrationHub', 'ATF'].map((chip) => (
-                                            <span key={chip} className="px-3 py-1 rounded-full text-xs font-mono border border-border dark:bg-white/5 bg-black/5 text-gray-400">
-                                                {chip}
-                                            </span>
-                                        ))}
-                                    </motion.div>
-                                )}
+                                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="flex flex-wrap justify-center gap-3 mb-10">
+                                    {['Mainline', 'Suite', 'Micro', 'CSA', 'IntegrationHub', 'ATF'].map((chip) => (
+                                        <span key={chip} className="px-3 py-1 rounded-full text-xs font-mono border border-border dark:bg-white/5 bg-black/5 text-gray-400">
+                                            {chip}
+                                        </span>
+                                    ))}
+                                </motion.div>
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
-                                    <MagneticButton onClick={() => document.getElementById(IS_SERVICENOW ? 'credentials' : 'projects').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform duration-200 accent-button-shadow">{IS_SERVICENOW ? 'View Credentials' : 'View Projects'}</MagneticButton>
+                                    <MagneticButton onClick={() => document.getElementById('credentials').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform duration-200 accent-button-shadow">View Credentials</MagneticButton>
                                     <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border dark:border-white/20 border-black/10 dark:bg-white/5 bg-black/5 backdrop-blur-sm dark:text-white text-gray-900 font-medium rounded-full dark:hover:bg-white/10 hover:bg-black/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
                                 </motion.div>
                             </motion.div>
                         </section>
 
-                        {IS_SERVICENOW && <ServiceNowStats />}
-
-                        {!IS_SERVICENOW && (
-                            <section id="projects" className="py-32 px-6 relative">
-                                <div className="container mx-auto max-w-7xl">
-                                    <div className="mb-16 flex flex-col md:flex-row justify-between items-end">
-                                        <div><h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Featured Work" /></h2><div className="h-1 w-24 bg-accent rounded-full"></div></div>
-                                        <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
-                                            <button
-                                                onClick={refreshProjects}
-                                                disabled={refreshing}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-border dark:bg-white/5 bg-black/5 dark:hover:bg-white/10 hover:bg-black/10 transition-all text-sm font-medium ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            >
-                                                <Icon name="refresh" size={16} className={refreshing ? 'animate-spin' : ''} />
-                                                {refreshing ? 'Refreshing...' : 'Refresh from GitHub'}
-                                            </button>
-                                            {lastRefreshed && <span className="text-xs text-gray-600">Last updated: {lastRefreshed}</span>}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-                                        {featuredProjects.map((project) => (
-                                            <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} isNew={newProjectNames.has(project.name)} />
-                                        ))}
-                                    </div>
-                                    <div className="border-t border-border pt-16">
-                                        <h3 className="text-2xl font-bold text-gray-400 mb-8">Other Projects</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {otherProjects.map((project) => (
-                                                <ProjectCard key={project.name} project={project} onClick={() => setSelectedProject(project)} activeSkill={activeSkill} onHoverProject={setHoveredProject} isNew={newProjectNames.has(project.name)} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
+                        <ServiceNowStats />
 
                         {/* CERTIFICATIONS / CREDENTIALS */}
                         <ServiceNowCredentialsSection activeSkill={activeSkill} onHoverProject={setHoveredProject} onSelectProject={setSelectedProject} />
@@ -1679,56 +1424,21 @@
                         <section id="skills" className="py-32 px-6">
                             <div className="container mx-auto max-w-6xl">
                                 <div className="text-center mb-16">
-                                    <h2 className="text-4xl md:text-6xl font-bold mb-4">{IS_SERVICENOW ? 'ServiceNow Skill Cloud' : 'Skill Cloud'}</h2>
+                                    <h2 className="text-4xl md:text-6xl font-bold mb-4">ServiceNow Skill Cloud</h2>
                                     <div className="h-1 w-24 bg-accent rounded-full mx-auto"></div>
-                                    {IS_SERVICENOW && <p className="mt-4 text-gray-500">Credentials and badges feed this platform-oriented skill map.</p>}
+                                    <p className="mt-4 text-gray-500">Credentials and badges feed this platform-oriented skill map.</p>
                                 </div>
                                 <WordCloud activeProject={hoveredProject} onHoverSkill={setActiveSkill} activeSkill={activeSkill} />
                             </div>
                         </section>
 
-                        {!IS_SERVICENOW && (
-                            <section className="py-32 px-6 bg-card border-y border-border">
-                                <div className="container mx-auto max-w-4xl">
-                                    <div className="text-center mb-12">
-                                        <h2 className="text-4xl md:text-6xl font-bold mb-4">GitHub Activity</h2>
-                                        <div className="h-1 w-24 bg-accent rounded-full mx-auto"></div>
-                                        <p className="mt-4 text-gray-500">My contribution history</p>
-                                    </div>
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        className="flex flex-col items-center gap-8"
-                                    >
-                                        <div className="w-full overflow-x-auto rounded-xl border border-border bg-card p-4">
-                                            <img
-                                                src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=Nivetha200111&theme=github_dark"
-                                                alt="GitHub Contribution Heatmap"
-                                                className="w-full min-w-[600px]"
-                                            />
-                                        </div>
-                                        <a
-                                            href="https://github.com/Nivetha200111"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-2 px-6 py-3 dark:bg-white/5 bg-black/5 border border-border rounded-full dark:text-gray-300 text-gray-600 dark:hover:text-white hover:text-gray-900 dark:hover:bg-white/10 hover:bg-black/10 transition-all"
-                                        >
-                                            <Icon name="github" size={20} />
-                                            View Full Profile
-                                        </a>
-                                    </motion.div>
-                                </div>
-                            </section>
-                        )}
-
                         {/* EXPERIENCE */}
                         <section id="experience" className="py-32 px-6 bg-card border-y border-border">
                             <div className="container mx-auto max-w-4xl">
                                 <div className="mb-20">
-                                    <h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text={IS_SERVICENOW ? "ServiceNow Journey" : "Experience"} /></h2>
+                                    <h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text="ServiceNow Journey" /></h2>
                                     <div className="h-1 w-24 bg-accent rounded-full"></div>
-                                    {IS_SERVICENOW && <p className="mt-4 text-gray-500 max-w-2xl">A compact timeline of the visible ServiceNow milestones from July 2025 through March 2026.</p>}
+                                    <p className="mt-4 text-gray-500 max-w-2xl">A compact timeline of the visible ServiceNow milestones from July 2025 through March 2026.</p>
                                 </div>
                                 <div className="relative border-l-2 border-border ml-4 space-y-16">
                                     {activeExperience.map((job, idx) => (
@@ -1746,47 +1456,13 @@
                             </div>
                         </section>
 
-                        {/* RESUME */}
-                        {IS_SERVICENOW ? (
-                            <ServiceNowBadgeWall />
-                        ) : (
-                            <section id="resume" className="py-32 px-6 relative overflow-hidden">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] section-orb rounded-full blur-[110px] pointer-events-none" />
-                                <div className="container mx-auto max-w-5xl relative z-10">
-                                    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
-                                            <div>
-                                                <h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text="Resume" /></h2>
-                                                <div className="h-1 w-24 bg-accent rounded-full"></div>
-                                            </div>
-                                            <a
-                                                href="/resume.pdf"
-                                                download="Nivetha_Sivakumar_Resume.pdf"
-                                                className="inline-flex items-center gap-3 px-6 py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-full transition-all hover:scale-105 active:scale-95 accent-button-shadow"
-                                            >
-                                                <Icon name="download" size={18} />
-                                                Download PDF
-                                            </a>
-                                        </div>
-                                        <div className="bg-background border border-border rounded-2xl overflow-hidden relative group">
-                                            <div className="absolute inset-0 bg-gradient-to-br dark:from-white/5 from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                                            <iframe
-                                                src="/resume.pdf"
-                                                className="w-full"
-                                                style={{ height: '80vh', minHeight: '600px' }}
-                                                title="Resume"
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </div>
-                            </section>
-                        )}
+                        <ServiceNowBadgeWall />
 
                         {/* ACHIEVEMENTS */}
                         <section className="py-32 px-6 bg-card border-y border-border">
                             <div className="container mx-auto max-w-6xl">
                                 <div className="mb-12">
-                                    <h2 className="text-4xl md:text-6xl font-bold mb-4">{IS_SERVICENOW ? 'Achievement Highlights' : 'Achievements'}</h2>
+                                    <h2 className="text-4xl md:text-6xl font-bold mb-4">Achievement Highlights</h2>
                                     <div className="h-1 w-24 bg-accent rounded-full"></div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1794,7 +1470,7 @@
                                         <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.02 }} className="p-6 rounded-xl bg-background border border-border hover:border-accent/30 transition-colors group">
                                             <div className="flex items-start gap-4">
                                                 <div className="p-3 dark:bg-white/5 bg-black/5 rounded-lg text-accent group-hover:bg-accent group-hover:text-white transition-colors">
-                                                    <Icon name={IS_SERVICENOW ? "layers" : "award"} size={24} />
+                                                    <Icon name="layers" size={24} />
                                                 </div>
                                                 <div>
                                                     <h4 className="font-bold dark:text-white text-gray-900 mb-1">{item.title}</h4>
@@ -1811,12 +1487,8 @@
                         <section id="contact" className="py-32 px-6">
                             <div className="container mx-auto max-w-4xl text-center">
                                 <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                                    <h2 className="text-4xl md:text-6xl font-bold mb-6"><ScrambleText text={IS_SERVICENOW ? "Let's build better workflows." : "Let's build something cool."} /></h2>
-                                    <p className="text-gray-500 max-w-2xl mx-auto mb-10">
-                                        {IS_SERVICENOW
-                                            ? "Happy to talk ServiceNow admin work, workflow design, testing, UI Builder, integration patterns, or platform-focused roles."
-                                            : "Open to software engineering, automation, platform, and product-minded full-stack roles."}
-                                    </p>
+                                    <h2 className="text-4xl md:text-6xl font-bold mb-6"><ScrambleText text="Let's build better workflows." /></h2>
+                                    <p className="text-gray-500 max-w-2xl mx-auto mb-10">Happy to talk ServiceNow admin work, workflow design, testing, UI Builder, integration patterns, or platform-focused roles.</p>
                                     <div className="flex flex-col sm:flex-row justify-center gap-6">
                                         <a href="mailto:nnivetha373@gmail.com" className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3 accent-button-shadow"><Icon name="mail" size={20} /> nnivetha373@gmail.com</a>
                                         <a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer" className="px-8 py-4 dark:bg-white/5 bg-black/5 border border-border dark:text-white text-gray-900 font-bold rounded-full dark:hover:bg-white/10 hover:bg-black/10 transition-colors flex items-center justify-center gap-3"><Icon name="linkedin" size={20} /> LinkedIn</a>
@@ -1828,11 +1500,6 @@
                     <footer className="py-8 text-center text-gray-600 text-sm border-t border-border">
                         <p>Crafted with <span className="text-accent animate-pulse inline-block">&#9829;</span> by Nivetha Sivakumar</p>
                         <p className="mt-2 dark:text-gray-500 text-gray-500 text-xs font-mono">{footerQuote}</p>
-                        <p className="mt-3">
-                            <a href={IS_SERVICENOW ? 'https://nivetha.info' : 'https://servicenow.nivetha.info'} className="text-xs text-accent/70 hover:text-accent transition-colors font-mono">
-                                {IS_SERVICENOW ? 'View Main Portfolio →' : 'View ServiceNow Track →'}
-                            </a>
-                        </p>
                     </footer>
                     <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
                 </div>
