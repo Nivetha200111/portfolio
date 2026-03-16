@@ -59,77 +59,76 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
 
         /*
-         * Palette:
-         *   #2E246D  deep purple
-         *   #67D658  green accent
-         *   #E6E6F0  light lavender
-         *   #948CB4  muted purple
+         * ServiceNow palette:
+         *   Core: #2E246D #67D658 #E6E6F0 #948CB4 #E2E3F6
+         *   Lights: #A6F89A #DFDDE8 #EDEFF0 #B7B9E8 #BEBDD8
+         *   Darks: #4E3FAE #2A5F23 #544E8B #163811 #110C32 #051504 #141228 #100D1B
          */
 
         /* Light mode */
         :root {
-            --bg: #E6E6F0;
-            --surface: #dcdcec;
-            --surface-rgb: 220 220 236;
-            --card: #f0f0f8;
-            --card-rgb: 240 240 248;
+            --bg: #EDEFF0;
+            --surface: #E6E6F0;
+            --surface-rgb: 230 230 240;
+            --card: #E2E3F6;
+            --card-rgb: 226 227 246;
             --text-primary: #2E246D;
-            --border: rgba(46,36,109,0.12);
-            --glass-bg: rgba(230,230,240,0.90);
-            --glass-border: rgba(46,36,109,0.10);
-            --spotlight-white: rgba(103,214,88,0.06);
-            --scrollbar-track: #E6E6F0;
-            --scrollbar-thumb: #948CB4;
-            --scrollbar-hover: #2E246D;
-            --dot-color: #948CB4;
+            --border: rgba(183,185,232,0.28);
+            --glass-bg: rgba(237,239,240,0.90);
+            --glass-border: rgba(183,185,232,0.34);
+            --spotlight-white: rgba(166,248,154,0.12);
+            --scrollbar-track: #EDEFF0;
+            --scrollbar-thumb: #B7B9E8;
+            --scrollbar-hover: #8F8FDB;
+            --dot-color: #BEBDD8;
             --accent-rgb: 103 214 88;
             --accent-secondary-rgb: 46 36 109;
-            --hero-orb-a-rgb: 46 36 109;
-            --hero-orb-b-rgb: 103 214 88;
+            --hero-orb-a-rgb: 143 143 219;
+            --hero-orb-b-rgb: 166 248 154;
         }
 
         /* Dark mode */
         .dark {
-            --bg: #1a1340;
-            --surface: #221a52;
-            --surface-rgb: 34 26 82;
-            --card: #2E246D;
-            --card-rgb: 46 36 109;
+            --bg: #110C32;
+            --surface: #141228;
+            --surface-rgb: 20 18 40;
+            --card: #2F2944;
+            --card-rgb: 47 41 68;
             --text-primary: #E6E6F0;
-            --border: rgba(148,140,180,0.18);
-            --glass-bg: rgba(26,19,64,0.88);
-            --glass-border: rgba(148,140,180,0.14);
-            --spotlight-white: rgba(103,214,88,0.07);
-            --scrollbar-track: #1a1340;
-            --scrollbar-thumb: #948CB4;
+            --border: rgba(148,140,180,0.22);
+            --glass-bg: rgba(20,18,40,0.88);
+            --glass-border: rgba(84,78,139,0.28);
+            --spotlight-white: rgba(103,214,88,0.10);
+            --scrollbar-track: #110C32;
+            --scrollbar-thumb: #7571AD;
             --scrollbar-hover: #E6E6F0;
-            --dot-color: rgba(148,140,180,0.35);
+            --dot-color: rgba(116,104,157,0.34);
             --accent-rgb: 103 214 88;
-            --accent-secondary-rgb: 148 140 180;
-            --hero-orb-a-rgb: 46 36 109;
+            --accent-secondary-rgb: 78 63 174;
+            --hero-orb-a-rgb: 78 63 174;
             --hero-orb-b-rgb: 103 214 88;
         }
 
-        /* ServiceNow variant — same palette, green-forward */
+        /* ServiceNow variant */
         html[data-site="servicenow"] {
-            --bg: #0d1f0a;
-            --surface: #142e10;
-            --surface-rgb: 20 46 16;
-            --card: #1b3d16;
-            --card-rgb: 27 61 22;
-            --text-primary: #E6E6F0;
-            --border: rgba(103,214,88,0.16);
-            --glass-bg: rgba(13,31,10,0.88);
-            --glass-border: rgba(103,214,88,0.12);
-            --spotlight-white: rgba(103,214,88,0.08);
-            --scrollbar-track: #0d1f0a;
-            --scrollbar-thumb: #67D658;
-            --scrollbar-hover: #E6E6F0;
-            --dot-color: rgba(103,214,88,0.22);
+            --bg: #051504;
+            --surface: #100D1B;
+            --surface-rgb: 16 13 27;
+            --card: #141228;
+            --card-rgb: 20 18 40;
+            --text-primary: #EDEFF0;
+            --border: rgba(84,78,139,0.34);
+            --glass-bg: rgba(16,13,27,0.84);
+            --glass-border: rgba(103,214,88,0.18);
+            --spotlight-white: rgba(166,248,154,0.12);
+            --scrollbar-track: #051504;
+            --scrollbar-thumb: #51AB45;
+            --scrollbar-hover: #A6F89A;
+            --dot-color: rgba(155,163,168,0.18);
             --accent-rgb: 103 214 88;
             --accent-secondary-rgb: 46 36 109;
-            --hero-orb-a-rgb: 103 214 88;
-            --hero-orb-b-rgb: 46 36 109;
+            --hero-orb-a-rgb: 46 36 109;
+            --hero-orb-b-rgb: 62 134 52;
         }
 
         body {
@@ -142,9 +141,10 @@
 
         html[data-site="servicenow"] body {
             background-image:
-                radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.08), transparent 22%),
-                radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.12), transparent 24%),
-                linear-gradient(180deg, #0d1f0a 0%, #142e10 100%);
+                radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.16), transparent 24%),
+                radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.14), transparent 26%),
+                radial-gradient(circle at 50% 120%, rgb(84 78 139 / 0.20), transparent 34%),
+                linear-gradient(180deg, #051504 0%, #100D1B 38%, #141228 100%);
         }
 
         /* Custom Scrollbar */
@@ -531,7 +531,7 @@
 
             useEffect(() => {
                 if (active) {
-                    const colors = ['#67D658', '#2E246D', '#E6E6F0', '#948CB4', '#7beb6c', '#4a3da0'];
+                    const colors = ['#67D658', '#A6F89A', '#2E246D', '#4E3FAE', '#E2E3F6', '#B7B9E8', '#544E8B'];
                     const newParticles = Array.from({ length: 50 }, (_, i) => ({
                         id: i,
                         x: Math.random() * 100,
@@ -1332,7 +1332,7 @@
             // --- CONSOLE ASCII ART ---
             useEffect(() => {
                 const accent = '#67D658';
-                const accentSoft = '#948CB4';
+                const accentSoft = '#B7B9E8';
                 console.log(
                     "%c" +
                     "███╗   ██╗███████╗\n" +
