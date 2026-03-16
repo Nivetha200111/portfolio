@@ -1607,9 +1607,9 @@
                     <main>
                         {/* HERO */}
                         <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20 relative overflow-hidden">
-                            <div className="absolute inset-0 z-0 will-change-transform">
-                                <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] hero-orb-a blur-[110px] animate-float" style={{ animationDuration: '20s' }} />
-                                <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] hero-orb-b blur-[110px] animate-float" style={{ animationDuration: '25s', animationDelay: '-8s' }} />
+                            <div className="absolute inset-0 z-0 overflow-hidden">
+                                <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] hero-orb-a blur-[110px] animate-float will-change-transform" style={{ animationDuration: '20s' }} />
+                                <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] hero-orb-b blur-[110px] animate-float will-change-transform" style={{ animationDuration: '25s', animationDelay: '-8s' }} />
                             </div>
                             <motion.div className="z-10 max-w-5xl mx-auto" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}>
                                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, type: "spring" }} className="mb-8">
