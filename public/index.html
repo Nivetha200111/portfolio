@@ -76,69 +76,78 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
 
-        /* Light mode (default root) */
+        /*
+         * Palette:
+         *   #2E246D  deep purple
+         *   #67D658  green accent
+         *   #E6E6F0  light lavender
+         *   #948CB4  muted purple
+         */
+
+        /* Light mode */
         :root {
-            --bg: #EDEFF0;
-            --surface: #E6E6F0;
-            --surface-rgb: 230 230 240;
-            --card: #E2E3F6;
-            --card-rgb: 226 227 246;
-            --text-primary: #110C32;
+            --bg: #E6E6F0;
+            --surface: #dcdcec;
+            --surface-rgb: 220 220 236;
+            --card: #f0f0f8;
+            --card-rgb: 240 240 248;
+            --text-primary: #2E246D;
             --border: rgba(46,36,109,0.12);
-            --glass-bg: rgba(230,230,240,0.88);
+            --glass-bg: rgba(230,230,240,0.90);
             --glass-border: rgba(46,36,109,0.10);
-            --spotlight-white: rgba(78,63,174,0.06);
-            --scrollbar-track: #DFDDE8;
-            --scrollbar-thumb: #B8B4CD;
-            --scrollbar-hover: #948CB4;
-            --dot-color: #BEBDD8;
-            --accent-rgb: 110 102 208;
-            --accent-secondary-rgb: 103 214 88;
-            --hero-orb-a-rgb: 46 36 109;
-            --hero-orb-b-rgb: 81 171 69;
-        }
-
-        /* Dark mode overrides */
-        .dark {
-            --bg: #110C32;
-            --surface: #141228;
-            --surface-rgb: 20 18 40;
-            --card: #1E1A44;
-            --card-rgb: 30 26 68;
-            --text-primary: #E6E6F0;
-            --border: rgba(148,140,180,0.14);
-            --glass-bg: rgba(17,12,50,0.85);
-            --glass-border: rgba(148,140,180,0.12);
-            --spotlight-white: rgba(110,102,208,0.08);
-            --scrollbar-track: #110C32;
-            --scrollbar-thumb: #544E8B;
-            --scrollbar-hover: #7571AD;
-            --dot-color: #544E8B;
-            --accent-rgb: 110 102 208;
-            --accent-secondary-rgb: 103 214 88;
-            --hero-orb-a-rgb: 78 63 174;
-            --hero-orb-b-rgb: 62 134 52;
-        }
-
-        html[data-site="servicenow"] {
-            --bg: #051504;
-            --surface: #163811;
-            --surface-rgb: 22 56 17;
-            --card: #2A5F23;
-            --card-rgb: 42 95 35;
-            --text-primary: #A6F89A;
-            --border: rgba(103,214,88,0.18);
-            --glass-bg: rgba(5,21,4,0.88);
-            --glass-border: rgba(103,214,88,0.14);
-            --spotlight-white: rgba(103,214,88,0.09);
-            --scrollbar-track: #051504;
-            --scrollbar-thumb: #3E8634;
-            --scrollbar-hover: #51AB45;
-            --dot-color: rgba(103,214,88,0.20);
+            --spotlight-white: rgba(103,214,88,0.06);
+            --scrollbar-track: #E6E6F0;
+            --scrollbar-thumb: #948CB4;
+            --scrollbar-hover: #2E246D;
+            --dot-color: #948CB4;
             --accent-rgb: 103 214 88;
-            --accent-secondary-rgb: 166 248 154;
-            --hero-orb-a-rgb: 62 134 52;
-            --hero-orb-b-rgb: 42 95 35;
+            --accent-secondary-rgb: 46 36 109;
+            --hero-orb-a-rgb: 46 36 109;
+            --hero-orb-b-rgb: 103 214 88;
+        }
+
+        /* Dark mode */
+        .dark {
+            --bg: #1a1340;
+            --surface: #221a52;
+            --surface-rgb: 34 26 82;
+            --card: #2E246D;
+            --card-rgb: 46 36 109;
+            --text-primary: #E6E6F0;
+            --border: rgba(148,140,180,0.18);
+            --glass-bg: rgba(26,19,64,0.88);
+            --glass-border: rgba(148,140,180,0.14);
+            --spotlight-white: rgba(103,214,88,0.07);
+            --scrollbar-track: #1a1340;
+            --scrollbar-thumb: #948CB4;
+            --scrollbar-hover: #E6E6F0;
+            --dot-color: rgba(148,140,180,0.35);
+            --accent-rgb: 103 214 88;
+            --accent-secondary-rgb: 148 140 180;
+            --hero-orb-a-rgb: 46 36 109;
+            --hero-orb-b-rgb: 103 214 88;
+        }
+
+        /* ServiceNow variant — same palette, green-forward */
+        html[data-site="servicenow"] {
+            --bg: #0d1f0a;
+            --surface: #142e10;
+            --surface-rgb: 20 46 16;
+            --card: #1b3d16;
+            --card-rgb: 27 61 22;
+            --text-primary: #E6E6F0;
+            --border: rgba(103,214,88,0.16);
+            --glass-bg: rgba(13,31,10,0.88);
+            --glass-border: rgba(103,214,88,0.12);
+            --spotlight-white: rgba(103,214,88,0.08);
+            --scrollbar-track: #0d1f0a;
+            --scrollbar-thumb: #67D658;
+            --scrollbar-hover: #E6E6F0;
+            --dot-color: rgba(103,214,88,0.22);
+            --accent-rgb: 103 214 88;
+            --accent-secondary-rgb: 46 36 109;
+            --hero-orb-a-rgb: 103 214 88;
+            --hero-orb-b-rgb: 46 36 109;
         }
 
         body {
@@ -153,7 +162,7 @@
             background-image:
                 radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.08), transparent 22%),
                 radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.12), transparent 24%),
-                linear-gradient(180deg, #051504 0%, #163811 100%);
+                linear-gradient(180deg, #0d1f0a 0%, #142e10 100%);
         }
 
         /* Custom Scrollbar */
@@ -656,9 +665,7 @@
 
             useEffect(() => {
                 if (active) {
-                    const colors = IS_SERVICENOW
-                        ? ['#5af17e', '#d1ff78', '#1b5e36', '#94ffb6', '#47c96d', '#ecfff1']
-                        : ['#8b5cf6', '#a78bfa', '#c4b5fd', '#fbbf24', '#34d399', '#f472b6'];
+                    const colors = ['#67D658', '#2E246D', '#E6E6F0', '#948CB4', '#7beb6c', '#4a3da0'];
                     const newParticles = Array.from({ length: 50 }, (_, i) => ({
                         id: i,
                         x: Math.random() * 100,
@@ -821,9 +828,7 @@
                                     scale = 1.2;
                                     colorClass = "text-accent";
                                     bgClass = "dark:bg-accent/15 bg-accent/15";
-                                    shadow = IS_SERVICENOW
-                                        ? "drop-shadow-[0_0_12px_rgba(90,241,126,0.7)]"
-                                        : "drop-shadow-[0_0_12px_rgba(139,92,246,0.7)]";
+                                    shadow = "drop-shadow-[0_0_12px_rgba(103,214,88,0.7)]";
                                     zIndex = 20;
                                 } else {
                                     opacity = 0.25;
@@ -1510,8 +1515,8 @@
 
             // --- CONSOLE ASCII ART ---
             useEffect(() => {
-                const accent = IS_SERVICENOW ? '#5af17e' : '#8b5cf6';
-                const accentSoft = IS_SERVICENOW ? '#d1ff78' : '#a78bfa';
+                const accent = '#67D658';
+                const accentSoft = '#948CB4';
                 console.log(
                     "%c" +
                     "███╗   ██╗███████╗\n" +
