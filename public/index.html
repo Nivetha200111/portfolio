@@ -473,7 +473,9 @@
                 category: "Mainline",
                 image: "/badges_certs/crops/mainline-certification-badge.png",
                 relatedSkills: ["CSA", "Mainline", "ServiceNow Administration"],
-                featured: true
+                featured: true,
+                hiddenFromGallery: true,
+                credentialMatch: "ServiceNow Certified System Administrator (CSA)"
             },
             {
                 slug: "associate-system-administrator",
@@ -500,7 +502,9 @@
                 category: "Admin",
                 image: "/badges_certs/crops/certified-system-administrator.png",
                 relatedSkills: ["CSA", "ServiceNow Administration"],
-                featured: true
+                featured: true,
+                hiddenFromGallery: true,
+                credentialMatch: "ServiceNow Certified System Administrator (CSA)"
             },
             {
                 slug: "servicenow-administration-fundamentals",
@@ -537,11 +541,19 @@
             },
             {
                 slug: "automated-test-framework-a",
-                title: "Automated Test Framework Skill Badge",
+                title: "Automated Test Framework Badge Set",
                 date: "2025-08-04",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-a.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                proofSet: [
+                    "automated-test-framework-a",
+                    "automated-test-framework-b",
+                    "automated-test-framework-c",
+                    "automated-test-framework-d",
+                    "automated-test-framework-e",
+                    "automated-test-framework-f"
+                ]
             },
             {
                 slug: "automated-test-framework-b",
@@ -549,7 +561,8 @@
                 date: "2025-08-04",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-b.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "automated-test-framework-c",
@@ -557,7 +570,8 @@
                 date: "2025-08-04",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-c.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "automated-test-framework-d",
@@ -565,7 +579,8 @@
                 date: "2025-08-04",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-d.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "automated-test-framework-e",
@@ -573,7 +588,8 @@
                 date: "2025-08-04",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-e.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "agent-intelligence",
@@ -599,7 +615,8 @@
                 date: "2025-08-01",
                 category: "Credential",
                 image: "/badges_certs/crops/micro-certification-badge.png",
-                relatedSkills: ["UI Builder", "Application Development", "Workflow Studio"]
+                relatedSkills: ["UI Builder", "Application Development", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "integrationhub-using-store-spokes",
@@ -648,7 +665,9 @@
                 category: "Foundations",
                 image: "/badges_certs/crops/welcome-to-servicenow.png",
                 relatedSkills: ["Welcome to ServiceNow", "Knowledge Management", "Service Catalog"],
-                featured: true
+                featured: true,
+                hiddenFromGallery: true,
+                credentialMatch: "Micro-Certification - Welcome to ServiceNow"
             },
             {
                 slug: "ui-builder-fundamentals",
@@ -657,7 +676,9 @@
                 category: "UI Builder",
                 image: "/badges_certs/crops/ui-builder-fundamentals.png",
                 relatedSkills: ["UI Builder", "Visual Task Boards", "Platform Analytics Experience"],
-                featured: true
+                featured: true,
+                hiddenFromGallery: true,
+                credentialMatch: "Micro-Certification - UI Builder"
             },
             {
                 slug: "introduction-to-flows",
@@ -673,7 +694,8 @@
                 date: "2025-07-26",
                 category: "Testing",
                 image: "/badges_certs/crops/automated-test-framework-f.png",
-                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"],
+                hiddenFromGallery: true
             },
             {
                 slug: "agentic-ai-executive-micro-certification",
@@ -682,7 +704,9 @@
                 category: "AI",
                 image: "/badges_certs/crops/agentic-ai-executive-micro-certification.png",
                 relatedSkills: ["Agentic AI", "ServiceNow AI Platform", "Now Intelligence"],
-                featured: true
+                featured: true,
+                hiddenFromGallery: true,
+                credentialMatch: "Micro-Certification - Agentic AI Executive"
             }
         ];
 
@@ -699,6 +723,8 @@
             "All", "Mainline", "Admin", "Reports", "Flows", "Testing", "AI",
             "Integration", "Credential", "Foundations", "UI Builder"
         ];
+
+        const VISIBLE_SERVICENOW_BADGES = SERVICENOW_BADGES.filter((badge) => !badge.hiddenFromGallery);
 
         const ACTIVE_ROLES = SERVICENOW_ROLES;
         const ACTIVE_SKILLS = SERVICENOW_SKILLS;
@@ -1475,11 +1501,16 @@
             }, [badge, onClose]);
 
             const relatedBadges = badge
-                ? SERVICENOW_BADGES.filter((candidate) => {
+                ? VISIBLE_SERVICENOW_BADGES.filter((candidate) => {
                     if (candidate.slug === badge.slug) return false;
                     if (candidate.category === badge.category) return true;
                     return candidate.relatedSkills.some((skill) => badge.relatedSkills.includes(skill));
                 }).slice(0, 4)
+                : [];
+            const proofBadges = badge?.proofSet
+                ? badge.proofSet
+                    .map((slug) => SERVICENOW_BADGES.find((candidate) => candidate.slug === slug))
+                    .filter(Boolean)
                 : [];
 
             return (
@@ -1573,6 +1604,34 @@
                                             </div>
                                         </div>
 
+                                        {proofBadges.length > 1 && (
+                                            <div className="rounded-[1.5rem] border border-border bg-black/10 p-5 mb-6">
+                                                <div className="mb-4 flex items-center justify-between gap-4">
+                                                    <div className="text-sm font-semibold dark:text-white text-gray-900">
+                                                        Badge set
+                                                    </div>
+                                                    <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                                                        {proofBadges.length} proofs
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                                    {proofBadges.map((proofBadge) => (
+                                                        <div
+                                                            key={proofBadge.slug}
+                                                            className="overflow-hidden rounded-xl border border-border bg-black/10"
+                                                            style={{ aspectRatio: '11 / 5' }}
+                                                        >
+                                                            <img
+                                                                src={proofBadge.image}
+                                                                alt={proofBadge.title}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="rounded-[1.5rem] border border-border bg-black/10 p-5">
                                             <div className="mb-4 flex items-center justify-between gap-4">
                                                 <div className="text-sm font-semibold dark:text-white text-gray-900">
@@ -1628,11 +1687,11 @@
             const [selectedBadge, setSelectedBadge] = useState(null);
 
             const availableCategories = BADGE_CATEGORY_ORDER.filter((category) => (
-                category === 'All' || SERVICENOW_BADGES.some((badge) => badge.category === category)
+                category === 'All' || VISIBLE_SERVICENOW_BADGES.some((badge) => badge.category === category)
             ));
 
             const normalizedQuery = query.trim().toLowerCase();
-            const filteredBadges = SERVICENOW_BADGES.filter((badge) => {
+            const filteredBadges = VISIBLE_SERVICENOW_BADGES.filter((badge) => {
                 const matchesCategory = activeCategory === 'All' || badge.category === activeCategory;
                 if (!matchesCategory) return false;
                 if (!normalizedQuery) return true;
@@ -1656,7 +1715,7 @@
                                 <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Badge Wall" /></h2>
                                 <div className="h-1 w-24 bg-accent rounded-full"></div>
                                 <p className="mt-4 text-gray-500 max-w-2xl">
-                                    A searchable proof gallery built from the captured ServiceNow badge pages. Every tile opens into a detail view with category context and related badges.
+                                    A searchable proof gallery built from the captured ServiceNow badge pages. Direct credential mirrors are kept in the credentials section above, so this wall stays focused on unique supporting badges and grouped proof sets.
                                 </p>
                             </div>
 
@@ -1700,7 +1759,7 @@
 
                                 <div className="flex items-center gap-3 lg:pt-9">
                                     <div className="rounded-full border border-border bg-black/10 px-4 py-2 text-sm font-mono text-gray-300">
-                                        {filteredBadges.length} / {SERVICENOW_BADGES.length}
+                                        {filteredBadges.length} / {VISIBLE_SERVICENOW_BADGES.length}
                                     </div>
                                     {(activeCategory !== 'All' || query) && (
                                         <button
