@@ -84,7 +84,7 @@ Project name: ${repoName}`;
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write in third person, be specific about what the project does. Keep it under 2 sentences.'
+                        content: 'You are a technical writer creating concise project descriptions for a developer portfolio. Write from a first-person perspective, be specific about what the project does. Keep it under 2 sentences.'
                     },
                     {
                         role: 'user',
