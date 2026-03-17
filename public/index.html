@@ -341,13 +341,6 @@
             "Predictive Intelligence", "ServiceNow AI Platform", "Agentic AI"
         ];
 
-        const SERVICENOW_STATS = [
-            { label: "Credentials", value: "9" },
-            { label: "Accreditations", value: "0" },
-            { label: "Skills Earned", value: "27" },
-            { label: "Badges", value: "27" }
-        ];
-
         const SERVICENOW_CREDENTIALS = [
             {
                 name: "ServiceNow Certified System Administrator (CSA)",
@@ -725,6 +718,13 @@
         ];
 
         const VISIBLE_SERVICENOW_BADGES = SERVICENOW_BADGES.filter((badge) => !badge.hiddenFromGallery);
+
+        const SERVICENOW_STATS = [
+            { label: "Credentials", value: String(SERVICENOW_CREDENTIALS.length) },
+            { label: "Accreditations", value: "0" },
+            { label: "Skills Earned", value: String(SERVICENOW_SKILLS.length) },
+            { label: "Badges", value: String(VISIBLE_SERVICENOW_BADGES.length) }
+        ];
 
         const ACTIVE_ROLES = SERVICENOW_ROLES;
         const ACTIVE_SKILLS = SERVICENOW_SKILLS;
@@ -1890,7 +1890,7 @@
             const [partyMode, setPartyMode] = useState(false);
             const photoRef = useRef(null);
 
-            const timeGreeting = "ServiceNow track: 9 credentials • 27 skills • 27 badges";
+            const timeGreeting = `ServiceNow track: ${SERVICENOW_CREDENTIALS.length} credentials • ${SERVICENOW_SKILLS.length} skills • ${VISIBLE_SERVICENOW_BADGES.length} badges`;
             const footerQuote = "// admin depth, workflow logic, and platform polish";
 
             // --- TAB TITLE TRICKERY ---
