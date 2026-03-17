@@ -60,9 +60,11 @@
 
         /*
          * ServiceNow palette:
-         *   Core: #2E246D #67D658 #E6E6F0 #948CB4 #E2E3F6
-         *   Lights: #A6F89A #DFDDE8 #EDEFF0 #B7B9E8 #BEBDD8
-         *   Darks: #4E3FAE #2A5F23 #544E8B #163811 #110C32 #051504 #141228 #100D1B
+         * #2E246D #67D658 #E6E6F0 #948CB4 #E2E3F6 #A6F89A #DFDDE8 #EDEFF0
+         * #B7B9E8 #BEBDD8 #B8B4CD #C2C9CC #8F8FDB #51AB45 #9795C1 #9BA3A8
+         * #6E66D0 #3E8634 #7571AD #74689D #7B8285 #4E3FAE #2A5F23 #544E8B
+         * #524873 #595F61 #163811 #322E57 #2F2944 #383B3D #110C32 #051504
+         * #141228 #100D1B #191B1C
          */
 
         /* Light mode */
@@ -85,6 +87,8 @@
             --accent-secondary-rgb: 46 36 109;
             --hero-orb-a-rgb: 143 143 219;
             --hero-orb-b-rgb: 166 248 154;
+            --shadow-light-rgb: 230 230 240;
+            --shadow-dark-rgb: 46 36 109;
         }
 
         /* Dark mode */
@@ -107,28 +111,32 @@
             --accent-secondary-rgb: 78 63 174;
             --hero-orb-a-rgb: 78 63 174;
             --hero-orb-b-rgb: 103 214 88;
+            --shadow-light-rgb: 230 230 240;
+            --shadow-dark-rgb: 20 18 40;
         }
 
         /* ServiceNow variant */
         html[data-site="servicenow"] {
-            --bg: #051504;
-            --surface: #100D1B;
-            --surface-rgb: 16 13 27;
-            --card: #141228;
-            --card-rgb: 20 18 40;
+            --bg: #110C32;
+            --surface: #141228;
+            --surface-rgb: 20 18 40;
+            --card: #2F2944;
+            --card-rgb: 47 41 68;
             --text-primary: #EDEFF0;
-            --border: rgba(84,78,139,0.34);
-            --glass-bg: rgba(16,13,27,0.84);
-            --glass-border: rgba(103,214,88,0.18);
-            --spotlight-white: rgba(166,248,154,0.12);
-            --scrollbar-track: #051504;
-            --scrollbar-thumb: #51AB45;
+            --border: rgba(148,140,180,0.28);
+            --glass-bg: rgba(20,18,40,0.86);
+            --glass-border: rgba(103,214,88,0.16);
+            --spotlight-white: rgba(230,230,240,0.08);
+            --scrollbar-track: #110C32;
+            --scrollbar-thumb: #7571AD;
             --scrollbar-hover: #A6F89A;
-            --dot-color: rgba(155,163,168,0.18);
+            --dot-color: rgba(190,189,216,0.22);
             --accent-rgb: 103 214 88;
-            --accent-secondary-rgb: 46 36 109;
-            --hero-orb-a-rgb: 46 36 109;
-            --hero-orb-b-rgb: 62 134 52;
+            --accent-secondary-rgb: 110 102 208;
+            --hero-orb-a-rgb: 78 63 174;
+            --hero-orb-b-rgb: 81 171 69;
+            --shadow-light-rgb: 230 230 240;
+            --shadow-dark-rgb: 20 18 40;
         }
 
         body {
@@ -141,10 +149,10 @@
 
         html[data-site="servicenow"] body {
             background-image:
-                radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.16), transparent 24%),
-                radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.14), transparent 26%),
-                radial-gradient(circle at 50% 120%, rgb(84 78 139 / 0.20), transparent 34%),
-                linear-gradient(180deg, #051504 0%, #100D1B 38%, #141228 100%);
+                radial-gradient(circle at 18% 10%, rgb(var(--accent-secondary-rgb) / 0.20), transparent 24%),
+                radial-gradient(circle at 86% 14%, rgb(var(--accent-rgb) / 0.14), transparent 24%),
+                radial-gradient(circle at 50% 120%, rgb(183 185 232 / 0.18), transparent 34%),
+                linear-gradient(180deg, #110C32 0%, #141228 44%, #2F2944 100%);
         }
 
         /* Custom Scrollbar */
@@ -238,7 +246,7 @@
             font-size: 14px;
             z-index: 99999;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(230,230,240,0.22);
             animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 4.7s forwards;
             white-space: nowrap;
         }
@@ -736,7 +744,7 @@
 
             useEffect(() => {
                 if (active) {
-                    const colors = ['#67D658', '#A6F89A', '#2E246D', '#4E3FAE', '#E2E3F6', '#B7B9E8', '#544E8B'];
+                    const colors = ['#67D658', '#A6F89A', '#2E246D', '#6E66D0', '#E6E6F0', '#B7B9E8', '#544E8B', '#51AB45'];
                     const newParticles = Array.from({ length: 50 }, (_, i) => ({
                         id: i,
                         x: Math.random() * 100,
@@ -876,7 +884,7 @@
                             let colorClass = isThisSkillActive ? "text-accent" : (isMajor ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-gray-400" : "text-gray-500"));
                             let fontWeight = isMajor ? "font-extrabold" : isMid ? "font-semibold" : "font-medium";
                             let fontSize = isMajor ? "text-xl md:text-2xl" : isMid ? "text-base md:text-lg" : "text-sm";
-                            let shadow = isMajor ? (isDark ? "drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]" : "drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]") : "";
+                            let shadow = isMajor ? (isDark ? "drop-shadow-[0_0_6px_rgba(230,230,240,0.22)]" : "drop-shadow-[0_0_6px_rgba(46,36,109,0.15)]") : "";
                             let zIndex = isMajor ? 5 : 3;
                             let bgClass = "";
 
@@ -886,7 +894,7 @@
                                     scale = 1.15;
                                     colorClass = "text-accent";
                                     bgClass = "dark:bg-accent/10 bg-accent/10";
-                                    shadow = isDark ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" : "drop-shadow-[0_0_10px_rgba(0,0,0,0.2)]";
+                                    shadow = isDark ? "drop-shadow-[0_0_10px_rgba(183,185,232,0.30)]" : "drop-shadow-[0_0_10px_rgba(46,36,109,0.20)]";
                                     zIndex = 15;
                                 } else {
                                     opacity = 0.25;
@@ -1845,7 +1853,7 @@
             // --- CONSOLE ASCII ART ---
             useEffect(() => {
                 const accent = '#67D658';
-                const accentSoft = '#B7B9E8';
+                const accentSoft = '#E6E6F0';
                 console.log(
                     "%c" +
                     "███╗   ██╗███████╗\n" +
