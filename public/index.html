@@ -448,34 +448,234 @@
             }
         ];
 
-        const SERVICENOW_BADGE_PAGES = [
-            [
-                { title: "Certification Maintenance Program (CMP)", date: "2026-03-16", category: "Mainline" },
-                { title: "Mainline Certification Badge", date: "2026-03-16", category: "Mainline" },
-                { title: "Associate System Administrator", date: "2026-03-12", category: "Admin" },
-                { title: "Get Started with Reports", date: "2026-03-12", category: "Reports" },
-                { title: "Certified System Administrator", date: "2026-02-23", category: "Admin" },
-                { title: "ServiceNow Administration Fundamentals", date: "2026-02-23", category: "Admin" },
-                { title: "Create a Subflow", date: "2025-08-04", category: "Flows" },
-                { title: "Flow Fundamentals", date: "2025-08-04", category: "Flows" },
-                { title: "Create a Flow", date: "2025-08-04", category: "Flows" },
-                { title: "Automated Test Framework Skill Badge", date: "2025-08-04", category: "Testing" },
-                { title: "Agent Intelligence", date: "2025-08-02", category: "AI" },
-                { title: "IntegrationHub Fundamentals (New York)", date: "2025-08-01", category: "Integration" },
-                { title: "Micro-Certification Badge", date: "2025-08-01", category: "Credential" },
-                { title: "IntegrationHub Using Store Spokes", date: "2025-08-01", category: "Integration" },
-                { title: "IntegrationHub Create New Spokes", date: "2025-08-01", category: "Integration" },
-                { title: "IntegrationHub Introduction", date: "2025-08-01", category: "Integration" }
-            ],
-            [
-                { title: "Predictive Intelligence Implementation", date: "2025-07-31", category: "AI" },
-                { title: "Predictive Intelligence Fundamentals", date: "2025-07-31", category: "AI" },
-                { title: "Welcome to ServiceNow", date: "2025-07-30", category: "Foundations" },
-                { title: "UI Builder Fundamentals", date: "2025-07-26", category: "UI Builder" },
-                { title: "Introduction to Flows", date: "2025-07-26", category: "Flows" },
-                { title: "Automated Test Framework Skill Badge", date: "2025-07-26", category: "Testing" },
-                { title: "Agentic AI Executive Micro-Certification", date: "2025-07-23", category: "AI" }
-            ]
+        const SERVICENOW_BADGES = [
+            {
+                slug: "cmp",
+                title: "Certification Maintenance Program (CMP)",
+                date: "2026-03-16",
+                category: "Mainline",
+                image: "/badges_certs/crops/cmp.png",
+                relatedSkills: ["CSA", "Mainline", "ServiceNow Administration"],
+                featured: true
+            },
+            {
+                slug: "mainline-certification-badge",
+                title: "Mainline Certification Badge",
+                date: "2026-03-16",
+                category: "Mainline",
+                image: "/badges_certs/crops/mainline-certification-badge.png",
+                relatedSkills: ["CSA", "Mainline", "ServiceNow Administration"],
+                featured: true
+            },
+            {
+                slug: "associate-system-administrator",
+                title: "Associate System Administrator",
+                date: "2026-03-12",
+                category: "Admin",
+                image: "/badges_certs/crops/associate-system-administrator.png",
+                relatedSkills: ["CSA", "ServiceNow Administration"],
+                featured: true
+            },
+            {
+                slug: "get-started-with-reports",
+                title: "Get Started with Reports",
+                date: "2026-03-12",
+                category: "Reports",
+                image: "/badges_certs/crops/get-started-with-reports.png",
+                relatedSkills: ["Reporting", "Platform Analytics"],
+                featured: true
+            },
+            {
+                slug: "certified-system-administrator",
+                title: "Certified System Administrator",
+                date: "2026-02-23",
+                category: "Admin",
+                image: "/badges_certs/crops/certified-system-administrator.png",
+                relatedSkills: ["CSA", "ServiceNow Administration"],
+                featured: true
+            },
+            {
+                slug: "servicenow-administration-fundamentals",
+                title: "ServiceNow Administration Fundamentals",
+                date: "2026-02-23",
+                category: "Admin",
+                image: "/badges_certs/crops/servicenow-administration-fundamentals.png",
+                relatedSkills: ["CSA", "ServiceNow Administration"],
+                featured: true
+            },
+            {
+                slug: "create-a-subflow",
+                title: "Create a Subflow",
+                date: "2025-08-04",
+                category: "Flows",
+                image: "/badges_certs/crops/create-a-subflow.png",
+                relatedSkills: ["Flow Designer", "Create a Subflow", "Introduction to Flows"]
+            },
+            {
+                slug: "flow-fundamentals",
+                title: "Flow Fundamentals",
+                date: "2025-08-04",
+                category: "Flows",
+                image: "/badges_certs/crops/flow-fundamentals.png",
+                relatedSkills: ["Flow Designer", "Create a Flow", "Introduction to Flows"]
+            },
+            {
+                slug: "create-a-flow",
+                title: "Create a Flow",
+                date: "2025-08-04",
+                category: "Flows",
+                image: "/badges_certs/crops/create-a-flow.png",
+                relatedSkills: ["Flow Designer", "Create a Flow", "Introduction to Flows"]
+            },
+            {
+                slug: "automated-test-framework-a",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-08-04",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-a.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "automated-test-framework-b",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-08-04",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-b.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "automated-test-framework-c",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-08-04",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-c.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "automated-test-framework-d",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-08-04",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-d.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "automated-test-framework-e",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-08-04",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-e.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "agent-intelligence",
+                title: "Agent Intelligence",
+                date: "2025-08-02",
+                category: "AI",
+                image: "/badges_certs/crops/agent-intelligence.png",
+                relatedSkills: ["Agent Intelligence", "Now Intelligence", "Predictive Intelligence"],
+                featured: true
+            },
+            {
+                slug: "integrationhub-fundamentals",
+                title: "IntegrationHub Fundamentals (New York)",
+                date: "2025-08-01",
+                category: "Integration",
+                image: "/badges_certs/crops/integrationhub-fundamentals.png",
+                relatedSkills: ["IntegrationHub", "Using Store Spokes", "Create New Spokes"],
+                featured: true
+            },
+            {
+                slug: "micro-certification-badge",
+                title: "Micro-Certification Badge",
+                date: "2025-08-01",
+                category: "Credential",
+                image: "/badges_certs/crops/micro-certification-badge.png",
+                relatedSkills: ["UI Builder", "Application Development", "Workflow Studio"]
+            },
+            {
+                slug: "integrationhub-using-store-spokes",
+                title: "IntegrationHub Using Store Spokes",
+                date: "2025-08-01",
+                category: "Integration",
+                image: "/badges_certs/crops/integrationhub-using-store-spokes.png",
+                relatedSkills: ["IntegrationHub", "Using Store Spokes", "Create New Spokes"]
+            },
+            {
+                slug: "integrationhub-create-new-spokes",
+                title: "IntegrationHub Create New Spokes",
+                date: "2025-08-01",
+                category: "Integration",
+                image: "/badges_certs/crops/integrationhub-create-new-spokes.png",
+                relatedSkills: ["IntegrationHub", "Using Store Spokes", "Create New Spokes"]
+            },
+            {
+                slug: "integrationhub-introduction",
+                title: "IntegrationHub Introduction",
+                date: "2025-08-01",
+                category: "Integration",
+                image: "/badges_certs/crops/integrationhub-introduction.png",
+                relatedSkills: ["IntegrationHub", "Using Store Spokes", "Create New Spokes"]
+            },
+            {
+                slug: "predictive-intelligence-implementation",
+                title: "Predictive Intelligence Implementation",
+                date: "2025-07-31",
+                category: "AI",
+                image: "/badges_certs/crops/predictive-intelligence-implementation.png",
+                relatedSkills: ["Predictive Intelligence", "Now Intelligence", "Agent Intelligence"]
+            },
+            {
+                slug: "predictive-intelligence-fundamentals",
+                title: "Predictive Intelligence Fundamentals",
+                date: "2025-07-31",
+                category: "AI",
+                image: "/badges_certs/crops/predictive-intelligence-fundamentals.png",
+                relatedSkills: ["Predictive Intelligence", "Now Intelligence", "Agent Intelligence"]
+            },
+            {
+                slug: "welcome-to-servicenow",
+                title: "Welcome to ServiceNow",
+                date: "2025-07-30",
+                category: "Foundations",
+                image: "/badges_certs/crops/welcome-to-servicenow.png",
+                relatedSkills: ["Welcome to ServiceNow", "Knowledge Management", "Service Catalog"],
+                featured: true
+            },
+            {
+                slug: "ui-builder-fundamentals",
+                title: "UI Builder Fundamentals",
+                date: "2025-07-26",
+                category: "UI Builder",
+                image: "/badges_certs/crops/ui-builder-fundamentals.png",
+                relatedSkills: ["UI Builder", "Visual Task Boards", "Platform Analytics Experience"],
+                featured: true
+            },
+            {
+                slug: "introduction-to-flows",
+                title: "Introduction to Flows",
+                date: "2025-07-26",
+                category: "Flows",
+                image: "/badges_certs/crops/introduction-to-flows.png",
+                relatedSkills: ["Flow Designer", "Introduction to Flows", "Create a Flow"]
+            },
+            {
+                slug: "automated-test-framework-f",
+                title: "Automated Test Framework Skill Badge",
+                date: "2025-07-26",
+                category: "Testing",
+                image: "/badges_certs/crops/automated-test-framework-f.png",
+                relatedSkills: ["Automated Test Framework", "Testing", "Workflow Studio"]
+            },
+            {
+                slug: "agentic-ai-executive-micro-certification",
+                title: "Agentic AI Executive Micro-Certification",
+                date: "2025-07-23",
+                category: "AI",
+                image: "/badges_certs/crops/agentic-ai-executive-micro-certification.png",
+                relatedSkills: ["Agentic AI", "ServiceNow AI Platform", "Now Intelligence"],
+                featured: true
+            }
         ];
 
         const SERVICENOW_HIGHLIGHTS = [
@@ -485,6 +685,11 @@
             { title: "Testing Discipline", desc: "Automated Test Framework shows repeated attention to verification and platform quality." },
             { title: "Integration Breadth", desc: "IntegrationHub work includes fundamentals, store spokes, and new spoke creation." },
             { title: "AI Signals", desc: "Predictive Intelligence, Agent Intelligence, and Agentic AI show a clear AI-adjacent platform direction." }
+        ];
+
+        const BADGE_CATEGORY_ORDER = [
+            "All", "Mainline", "Admin", "Reports", "Flows", "Testing", "AI",
+            "Integration", "Credential", "Foundations", "UI Builder"
         ];
 
         const ACTIVE_ROLES = SERVICENOW_ROLES;
@@ -738,11 +943,6 @@
                         })}
                     </div>
 
-                    <div className="relative z-10 pb-5 text-center pointer-events-none">
-                        <span className="px-3 py-1 dark:bg-black/50 bg-white/70 rounded-full text-xs text-gray-400 border border-border backdrop-blur-sm">
-                            Hover skills to find projects &bull; Hover projects to find skills
-                        </span>
-                    </div>
                 </div>
             );
         };
@@ -1247,57 +1447,370 @@
             );
         };
 
+        const BadgeModal = ({ badge, onClose, onSelectBadge }) => {
+            useEffect(() => {
+                if (!badge) return;
+                const previousOverflow = document.body.style.overflow;
+                const handleEscape = (event) => {
+                    if (event.key === 'Escape') {
+                        onClose();
+                    }
+                };
+
+                document.body.style.overflow = 'hidden';
+                window.addEventListener('keydown', handleEscape);
+
+                return () => {
+                    document.body.style.overflow = previousOverflow;
+                    window.removeEventListener('keydown', handleEscape);
+                };
+            }, [badge, onClose]);
+
+            const relatedBadges = badge
+                ? SERVICENOW_BADGES.filter((candidate) => {
+                    if (candidate.slug === badge.slug) return false;
+                    if (candidate.category === badge.category) return true;
+                    return candidate.relatedSkills.some((skill) => badge.relatedSkills.includes(skill));
+                }).slice(0, 4)
+                : [];
+
+            return (
+                <AnimatePresence>
+                    {badge && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
+                            onClick={onClose}
+                        >
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                                className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[2rem] border border-border bg-card p-5 md:p-8 shadow-2xl"
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <button
+                                    onClick={onClose}
+                                    className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-black/10 text-gray-400 transition-colors hover:text-white hover:bg-black/20"
+                                    aria-label="Close badge details"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+
+                                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+                                    <div className="rounded-[1.75rem] border border-border bg-black/15 p-4 md:p-5">
+                                        <div className="mb-4 flex items-center justify-between gap-4">
+                                            <span className="rounded-full border border-border bg-black/10 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-accent">
+                                                {badge.category}
+                                            </span>
+                                            {badge.featured && (
+                                                <span className="rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent">
+                                                    Featured
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="overflow-hidden rounded-[1.5rem] border border-border" style={{ aspectRatio: '11 / 5' }}>
+                                            <img
+                                                src={badge.image}
+                                                alt={badge.title}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <div className="mb-6">
+                                            <div className="text-xs uppercase tracking-[0.24em] text-gray-500 mb-3">
+                                                Badge Details
+                                            </div>
+                                            <h3 data-badge-modal-title className="text-3xl md:text-4xl font-bold tracking-tight dark:text-white text-gray-900 mb-4">
+                                                {badge.title}
+                                            </h3>
+                                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                                                <span className="flex items-center gap-2 rounded-full border border-border px-3 py-2">
+                                                    <Icon name="clock" size={14} className="text-accent" />
+                                                    {formatDate(badge.date)}
+                                                </span>
+                                                <span className="rounded-full border border-border px-3 py-2">
+                                                    {badge.slug}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-[1.5rem] border border-border bg-black/10 p-5 mb-6">
+                                            <div className="text-sm font-semibold dark:text-white text-gray-900 mb-3">
+                                                Related skills
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {badge.relatedSkills.map((skill) => (
+                                                    <span
+                                                        key={skill}
+                                                        className="rounded-full border border-border bg-black/10 px-3 py-1.5 text-sm text-gray-300"
+                                                    >
+                                                        {skill}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-[1.5rem] border border-border bg-black/10 p-5">
+                                            <div className="mb-4 flex items-center justify-between gap-4">
+                                                <div className="text-sm font-semibold dark:text-white text-gray-900">
+                                                    Related badges
+                                                </div>
+                                                <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                                                    {relatedBadges.length} matched
+                                                </div>
+                                            </div>
+                                            {relatedBadges.length > 0 ? (
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    {relatedBadges.map((relatedBadge) => (
+                                                        <button
+                                                            key={relatedBadge.slug}
+                                                            onClick={() => onSelectBadge(relatedBadge)}
+                                                            data-related-badge-card={relatedBadge.slug}
+                                                            className="rounded-[1.25rem] border border-border bg-black/10 p-3 text-left transition-transform hover:-translate-y-1 hover:border-accent/60"
+                                                        >
+                                                            <div className="overflow-hidden rounded-xl border border-border mb-3" style={{ aspectRatio: '11 / 5' }}>
+                                                                <img
+                                                                    src={relatedBadge.image}
+                                                                    alt={relatedBadge.title}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            </div>
+                                                            <div className="text-sm font-semibold dark:text-white text-gray-900 mb-1">
+                                                                {relatedBadge.title}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {relatedBadge.category} • {formatDate(relatedBadge.date)}
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-sm text-gray-500">
+                                                    No related badges were detected for this entry yet.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            );
+        };
+
         const ServiceNowBadgeWall = () => {
-            const [page, setPage] = useState(0);
-            const items = SERVICENOW_BADGE_PAGES[page];
+            const [activeCategory, setActiveCategory] = useState('All');
+            const [query, setQuery] = useState('');
+            const [selectedBadge, setSelectedBadge] = useState(null);
+
+            const availableCategories = BADGE_CATEGORY_ORDER.filter((category) => (
+                category === 'All' || SERVICENOW_BADGES.some((badge) => badge.category === category)
+            ));
+
+            const normalizedQuery = query.trim().toLowerCase();
+            const filteredBadges = SERVICENOW_BADGES.filter((badge) => {
+                const matchesCategory = activeCategory === 'All' || badge.category === activeCategory;
+                if (!matchesCategory) return false;
+                if (!normalizedQuery) return true;
+
+                const searchIndex = [
+                    badge.title,
+                    badge.category,
+                    badge.date,
+                    badge.slug,
+                    ...badge.relatedSkills
+                ].join(' ').toLowerCase();
+
+                return searchIndex.includes(normalizedQuery);
+            });
 
             return (
                 <section id="badges" className="py-32 px-6 relative">
                     <div className="container mx-auto max-w-7xl">
-                        <div className="mb-12">
-                            <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Badge Wall" /></h2>
-                            <div className="h-1 w-24 bg-accent rounded-full"></div>
-                            <p className="mt-4 text-gray-500 max-w-2xl">
-                                The visible badge pages from your ServiceNow profile, organized into a simple pageable wall.
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                            {items.map((badge, index) => (
-                                <motion.div
-                                    key={`${badge.title}-${badge.date}-${index}`}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: index * 0.03 }}
-                                    whileHover={{ y: -4 }}
-                                    className="rounded-2xl border border-border bg-card p-5"
-                                >
-                                    <div className="flex items-start justify-between gap-4 mb-6">
-                                        <span className="px-3 py-1 rounded-full text-xs font-mono border border-border dark:bg-white/5 bg-black/5 text-accent">
-                                            {badge.category}
-                                        </span>
-                                        <Icon name="award" size={18} className="text-accent" />
-                                    </div>
-                                    <h3 className="text-xl font-bold dark:text-white text-gray-900 leading-tight mb-6">{badge.title}</h3>
-                                    <div className="text-sm text-gray-500 flex items-center gap-2">
-                                        <Icon name="clock" size={14} />
-                                        {formatDate(badge.date)}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                        <div className="flex items-center justify-center gap-3 mt-12">
-                            <button onClick={() => setPage((current) => Math.max(0, current - 1))} disabled={page === 0} className="p-3 rounded-full border border-border dark:bg-white/5 bg-black/5 disabled:opacity-40">
-                                <Icon name="chevronLeft" size={18} />
-                            </button>
-                            <div className="px-4 py-2 rounded-full border border-border dark:bg-white/5 bg-black/5 text-sm font-mono">
-                                {page + 1} / {SERVICENOW_BADGE_PAGES.length}
+                        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.85fr)] mb-12">
+                            <div>
+                                <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"><ScrambleText text="Badge Wall" /></h2>
+                                <div className="h-1 w-24 bg-accent rounded-full"></div>
+                                <p className="mt-4 text-gray-500 max-w-2xl">
+                                    A searchable proof gallery built from the captured ServiceNow badge pages. Every tile opens into a detail view with category context and related badges.
+                                </p>
                             </div>
-                            <button onClick={() => setPage((current) => Math.min(SERVICENOW_BADGE_PAGES.length - 1, current + 1))} disabled={page === SERVICENOW_BADGE_PAGES.length - 1} className="p-3 rounded-full border border-border dark:bg-white/5 bg-black/5 disabled:opacity-40">
-                                <Icon name="chevronRight" size={18} />
-                            </button>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="rounded-[2rem] border border-border bg-card p-5 md:p-6"
+                            >
+                                <div className="text-xs uppercase tracking-[0.24em] text-gray-500 mb-3">
+                                    Community Snapshot
+                                </div>
+                                <div className="overflow-hidden rounded-[1.5rem] border border-border bg-black/10">
+                                    <img
+                                        src="/badges_certs/score.png"
+                                        alt="ServiceNow community score"
+                                        className="w-full h-auto object-cover"
+                                    />
+                                </div>
+                                <p className="mt-4 text-sm text-gray-400">
+                                    The gallery below focuses on badge evidence, while this card preserves the community score snapshot from your profile.
+                                </p>
+                            </motion.div>
                         </div>
+
+                        <div className="rounded-[2rem] border border-border bg-card p-5 md:p-6 mb-10">
+                            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                                <div>
+                                    <label htmlFor="badge-search" className="block text-sm font-semibold dark:text-white text-gray-900 mb-3">
+                                        Search badges
+                                    </label>
+                                    <input
+                                        id="badge-search"
+                                        type="text"
+                                        value={query}
+                                        onChange={(event) => setQuery(event.target.value)}
+                                        placeholder="Search by title, category, date, or skill"
+                                        className="w-full rounded-2xl border border-border bg-black/10 px-4 py-3 text-sm text-gray-200 outline-none transition-colors focus:border-accent"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-3 lg:pt-9">
+                                    <div className="rounded-full border border-border bg-black/10 px-4 py-2 text-sm font-mono text-gray-300">
+                                        {filteredBadges.length} / {SERVICENOW_BADGES.length}
+                                    </div>
+                                    {(activeCategory !== 'All' || query) && (
+                                        <button
+                                            onClick={() => {
+                                                setActiveCategory('All');
+                                                setQuery('');
+                                            }}
+                                            className="rounded-full border border-border px-4 py-2 text-sm text-gray-300 transition-colors hover:text-white hover:border-accent/60"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3 mt-5">
+                                {availableCategories.map((category) => (
+                                    <button
+                                        key={category}
+                                        onClick={() => setActiveCategory(category)}
+                                        data-badge-filter={category}
+                                        className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                                            activeCategory === category
+                                                ? 'bg-accent text-white border-accent'
+                                                : 'border-border bg-black/10 text-gray-300 hover:text-white hover:border-accent/50'
+                                        }`}
+                                    >
+                                        {category}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {filteredBadges.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {filteredBadges.map((badge, index) => (
+                                    <motion.button
+                                        key={badge.slug}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.02 }}
+                                        whileHover={{ y: -6 }}
+                                        onClick={() => setSelectedBadge(badge)}
+                                        data-badge-card={badge.slug}
+                                        className="group overflow-hidden rounded-[1.75rem] border border-border bg-card text-left"
+                                    >
+                                        <div className="relative p-4 pb-0">
+                                            <div className="absolute left-8 top-8 z-10 flex items-center gap-2">
+                                                <span className="rounded-full border border-border bg-black/60 px-3 py-1 text-xs font-mono uppercase tracking-[0.18em] text-accent backdrop-blur-sm">
+                                                    {badge.category}
+                                                </span>
+                                                {badge.featured && (
+                                                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                                                        Featured
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="overflow-hidden rounded-[1.5rem] border border-border bg-black/15" style={{ aspectRatio: '11 / 5' }}>
+                                                <img
+                                                    src={badge.image}
+                                                    alt={badge.title}
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="p-5">
+                                            <div className="flex items-start justify-between gap-4 mb-3">
+                                                <h3 className="text-lg font-bold leading-tight dark:text-white text-gray-900">
+                                                    {badge.title}
+                                                </h3>
+                                                <Icon name="arrowUpRight" size={18} className="text-accent shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                            </div>
+                                            <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
+                                                <Icon name="clock" size={14} />
+                                                {formatDate(badge.date)}
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {badge.relatedSkills.slice(0, 3).map((skill) => (
+                                                    <span
+                                                        key={skill}
+                                                        className="rounded-full border border-border bg-black/10 px-3 py-1 text-xs text-gray-300"
+                                                    >
+                                                        {skill}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="rounded-[2rem] border border-dashed border-border bg-card p-10 text-center">
+                                <div className="text-2xl font-bold dark:text-white text-gray-900 mb-3">
+                                    No badges match the current filter
+                                </div>
+                                <p className="text-gray-500 max-w-xl mx-auto mb-6">
+                                    Try a broader search term or reset the category to bring the full badge proof gallery back into view.
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setActiveCategory('All');
+                                        setQuery('');
+                                    }}
+                                    className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        )}
                     </div>
+
+                    <BadgeModal
+                        badge={selectedBadge}
+                        onClose={() => setSelectedBadge(null)}
+                        onSelectBadge={setSelectedBadge}
+                    />
                 </section>
             );
         };
