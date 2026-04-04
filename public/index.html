@@ -1981,14 +1981,7 @@
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
                                     Focused on certifications, badges, platform skills, and workflow depth.
                                 </motion.p>
-                                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="flex flex-wrap justify-center gap-3 mb-10">
-                                    {['Mainline', 'Suite', 'Micro', 'CSA', 'IntegrationHub', 'ATF'].map((chip) => (
-                                        <span key={chip} className="px-3 py-1 rounded-full text-xs font-mono border border-border dark:bg-white/5 bg-black/5 text-gray-400">
-                                            {chip}
-                                        </span>
-                                    ))}
-                                </motion.div>
-                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="flex flex-col sm:flex-row gap-5 justify-center">
+                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="flex flex-col sm:flex-row gap-5 justify-center">
                                     <MagneticButton onClick={() => document.getElementById('credentials').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform duration-200 accent-button-shadow">View Credentials</MagneticButton>
                                     <MagneticButton onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 border dark:border-white/20 border-black/10 dark:bg-white/5 bg-black/5 backdrop-blur-sm dark:text-white text-gray-900 font-medium rounded-full dark:hover:bg-white/10 hover:bg-black/10 hover:border-white/40 transition-all duration-200">Contact Me</MagneticButton>
                                 </motion.div>
