@@ -721,7 +721,6 @@
 
         const SERVICENOW_STATS = [
             { label: "Credentials", value: String(SERVICENOW_CREDENTIALS.length) },
-            { label: "Accreditations", value: "0" },
             { label: "Skills Earned", value: String(SERVICENOW_SKILLS.length) },
             { label: "Badges", value: String(VISIBLE_SERVICENOW_BADGES.length) }
         ];
@@ -1415,7 +1414,7 @@
         const ServiceNowStats = () => (
             <section className="px-6 -mt-16 relative z-10">
                 <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-background rounded-2xl p-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-background rounded-2xl p-2">
                         {SERVICENOW_STATS.map((stat, index) => (
                             <motion.div
                                 key={stat.label}
@@ -2078,7 +2077,6 @@
                                             description: "AI-powered system that transforms IT incidents into actionable project recommendations. Processes incidents via Grok AI, clusters related ones by theme, calculates business impact, and auto-generates project suggestions when patterns reach a threshold.",
                                             tech: ["React 18", "Vite", "Grok AI (xAI)", "ServiceNow PDI", "Vercel"],
                                             highlights: ["80+ incidents processed", "8 active clusters", "5 project suggestions generated"],
-                                            liveUrl: "https://incident-project-intelligence-tzp8.vercel.app/",
                                             repoUrl: "https://github.com/Nivetha200111/incident_project_intelliggence"
                                         }
                                     ].map((project, i) => (
@@ -2113,9 +2111,6 @@
                                                     ))}
                                                 </div>
                                                 <div className="flex gap-3 mt-auto">
-                                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-full hover:scale-105 transition-transform accent-button-shadow">
-                                                        <Icon name="external-link" size={14} /> Live Demo
-                                                    </a>
                                                     <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 dark:bg-white/5 bg-black/5 border border-border dark:text-white text-gray-900 text-sm font-medium rounded-full dark:hover:bg-white/10 hover:bg-black/10 transition-colors">
                                                         <Icon name="github" size={14} /> Source
                                                     </a>
