@@ -1610,6 +1610,11 @@
             ['contact', 'The mailbox', 'Contact & résumé']
         ];
 
+        const PROJECT_SCREEN_NOTICES = {
+            'goggins-study': 'This build currently blocks embedded browsing. You can open it in a full browser below.',
+            'Bindora': 'This deployment is currently offline. The source code is still available below.',
+            'LunchTube': 'This deployment is currently offline. The source code is still available below.'
+        };
         const WorldPortfolio = ({ projects, onRefresh, refreshing }) => {
             const host = useRef(null);
             const engine = useRef(null);
@@ -1629,6 +1634,10 @@
             const [roomInfo, setRoomInfo] = useState({ kind: null, screens: [] });
             const [stationIndex, setStationIndex] = useState(null);
             const [buildIndex, setBuildIndex] = useState(0);
+            const [embeddedScreen, setEmbeddedScreen] = useState(null);
+            const [screenReload, setScreenReload] = useState(0);
+            const [soundMuted, setSoundMuted] = useState(false);
+            const [audioReady, setAudioReady] = useState(false);
             const select = id => { setPlace(id); setPage(0); window.history.replaceState(null, '', '#' + (id || 'world')); };
             const close = () => { setPlace(null); window.history.replaceState(null, '', '#world'); };
 
@@ -1640,8 +1649,10 @@
                         immersive: true,
                         onSelect: select,
                         projectCount: projects.length,
-                        onInterior: info => { setRoomInfo(info); setStationIndex(null); },
-                        onStation: index => { setStationIndex(index); setBuildIndex(index); },
+                        skills: RAW_SKILLS,
+                        onInterior: info => { setRoomInfo(info); setStationIndex(null); setEmbeddedScreen(null); },
+                        onStation: index => { setStationIndex(index); setBuildIndex(index); setEmbeddedScreen(null); },
+                        onSoundChange: (muted, ready) => { setSoundMuted(muted); setAudioReady(ready); },
                         onReady: () => { setStatus(''); setFallback(false); },
                         onError: message => { setStatus(message); setFallback(true); }
                     });
@@ -1676,7 +1687,7 @@
             const projectIndex = Math.min(page, Math.max(0, projects.length - 1));
             const project = projects[projectIndex];
             const item = STORY_CHAPTERS[Math.min(page, 3)];
-            const book = place && (place !== 'projects' || roomInfo.kind !== 'projects' || fallback) && (
+            const book = place && (!['projects', 'skills'].includes(place) || roomInfo.kind !== place || fallback) && (
                 <article className={`world-book ${!fallback && roomInfo.kind ? `room-board board-${place}` : ''}`} aria-label={place === 'story' ? 'The story journal' : `${place} journal`}>
                     <div className="book-top"><span>{place === 'story' ? 'Nivetha’s wandering journal' : place === 'map' ? 'A map of my little world' : WORLD_PLACES.find(entry => entry[0] === place)?.[1]}</span><button className="book-close" onClick={close} aria-label="Close journal and explore the world">×</button></div>
                     {place === 'story' && <>
@@ -1699,6 +1710,7 @@
                     {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have an idea, an interesting problem, or an opportunity? Leave a little note in my mailbox.</p><div className="book-links"><a href="mailto:nnivetha373@gmail.com">Send me a note ↗</a><a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="/resume.pdf" target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href="/resume.pdf" download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>nnivetha373@gmail.com</p></>}
                     {place !== 'story' && <div className="book-nav"><button onClick={() => select('map')}>← World map</button><button onClick={close}>Back to the garden ↗</button></div>}
                     <div className="book-nav"><button onClick={() => select('story')}>Read my story</button><button onClick={() => setEvening(value => !value)} aria-pressed={evening}>{evening ? 'Morning ☀' : 'Golden hour ☀'}</button><button onClick={() => setPlaying(value => !value)} aria-pressed={!playing}>{playing ? 'Pause the breeze Ⅱ' : 'Let it wander ▷'}</button></div>
+                    {!fallback && <div className="book-nav"><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play room music ♫' : 'Mute room music ♫'}</button></div>}
                 </article>
             );
             return <main className="world-portfolio" aria-label="Nivetha Sivakumar’s interactive 3D portfolio">
@@ -1711,11 +1723,16 @@
                     const active = stationIndex === index;
                     const build = projects[active ? Math.min(buildIndex, projects.length - 1) : index];
                     if (!build) return null;
+                    const browsing = active && embeddedScreen?.station === index && embeddedScreen.project === build.name;
+                    const backToBuild = () => { setEmbeddedScreen(null); engine.current?.focusStation(index, false, false); };
                     return ReactDOM.createPortal(<div className="station-desktop">
                         <div className="station-bar"><span>◉ ◉ ◉</span><span>Nivetha / workshop / station 0{index + 1}</span></div>
-                        <div className="station-content"><p className="station-eyebrow">{build.language} · {build.tags?.join(' / ')}</p><h2>{build.name}</h2>
-                            {active ? <><p>{build.description}</p><div className="station-tags">{(build.stack || []).map(skill => <span key={skill}>{skill}</span>)}</div><div className="station-links">{build.liveUrl && <a href={build.liveUrl} target="_blank" rel="noopener noreferrer">Launch project ↗</a>}<a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a></div><div className="station-pager"><button disabled={buildIndex === 0} onClick={() => setBuildIndex(value => value - 1)}>← Previous build</button><span>{buildIndex + 1} / {projects.length}</span><button disabled={buildIndex >= projects.length - 1} onClick={() => setBuildIndex(value => value + 1)}>Next build →</button></div></> : <><p>A little experiment, made real.</p><button className="station-open" onClick={() => engine.current?.focusStation(index)}>Sit at this computer →</button></>}
-                        </div><div className="station-footer"><button onClick={close}>← Leave the workshop</button><button onClick={() => { setStationIndex(null); engine.current?.showRoom(); }}>Look around</button>{active && <button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Syncing…' : 'Sync builds ↻'}</button>}</div>
+                        {browsing ? <div className="station-web">
+                            <div className="station-browser-bar"><button onClick={backToBuild}>← Back to build</button><span>{build.name}</span><button onClick={() => setScreenReload(value => value + 1)} aria-label="Reload project">↻</button><a href={build.liveUrl} target="_blank" rel="noopener noreferrer" aria-label="Open project in a full browser">↗</a></div>
+                            {PROJECT_SCREEN_NOTICES[build.name] ? <div className="station-unavailable"><h2>{build.name}</h2><p>{PROJECT_SCREEN_NOTICES[build.name]}</p><div className="station-links"><a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a><a href={build.liveUrl} target="_blank" rel="noopener noreferrer">Open full page ↗</a></div></div> : <div className="station-web-viewport"><iframe key={`${build.name}-${screenReload}`} src={build.liveUrl} title={`${build.name} live project`} sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads" referrerPolicy="strict-origin-when-cross-origin" /></div>}
+                        </div> : <div className="station-content"><p className="station-eyebrow">{build.language} · {build.tags?.join(' / ')}</p><h2>{build.name}</h2>
+                            {active ? <><p>{build.description}</p><div className="station-tags">{(build.stack || []).map(skill => <span key={skill}>{skill}</span>)}</div><div className="station-links">{build.liveUrl && <button className="station-open" onClick={() => { engine.current?.focusStation(index, false, true); setEmbeddedScreen({ station: index, project: build.name }); }}>Launch project ▷</button>}<a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a></div><div className="station-pager"><button disabled={buildIndex === 0} onClick={() => setBuildIndex(value => value - 1)}>← Previous build</button><span>{buildIndex + 1} / {projects.length}</span><button disabled={buildIndex >= projects.length - 1} onClick={() => setBuildIndex(value => value + 1)}>Next build →</button></div></> : <><p>A little experiment, made real.</p><button className="station-open" onClick={() => engine.current?.focusStation(index)}>Sit at this computer →</button></>}
+                        </div>}<div className="station-footer"><button onClick={close}>← Leave the workshop</button><button onClick={() => { setStationIndex(null); setEmbeddedScreen(null); engine.current?.showRoom(); }}>Look around</button><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play music ♫' : 'Mute music ♫'}</button>{active && !browsing && <button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Syncing…' : 'Sync builds ↻'}</button>}</div>
                     </div>, screen.element, `station-${index}`);
                 })}
                 {fallback && <div className="world-fallback"><h1>Nivetha’s little world</h1><p role="status">{status}</p><div>{[['story', 'My story'], ...WORLD_PLACES].map(([id, title]) => <button key={id} onClick={() => select(id)}>{title}</button>)}</div>{book && <div className="world-book">{book}</div>}</div>}
