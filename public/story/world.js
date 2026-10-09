@@ -5,7 +5,7 @@ import { createInterior } from './interiors.js';
 import { createWorldAudio } from './audio.js';
 
 // Everything in this world is modeled here: no remote models or textures.
-export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onSoundChange, projectCount = 7, skills = [] } = {}) {
+export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onArrival, onSoundChange, projectCount = 7, skills = [] } = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, .1, 160);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -643,7 +643,10 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
         const complete = journey.complete; journey = null; threshold(0); veil.style.pointerEvents = 'none'; delete veil.dataset.phase;
         host.setAttribute('aria-busy', 'false'); controls.enabled = !insideRoom;
         if (queuedPlace !== undefined) { const id = queuedPlace; queuedPlace = undefined; focus(id); }
-        else complete?.();
+        else {
+          complete?.();
+          if (insideRoom && !journey) onArrival?.(insideRoom.kind);
+        }
       }
       if (!remaining) break;
     }
