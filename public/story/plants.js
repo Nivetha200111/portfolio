@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { CSS3DSprite } from './vendor/CSS3DRenderer.js';
+import { CSS3DSprite } from './vendor/CSS3DRenderer.js?v=2';
 
 // Logo-inspired botany: every tool has a distinct silhouette, color and species.
 const species = {

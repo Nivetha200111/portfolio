@@ -164,6 +164,8 @@ class CSS3DRenderer {
 
 		const _this = this;
 
+		const viewIdentity = new Matrix4();
+
 		let _width, _height;
 		let _widthHalf, _heightHalf;
 
@@ -247,7 +249,7 @@ class CSS3DRenderer {
 			const scaleByViewOffset = camera.view && camera.view.enabled ? camera.view.height / camera.view.fullHeight : 1;
 			const cameraCSSMatrix = camera.isOrthographicCamera ?
 				`scale( ${ scaleByViewOffset } )` + 'scale(' + fov + ')' + 'translate(' + epsilon( tx ) + 'px,' + epsilon( ty ) + 'px)' + getCameraCSSMatrix( camera.matrixWorldInverse ) :
-				`scale( ${ scaleByViewOffset } )` + 'translateZ(' + fov + 'px)' + getCameraCSSMatrix( camera.matrixWorldInverse );
+				`scale( ${ scaleByViewOffset } )` + 'translateZ(' + ( fov - 1 ) + 'px)' + getCameraCSSMatrix( viewIdentity );
 			const perspective = camera.isPerspectiveCamera ? 'perspective(' + fov + 'px) ' : '';
 
 			const style = perspective + cameraCSSMatrix +
@@ -399,13 +401,20 @@ class CSS3DRenderer {
 						_matrix.elements[ 11 ] = 0;
 						_matrix.elements[ 15 ] = 1;
 
-						style = getObjectCSSMatrix( _matrix );
 
 					} else {
 
-						style = getObjectCSSMatrix( object.matrixWorld );
+						_matrix.copy( object.matrixWorld );
 
 					}
+
+					// Bake view space into each plane. Keep the parent plane in front of
+					// CSS perspective so Chromium does not discard its children during hit-testing.
+					if ( camera.isPerspectiveCamera ) {
+						_matrix.premultiply( camera.matrixWorldInverse );
+						_matrix.elements[ 14 ] += 1;
+					}
+					style = getObjectCSSMatrix( _matrix );
 
 					const cachedObject = cache.objects.get( object );
 

@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js';
+import { CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js?v=2';
 import { createSkillPlants } from './plants.js';
 
 // Actual rooms, furniture and computer screens. Their DOM surfaces live in 3D.

@@ -7,3 +7,9 @@ https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.j
 
 Served locally so the story does not depend on an external runtime CDN.
 Imports are rewritten to reference the local three.module.js and three.core.js.
+
+CSS3DRenderer has a local perspective-camera adaptation: object transforms are
+converted to camera space and the parent plane stays one pixel inside the CSS
+perspective volume. This avoids Chromium dropping pointer targets when a close
+camera moves behind the scene origin. Projection parity with the WebGL camera is
+checked by tests/world-projection.test.mjs. Orthographic rendering is unchanged.

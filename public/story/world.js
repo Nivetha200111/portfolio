@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js';
+import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js?v=2';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createInterior } from './interiors.js';
 import { createWorldAudio } from './audio.js';
