@@ -1617,7 +1617,7 @@
             const readDestination = () => {
                 const id = window.location.hash.slice(1);
                 const aliases = { resume: 'contact', credentials: 'certifications', portfolio: 'map', world: null };
-                return Object.prototype.hasOwnProperty.call(aliases, id) ? aliases[id] : ['story', 'map', ...WORLD_PLACES.map(entry => entry[0])].includes(id) ? id : 'story';
+                return Object.prototype.hasOwnProperty.call(aliases, id) ? aliases[id] : ['story', 'map', ...WORLD_PLACES.map(entry => entry[0])].includes(id) ? id : null;
             };
             const [place, setPlace] = useState(readDestination);
             const [page, setPage] = useState(0);
@@ -1626,7 +1626,10 @@
             const [evening, setEvening] = useState(false);
             const [status, setStatus] = useState('A little world is waking up…');
             const [fallback, setFallback] = useState(false);
-            const select = id => { setPlace(id); setPage(0); window.history.replaceState(null, '', '#' + id); };
+            const [roomInfo, setRoomInfo] = useState({ kind: null, screens: [] });
+            const [stationIndex, setStationIndex] = useState(null);
+            const [buildIndex, setBuildIndex] = useState(0);
+            const select = id => { setPlace(id); setPage(0); window.history.replaceState(null, '', '#' + (id || 'world')); };
             const close = () => { setPlace(null); window.history.replaceState(null, '', '#world'); };
 
             useEffect(() => {
@@ -1636,6 +1639,9 @@
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
                         onSelect: select,
+                        projectCount: projects.length,
+                        onInterior: info => { setRoomInfo(info); setStationIndex(null); },
+                        onStation: index => { setStationIndex(index); setBuildIndex(index); },
                         onReady: () => { setStatus(''); setFallback(false); },
                         onError: message => { setStatus(message); setFallback(true); }
                     });
@@ -1649,9 +1655,8 @@
 
             useEffect(() => {
                 if (!engine.current) return;
-                const storyStops = ['story', 'projects', 'experience', 'certifications'];
-                engine.current.setLocation(place === 'story' ? storyStops[page] : place === 'map' ? 'story' : place);
-            }, [place, page, panelElement]);
+                engine.current.setLocation(place);
+            }, [place, panelElement]);
             useEffect(() => {
                 playingRef.current = playing;
                 engine.current?.setPlaying(playing);
@@ -1671,8 +1676,8 @@
             const projectIndex = Math.min(page, Math.max(0, projects.length - 1));
             const project = projects[projectIndex];
             const item = STORY_CHAPTERS[Math.min(page, 3)];
-            const book = place && (
-                <article aria-label={place === 'story' ? 'The story journal' : `${place} journal`}>
+            const book = place && (place !== 'projects' || roomInfo.kind !== 'projects' || fallback) && (
+                <article className={`world-book ${!fallback && roomInfo.kind ? `room-board board-${place}` : ''}`} aria-label={place === 'story' ? 'The story journal' : `${place} journal`}>
                     <div className="book-top"><span>{place === 'story' ? 'Nivetha’s wandering journal' : place === 'map' ? 'A map of my little world' : WORLD_PLACES.find(entry => entry[0] === place)?.[1]}</span><button className="book-close" onClick={close} aria-label="Close journal and explore the world">×</button></div>
                     {place === 'story' && <>
                         {page === 0 && <img className="book-profile" src="/pfp.jpg" alt="Nivetha Sivakumar" />}
@@ -1702,6 +1707,17 @@
                 <div className="story-grain" />
                 {status && !fallback && <p className="story-loading" role="status">{status}</p>}
                 {panelElement && !fallback && ReactDOM.createPortal(book, panelElement)}
+                {!fallback && roomInfo.kind === 'projects' && roomInfo.screens.map((screen, index) => {
+                    const active = stationIndex === index;
+                    const build = projects[active ? Math.min(buildIndex, projects.length - 1) : index];
+                    if (!build) return null;
+                    return ReactDOM.createPortal(<div className="station-desktop">
+                        <div className="station-bar"><span>◉ ◉ ◉</span><span>Nivetha / workshop / station 0{index + 1}</span></div>
+                        <div className="station-content"><p className="station-eyebrow">{build.language} · {build.tags?.join(' / ')}</p><h2>{build.name}</h2>
+                            {active ? <><p>{build.description}</p><div className="station-tags">{(build.stack || []).map(skill => <span key={skill}>{skill}</span>)}</div><div className="station-links">{build.liveUrl && <a href={build.liveUrl} target="_blank" rel="noopener noreferrer">Launch project ↗</a>}<a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a></div><div className="station-pager"><button disabled={buildIndex === 0} onClick={() => setBuildIndex(value => value - 1)}>← Previous build</button><span>{buildIndex + 1} / {projects.length}</span><button disabled={buildIndex >= projects.length - 1} onClick={() => setBuildIndex(value => value + 1)}>Next build →</button></div></> : <><p>A little experiment, made real.</p><button className="station-open" onClick={() => engine.current?.focusStation(index)}>Sit at this computer →</button></>}
+                        </div><div className="station-footer"><button onClick={close}>← Leave the workshop</button><button onClick={() => { setStationIndex(null); engine.current?.showRoom(); }}>Look around</button>{active && <button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Syncing…' : 'Sync builds ↻'}</button>}</div>
+                    </div>, screen.element, `station-${index}`);
+                })}
                 {fallback && <div className="world-fallback"><h1>Nivetha’s little world</h1><p role="status">{status}</p><div>{[['story', 'My story'], ...WORLD_PLACES].map(([id, title]) => <button key={id} onClick={() => select(id)}>{title}</button>)}</div>{book && <div className="world-book">{book}</div>}</div>}
             </main>;
         };

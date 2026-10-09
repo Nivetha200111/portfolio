@@ -1,9 +1,10 @@
 import * as THREE from './vendor/three.module.js';
 import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
+import { createInterior } from './interiors.js';
 
 // Everything in this world is modeled here: no remote models or textures.
-export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect } = {}) {
+export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, projectCount = 7 } = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, .1, 160);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -140,7 +141,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   world.add(cottage);
   block(palette.cream, 0, 1, 0, 2.3, 2, 1.9, cottage);
   roof(cottage, 2.8, 2.5, 2, palette.roof);
-  block(palette.wood, -.4, .65, 1, .56, 1.3, .12, cottage);
+  const cottageDoor = block(palette.wood, -.4, .65, 1, .56, 1.3, .12, cottage);
   ellipsoid('#dfbf69', -.25, .65, 1.08, .04, .04, .035, cottage);
   block('#799a9a', .66, 1.1, 1, .62, .66, .08, cottage);
   block(palette.cream, .66, 1.1, 1.06, .045, .7, .045, cottage);
@@ -286,10 +287,12 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   const labels = [], interactiveObjects = [cottage, mill, observatory, mailbox, spirit];
   [cottage, mill, observatory, mailbox, spirit].forEach((object, i) => { object.userData.place = ['projects', 'experience', 'certifications', 'contact', 'story'][i]; });
   const bookElement = document.createElement('div');
-  bookElement.className = 'world-book';
+  bookElement.className = 'world-surface';
   bookElement.style.pointerEvents = 'auto';
   const book = immersive ? new CSS3DObject(bookElement) : null;
   let selectedPlace = null, flying = false, fitDistance = 28;
+  const rooms = new Map(), walkKeys = new Set();
+  let insideRoom = null, trip = null, lookYaw = 0, lookPitch = 0, lookDown = null, activeDesk = null;
   const destination = new THREE.Vector3(), destinationTarget = new THREE.Vector3();
   if (immersive) {
     scene.add(book); book.visible = false;
@@ -358,26 +361,51 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   function render(time = 0) {
     if (disposed || inFrame) return;
     inFrame = true;
-    const delta = Math.min((time - lastTime) / 1000, .05); lastTime = time;
+    const elapsed = Math.max(0, (time - lastTime) / 1000);
+    const delta = Math.min(elapsed, .05); lastTime = time;
     if (playing) localTime += delta;
     current = playing ? THREE.MathUtils.damp(current, progress, 4, delta || .016) : progress;
     if (immersive) {
       if (flying) {
-        const amount = playing ? 1 - Math.exp(-3.8 * (delta || .016)) : 1;
+        const amount = playing ? 1 - Math.exp(-3.8 * (elapsed || .016)) : 1;
         camera.position.lerp(destination, amount); controls.target.lerp(destinationTarget, amount);
-        if (camera.position.distanceTo(destination) < .03) flying = false;
+        camera.lookAt(controls.target);
+        if (camera.position.distanceTo(destination) < .035 && controls.target.distanceTo(destinationTarget) < .035) {
+          flying = false;
+          if (trip === 'outside') finishExit();
+          else if (trip) finishEntrance(trip);
+          camera.rotation.order = 'YXZ'; lookYaw = camera.rotation.y; lookPitch = camera.rotation.x;
+        }
       }
-      controls.autoRotate = playing && !selectedPlace && !flying;
-      controls.update(delta);
+      if (insideRoom) {
+        insideRoom.update(localTime);
+        if (!flying) {
+          camera.rotation.set(lookPitch, lookYaw, 0, 'YXZ');
+          const speed = delta * 3.3;
+          let dx = 0, dz = 0;
+          if (walkKeys.has('w') || walkKeys.has('arrowup')) dz -= speed;
+          if (walkKeys.has('s') || walkKeys.has('arrowdown')) dz += speed;
+          if (walkKeys.has('a') || walkKeys.has('arrowleft')) dx -= speed;
+          if (walkKeys.has('d') || walkKeys.has('arrowright')) dx += speed;
+          const nextX = camera.position.x + dx * Math.cos(lookYaw) + dz * Math.sin(lookYaw);
+          const nextZ = camera.position.z - dx * Math.sin(lookYaw) + dz * Math.cos(lookYaw);
+          if (Math.abs(nextX) < 7.25 && Math.abs(nextZ) < 6.25 && !insideRoom.colliders.some(c => Math.abs(nextX - c.x) < c.width && Math.abs(nextZ - c.z) < c.depth)) { camera.position.x = nextX; camera.position.z = nextZ; }
+        }
+      } else {
+        controls.autoRotate = playing && !selectedPlace && !flying;
+        if (!flying) controls.update(delta);
+      }
       if (book.visible) {
-        book.quaternion.copy(camera.quaternion);
-        bookEuler.set(.012 * Math.sin(localTime * .6), .055 + .015 * Math.sin(localTime * .4), -.012);
-        book.quaternion.multiply(bookTilt.setFromEuler(bookEuler));
-        const focal = host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
-        const wantedWidth = Math.min(host.clientWidth - 44, host.clientHeight * .78, 500);
-        const scale = wantedWidth * book.position.distanceTo(camera.position) / ((bookElement.offsetWidth || 520) * focal);
-        book.scale.setScalar(scale);
-        if (playing) book.position.y += Math.sin(localTime * .7) * .0007;
+        if (insideRoom) { book.quaternion.identity(); book.scale.setScalar(.008); }
+        else {
+          book.quaternion.copy(camera.quaternion);
+          bookEuler.set(.012 * Math.sin(localTime * .6), .055 + .015 * Math.sin(localTime * .4), -.012);
+          book.quaternion.multiply(bookTilt.setFromEuler(bookEuler));
+          const focal = host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+          const wantedWidth = Math.min(host.clientWidth - 44, host.clientHeight * .78, 500);
+          const scale = wantedWidth * book.position.distanceTo(camera.position) / ((bookElement.offsetWidth || 520) * focal);
+          book.scale.setScalar(scale);
+        }
       }
       labels.forEach(label => { label.visible = !selectedPlace; });
       if (!selectedPlace) {
@@ -450,7 +478,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const { width, height } = host.getBoundingClientRect();
     renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
     cssRenderer?.setSize(width, height);
-    if (immersive) {
+    if (immersive && !insideRoom) {
       const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
       fitDistance = 7.6 / Math.sin(Math.min(halfHorizontal, THREE.MathUtils.degToRad(camera.fov / 2)));
       controls.maxDistance = Math.max(65, fitDistance * 1.6);
@@ -458,6 +486,9 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
         camera.position.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
         controls.target.set(0, 1, 0);
       } else focus(selectedPlace);
+    } else if (immersive && insideRoom) {
+      if (activeDesk !== null) focusStation(activeDesk, false);
+      else if (insideRoom.kind !== 'projects') finishEntrance(insideRoom.kind, false);
     }
     render(lastTime);
   }
@@ -467,42 +498,128 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     pointer.set((event.clientX - rect.left) / rect.width - .5, .5 - (event.clientY - rect.top) / rect.height);
   }
   function loop() { renderer.setAnimationLoop(playing && visible && !document.hidden ? render : null); render(lastTime); }
+  function ensureRoom(id) {
+    if (!rooms.has(id)) {
+      const room = createInterior(id, { material: mat, projectCount, onExit: () => onSelect?.(null), onStation });
+      room.kind = id; rooms.set(id, room); scene.add(room.group);
+    }
+    return rooms.get(id);
+  }
+  function finishEntrance(id, notify = true) {
+    trip = null;
+    activeDesk = null;
+    insideRoom?.group && (insideRoom.group.visible = false);
+    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false;
+    camera.fov = 65; camera.updateProjectionMatrix();
+    if (id === 'projects') {
+      camera.position.set(0, 2.7, 5.6); controls.target.set(0, 2.5, -4.7); book.visible = false;
+    } else {
+      const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+      const distance = Math.max(4.8, 2.2 / Math.tan(halfHorizontal) * 1.15);
+      book.position.copy(insideRoom.boardPoint); book.visible = true;
+      camera.position.copy(insideRoom.boardPoint).add(new THREE.Vector3(0, 0, distance));
+      controls.target.copy(insideRoom.boardPoint);
+    }
+    camera.lookAt(controls.target); camera.rotation.order = 'YXZ'; lookYaw = camera.rotation.y; lookPitch = camera.rotation.x;
+    if (notify) onInterior?.({ kind: id, screens: insideRoom.screens });
+  }
+  function finishExit() {
+    insideRoom.group.visible = false; insideRoom = null; trip = null; world.visible = true;
+    book.visible = false;
+    camera.fov = 34; camera.updateProjectionMatrix();
+    camera.position.set(-3.1, 2.2, 3.6); controls.target.set(0, 1, 0);
+    destinationTarget.set(0, 1, 0); destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
+    controls.enabled = true; flying = true; activeDesk = null; onInterior?.({ kind: null, screens: [] });
+    if (!playing) { camera.position.copy(destination); controls.target.copy(destinationTarget); flying = false; }
+  }
+  function focusStation(index, notify = true) {
+    if (insideRoom?.kind !== 'projects') return;
+    const station = insideRoom.screens[index]; if (!station) return;
+    const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+    const distance = Math.max(3, 1.36 / Math.tan(halfHorizontal) * 1.18);
+    destinationTarget.copy(station.point);
+    destination.copy(station.point).addScaledVector(station.normal, distance);
+    destination.y = 2.55; flying = true; trip = null;
+    activeDesk = index;
+    if (notify) onStation?.(index);
+    if (!playing) render(lastTime);
+  }
   function focus(id) {
     selectedPlace = id;
-    book.visible = !!id;
-    controls.enabled = !id;
-    if (id) {
-      const anchor = new THREE.Vector3(...places[id].point);
-      book.position.copy(anchor); book.position.y = 4;
-      const forward = new THREE.Vector3(9, 6, 15).normalize();
-      book.position.addScaledVector(forward, 3);
-      destinationTarget.copy(book.position);
-      destination.copy(book.position).addScaledVector(forward, Math.max(18, fitDistance * .62));
+    book.visible = false; controls.enabled = false;
+    if (id && insideRoom) {
+      finishEntrance(id);
+    } else if (id) {
+      const entrance = { projects: [-3.1, 1.7, 2.1], experience: [3.5, 1.8, .3], certifications: [.15, 1.8, -1.8], contact: [4.5, 1.7, 4], skills: [2.95, 1.7, 4.2], achievements: [-1.1, 1.8, .1], story: [-3.7, 1.7, 5.3], map: [-3.7, 1.7, 5.3] };
+      destination.fromArray(entrance[id]); destinationTarget.copy(destination).add(new THREE.Vector3(0, -.08, -1));
+      trip = id; flying = true;
+      if (id === 'projects') cottageDoor.rotation.y = -1.1;
+    } else if (insideRoom) {
+      trip = 'outside'; destination.set(0, 2.7, 6.6); destinationTarget.set(0, 2.7, 8); flying = true;
     } else {
       destinationTarget.set(0, 1, 0);
       destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
+      controls.enabled = true; flying = true;
     }
-    flying = true;
     if (!playing) render(lastTime);
   }
   const raycaster = new THREE.Raycaster();
   let pointerDown = null;
-  const down = event => { pointerDown = [event.clientX, event.clientY]; };
+  const down = event => { pointerDown = [event.clientX, event.clientY]; lookDown = [event.clientX, event.clientY]; if (insideRoom) renderer.domElement.setPointerCapture(event.pointerId); };
+  function look(event) {
+    if (!insideRoom || !lookDown || !event.buttons) return;
+    flying = false;
+    lookYaw -= (event.clientX - lookDown[0]) * .004;
+    lookPitch = THREE.MathUtils.clamp(lookPitch - (event.clientY - lookDown[1]) * .004, -.95, .95);
+    lookDown = [event.clientX, event.clientY];
+    if (!playing) render(lastTime);
+  }
   function pick(event) {
+    lookDown = null;
     if (!immersive || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
     const rect = renderer.domElement.getBoundingClientRect();
     raycaster.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1), camera);
-    const hit = raycaster.intersectObjects(interactiveObjects, true)[0];
+    const hit = raycaster.intersectObjects(insideRoom ? insideRoom.pickable : interactiveObjects, true)[0];
     if (!hit) return;
     let object = hit.object;
+    if (insideRoom) {
+      while (object && !object.userData.exit && object.userData.station === undefined && !object.userData.walk) object = object.parent;
+      if (object?.userData.exit) onSelect?.(null);
+      else if (object?.userData.station !== undefined) focusStation(object.userData.station);
+      else if (object?.userData.walk) {
+        destination.set(THREE.MathUtils.clamp(hit.point.x, -7, 7), 2.7, THREE.MathUtils.clamp(hit.point.z, -6, 6));
+        destinationTarget.copy(destination).add(new THREE.Vector3(-Math.sin(lookYaw), Math.sin(lookPitch), -Math.cos(lookYaw))); flying = true;
+      }
+      return;
+    }
     while (object && !object.userData.place) object = object.parent;
     if (object) onSelect?.(object.userData.place);
   }
   const controlsChanged = () => { if (!playing) render(lastTime); };
+  const keyDown = event => {
+    if (!insideRoom || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.ctrlKey || event.metaKey) return;
+    const key = event.key.toLowerCase();
+    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+      walkKeys.add(key); event.preventDefault();
+      if (!playing) {
+        flying = false;
+        const dx = ['a', 'arrowleft'].includes(key) ? -.18 : ['d', 'arrowright'].includes(key) ? .18 : 0;
+        const dz = ['w', 'arrowup'].includes(key) ? -.18 : ['s', 'arrowdown'].includes(key) ? .18 : 0;
+        const nextX = camera.position.x + dx * Math.cos(lookYaw) + dz * Math.sin(lookYaw);
+        const nextZ = camera.position.z - dx * Math.sin(lookYaw) + dz * Math.cos(lookYaw);
+        if (Math.abs(nextX) < 7.25 && Math.abs(nextZ) < 6.25 && !insideRoom.colliders.some(c => Math.abs(nextX - c.x) < c.width && Math.abs(nextZ - c.z) < c.depth)) camera.position.set(nextX, 2.7, nextZ);
+        render(lastTime);
+      }
+    }
+  };
+  const keyUp = event => walkKeys.delete(event.key.toLowerCase());
+  const blur = () => { walkKeys.clear(); lookDown = null; };
   controls?.addEventListener('change', controlsChanged);
   if (immersive) {
     renderer.domElement.addEventListener('pointerdown', down);
     renderer.domElement.addEventListener('pointerup', pick);
+    renderer.domElement.addEventListener('pointermove', look);
+    document.addEventListener('keydown', keyDown); document.addEventListener('keyup', keyUp); window.addEventListener('blur', blur);
   }
   const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(host);
   const visibilityObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; loop(); }, { rootMargin: '80px' });
@@ -516,7 +633,9 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   resize(); loop(); onReady?.();
   return {
     panelElement: bookElement,
-    setLocation(id) { if (immersive && (id === null || places[id])) focus(id); },
+    setLocation(id) { if (immersive && (id === null || places[id] || id === 'map')) focus(id); },
+    focusStation,
+    showRoom() { if (insideRoom?.kind === 'projects') { activeDesk = null; destination.set(0, 2.7, 5.6); destinationTarget.set(0, 2.5, -4.7); flying = true; if (!playing) render(lastTime); } },
     setEvening(value) { progress = value ? 1 : 0; if (!playing) render(lastTime); },
     setProgress(value) { progress = THREE.MathUtils.clamp(value, 0, 1); if (!playing || !visible) render(lastTime); },
     setPlaying(value) { playing = value; loop(); },
@@ -524,11 +643,12 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
       disposed = true; renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
       host.removeEventListener('pointermove', move); document.removeEventListener('visibilitychange', loop);
       renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointerup', pick);
+      renderer.domElement.removeEventListener('pointermove', look); document.removeEventListener('keydown', keyDown); document.removeEventListener('keyup', keyUp); window.removeEventListener('blur', blur);
       controls?.removeEventListener('change', controlsChanged); controls?.dispose(); cssRenderer?.domElement.remove();
       renderer.domElement.removeEventListener('webglcontextlost', lost); renderer.domElement.removeEventListener('webglcontextrestored', restored);
       const geometries = new Set(), usedMaterials = new Set();
       scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) usedMaterials.add(object.material); if (object.isInstancedMesh) object.dispose(); });
-      geometries.forEach(g => g.dispose()); usedMaterials.forEach(m => m.dispose()); gradient.dispose(); renderer.dispose(); renderer.domElement.remove();
+      geometries.forEach(g => g.dispose()); usedMaterials.forEach(m => { m.map?.dispose(); m.dispose(); }); gradient.dispose(); renderer.dispose(); renderer.domElement.remove();
     }
   };
 }
