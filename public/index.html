@@ -6,6 +6,7 @@
     <meta name="description" content="Step into Nivetha Sivakumar's storybook 3D garden, then explore her full-stack projects, AI, automation, and enterprise experience.">
     <link rel="stylesheet" href="/story/story.css">
     <link rel="stylesheet" href="/story/immersive.css">
+    <link rel="stylesheet" href="/story/quick-view.css?v=1">
     <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
     <script>
         if (window.location.hostname.toLowerCase() === 'servicenow.nivetha.info' || new URLSearchParams(window.location.search).get('site') === 'servicenow') {
@@ -328,6 +329,7 @@
 <body>
     <div id="root"></div>
 
+    <script type="text/babel" src="/story/quick-view.jsx?v=1"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         const { motion, useScroll, AnimatePresence, useMotionValue, useMotionTemplate, useReducedMotion } = window.Motion;
@@ -342,14 +344,33 @@
 
         // --- DATA ---
 
+        const PORTFOLIO_PROFILE = {
+            name: 'Nivetha Sivakumar',
+            role: 'Software Engineer & Systems Tinkerer',
+            tagline: 'Code alchemist. Systems tinkerer.',
+            introduction: 'I build useful software at the intersection of AI, automation, and full-stack development. From enterprise modernization to small experiments, I like turning complicated problems into thoughtful tools.',
+            email: 'nnivetha373@gmail.com',
+            github: 'https://github.com/Nivetha200111',
+            linkedin: 'https://www.linkedin.com/in/nivetha-sivakumar2001/',
+            resume: '/resume.pdf',
+            photo: '/pfp.jpg',
+            credentials: 'https://www.credly.com/users/nivetha-s.f4035a62',
+            serviceNow: 'https://servicenow.nivetha.info'
+        };
+
         const PROJECTS = [
             {
                 name: "ApplyX",
                 repoUrl: "https://github.com/Nivetha200111/applyx",
                 liveUrl: "https://applyx.vercel.app",
-                description: "AI-powered job application automation platform that streamlines the job search process by intelligently applying to relevant positions across multiple job boards based on your skills and preferences.",
+                description: "AI-assisted résumé tailoring, application tracking, and mock interviews, bringing job-search preparation into one platform.",
                 language: "TypeScript",
-                stack: ["TypeScript", "Next.js", "React", "Python", "PostgreSQL", "Git", "Vercel", "OpenAI API"],
+                stack: ["TypeScript", "Next.js", "React", "PostgreSQL", "Gemini", "Vercel"],
+                engineering: {
+                    kind: 'tailoring', title: 'ApplyX',
+                    decisions: 'Next.js App Router and PostgreSQL for application records; AI tailoring with semantic answer evaluation for mock interviews.',
+                    outcome: 'A master résumé becomes a role-specific PDF or DOCX, with application tracking and interview feedback in the same workflow.'
+                },
                 tags: ["Automation", "AI"]
             },
             {
@@ -365,9 +386,14 @@
                 name: "servicenowplanner",
                 repoUrl: "https://github.com/Nivetha200111/servicenowplanner",
                 liveUrl: "https://servicenowplanner.vercel.app",
-                description: "ServiceNow-integrated planning tool that helps teams manage IT service management workflows and project timelines efficiently.",
+                description: "A ServiceNow certification study platform with personalized plans, practice quizzes, flashcards, progress tracking, and Telegram reminders.",
                 language: "JavaScript",
-                stack: ["JavaScript", "React", "Node.js", "Git", "Vercel"],
+                stack: ["JavaScript", "HTML", "CSS", "Telegram Bot API", "Vercel"],
+                engineering: {
+                    kind: 'planner', title: 'SNowPrep',
+                    decisions: 'A modular browser interface with local progress storage, an exam simulator, and serverless endpoints for AI tutoring and Telegram reminders.',
+                    outcome: 'Study plans, recall practice, notes, and progress live together for CSA, CAD, and CIS-ITSM preparation.'
+                },
                 tags: ["SaaS"]
             },
             {
@@ -403,7 +429,12 @@
                 liveUrl: "https://dwightvercel.vercel.app",
                 description: "Neural ACO Emergency Response Simulator combining neural-augmented ant-colony optimization, IoT sensor fusion, LSTM fire prediction, and Q-learning for smart-building evacuation scenarios.",
                 language: "Python",
-                stack: ["Python", "React", "Next.js", "Vercel", "Git"],
+                stack: ["Python", "NumPy", "Pygame", "Kalman filtering", "A*", "ACO"],
+                engineering: {
+                    kind: 'evacuation', title: 'DWIGHT',
+                    decisions: 'Kalman-filtered sensor readings inform fire predictions and pheromone-weighted A* routing; a headless loop separates simulation from rendering.',
+                    outcome: 'An interactive evacuation simulator for exploring hazards, crowd behavior, safer paths, alarms, and rescue response.'
+                },
                 tags: ["Web"]
             }
         ];
@@ -1505,7 +1536,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=2').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=3').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1615,7 +1646,7 @@
             'Bindora': 'This deployment is currently offline. The source code is still available below.',
             'LunchTube': 'This deployment is currently offline. The source code is still available below.'
         };
-        const WorldPortfolio = ({ projects, onRefresh, refreshing }) => {
+        const WorldPortfolio = ({ profile = PORTFOLIO_PROFILE, projects, onRefresh, refreshing }) => {
             const host = useRef(null);
             const engine = useRef(null);
             const [panelElement, setPanelElement] = useState(null);
@@ -1638,12 +1669,16 @@
             const [screenReload, setScreenReload] = useState(0);
             const [soundMuted, setSoundMuted] = useState(false);
             const [audioReady, setAudioReady] = useState(false);
+            const projectsRef = useRef(projects);
+            projectsRef.current = projects;
+            const requestedBuild = useRef(null);
+            const projectVisited = useRef(false);
             const select = id => { setPlace(id); setPage(0); window.history.replaceState(null, '', '#' + (id || 'world')); };
             const close = () => { setPlace(null); window.history.replaceState(null, '', '#world'); };
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=2').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=3').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
@@ -1651,7 +1686,17 @@
                         projectCount: projects.length,
                         skills: RAW_SKILLS,
                         onInterior: info => { setRoomInfo(info); setStationIndex(null); setEmbeddedScreen(null); },
-                        onStation: index => { setStationIndex(index); setBuildIndex(index); setEmbeddedScreen(null); },
+                        onStation: index => { setStationIndex(index); setBuildIndex(requestedBuild.current?.station === index ? requestedBuild.current.build : index); requestedBuild.current = null; setEmbeddedScreen(null); },
+                        onArrival: kind => {
+                            if (kind !== 'projects' || projectVisited.current) return;
+                            const name = new URLSearchParams(window.location.search).get('project');
+                            const index = projectsRef.current.findIndex(project => project.name.toLowerCase() === name?.toLowerCase());
+                            if (index < 0) return;
+                            projectVisited.current = true;
+                            const station = Math.min(index, 6);
+                            requestedBuild.current = { station, build: index };
+                            engine.current?.focusStation(station);
+                        },
                         onSoundChange: (muted, ready) => { setSoundMuted(muted); setAudioReady(ready); },
                         onReady: () => { setStatus(''); setFallback(false); },
                         onError: message => { setStatus(message); setFallback(true); }
@@ -1691,8 +1736,8 @@
                 <article className={`world-book ${!fallback && roomInfo.kind ? `room-board board-${place}` : ''}`} aria-label={place === 'story' ? 'The story journal' : `${place} journal`}>
                     <div className="book-top"><span>{place === 'story' ? 'Nivetha’s wandering journal' : place === 'map' ? 'A map of my little world' : WORLD_PLACES.find(entry => entry[0] === place)?.[1]}</span><button className="book-close" onClick={close} aria-label="Close journal and explore the world">×</button></div>
                     {place === 'story' && <>
-                        {page === 0 && <img className="book-profile" src="/pfp.jpg" alt="Nivetha Sivakumar" />}
-                        {page === 0 ? <><p className="book-caption">A small world. A real journey.</p><h1>Nivetha<br />Sivakumar</h1><p>Code alchemist. Systems tinkerer.<br />Every story starts with a seed.</p><p>{item.description}</p><button className="book-action" onClick={close}>Step into my world ↗</button><p style={{fontSize: 12, marginTop: 14}}>Drag to wander. Scroll or pinch to get closer. Tap a landmark to explore.</p></> : <><p className="book-caption">{item.eyebrow}</p><h2>{item.title}</h2><p>{item.description}</p><p className="book-caption">{item.note}</p></>}
+                        {page === 0 && <img className="book-profile" src={profile.photo} alt={profile.name} />}
+                        {page === 0 ? <><p className="book-caption">A small world. A real journey.</p><h1>{profile.name.split(' ')[0]}<br />{profile.name.split(' ').slice(1).join(' ')}</h1><p>{profile.tagline}<br />Every story starts with a seed.</p><p>{profile.introduction}</p><button className="book-action" onClick={close}>Step into my world ↗</button><p style={{fontSize: 12, marginTop: 14}}>Drag to wander. Scroll or pinch to get closer. Tap a landmark to explore.</p></> : <><p className="book-caption">{item.eyebrow}</p><h2>{item.title}</h2><p>{item.description}</p><p className="book-caption">{item.note}</p></>}
                         <div className="book-nav"><button onClick={() => setPage(value => value - 1)} disabled={page === 0}>← Previous</button><span>0{page + 1} / 04</span>{page < 3 ? <button onClick={() => setPage(value => value + 1)}>Turn the page →</button> : <button onClick={() => select('projects')}>Visit the workshop →</button>}</div>
                     </>}
                     {place === 'map' && <><h2>Where shall<br /><em>we wander?</em></h2><p>Every place holds a piece of my portfolio. Pick a destination, or close the journal and tap a landmark.</p><div className="book-map">{WORLD_PLACES.map(([id, title, subtitle]) => <button key={id} onClick={() => select(id)}>{title}<span>{subtitle}</span></button>)}</div></>}
@@ -1701,13 +1746,13 @@
                         <h2>The little<br /><em>workshop.</em></h2>
                         {project && <><h3>{project.name}</h3><p>{project.description}</p><div className="book-tags">{(project.stack || [project.language]).filter(Boolean).map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links">{project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit project ↗</a>}<a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Read the code ↗</a></div></>}
                         <div className="book-nav"><button onClick={() => setPage(projectIndex - 1)} disabled={projectIndex === 0}>← Previous build</button><span>{projectIndex + 1} / {projects.length}</span><button onClick={() => setPage(projectIndex + 1)} disabled={projectIndex >= projects.length - 1}>Next build →</button></div>
-                        <div className="book-nav"><a href="https://github.com/Nivetha200111" target="_blank" rel="noopener noreferrer">My GitHub ↗</a><button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Finding new builds…' : 'Refresh the workshop ↻'}</button></div>
+                        <div className="book-nav"><a href={profile.github} target="_blank" rel="noopener noreferrer">My GitHub ↗</a><button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Finding new builds…' : 'Refresh the workshop ↻'}</button></div>
                     </>}
                     {place === 'experience' && <><h2>Small details.<br /><em>Big systems.</em></h2>{EXPERIENCE.map(job => <div key={job.company}><p className="book-caption">{job.dates}</p><h3>{job.title}</h3><p>{job.company}</p><ul className="book-list">{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul><div className="book-tags">{job.awards.map(award => <span key={award}>{award}</span>)}</div></div>)}</>}
                     {place === 'skills' && <><h2>A garden<br /><em>of skills.</em></h2><p>Different tools. One habit: keep learning, keep building.</p><div className="book-tags">{RAW_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><button className="book-action" onClick={() => select('projects')}>See them in the workshop ↗</button></>}
                     {place === 'achievements' && <><h2>Little seeds.<br /><em>Lasting milestones.</em></h2>{ACHIEVEMENTS.map(achievement => <div className="book-row" key={achievement.title}><strong>{achievement.title}</strong><p>{achievement.desc}</p></div>)}</>}
-                    {place === 'certifications' && <><h2>Always looking<br /><em>a little further.</em></h2><p>My ServiceNow learning path spans administration, application development, flows, integration, automated testing, interfaces, and AI.</p><div className="book-tags">{SERVICENOW_PRIORITY_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links"><a href="https://www.credly.com/users/nivetha-s.f4035a62" target="_blank" rel="noopener noreferrer">Verified credentials ↗</a><a href="https://servicenow.nivetha.info" target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a></div></>}
-                    {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have an idea, an interesting problem, or an opportunity? Leave a little note in my mailbox.</p><div className="book-links"><a href="mailto:nnivetha373@gmail.com">Send me a note ↗</a><a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="/resume.pdf" target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href="/resume.pdf" download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>nnivetha373@gmail.com</p></>}
+                    {place === 'certifications' && <><h2>Always looking<br /><em>a little further.</em></h2><p>My ServiceNow learning path spans administration, application development, flows, integration, automated testing, interfaces, and AI.</p><div className="book-tags">{SERVICENOW_PRIORITY_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links"><a href={profile.credentials} target="_blank" rel="noopener noreferrer">Verified credentials ↗</a><a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a></div></>}
+                    {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have an idea, an interesting problem, or an opportunity? Leave a little note in my mailbox.</p><div className="book-links"><a href={`mailto:${profile.email}`}>Send me a note ↗</a><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href={profile.resume} download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>{profile.email}</p></>}
                     {place !== 'story' && <div className="book-nav"><button onClick={() => select('map')}>← World map</button><button onClick={close}>Back to the garden ↗</button></div>}
                     <div className="book-nav"><button onClick={() => select('story')}>Read my story</button><button onClick={() => setEvening(value => !value)} aria-pressed={evening}>{evening ? 'Morning ☀' : 'Golden hour ☀'}</button><button onClick={() => setPlaying(value => !value)} aria-pressed={!playing}>{playing ? 'Pause the breeze Ⅱ' : 'Let it wander ▷'}</button></div>
                     {!fallback && <div className="book-nav"><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play room music ♫' : 'Mute room music ♫'}</button></div>}
@@ -1839,7 +1884,7 @@
                             setShowConfetti(true);
                             setTimeout(() => setShowConfetti(false), 3000);
                         }
-                        setProjects(data.projects);
+                        setProjects(data.projects.map(project => ({ ...PROJECTS.find(original => original.name.toLowerCase() === project.name.toLowerCase()), ...project, engineering: PROJECTS.find(original => original.name.toLowerCase() === project.name.toLowerCase())?.engineering })));
                         setLastRefreshed(new Date().toLocaleTimeString());
                     } else {
                         console.error('Failed to refresh projects:', data.error);
@@ -1859,7 +1904,7 @@
             const activeAchievements = IS_SERVICENOW ? SERVICENOW_HIGHLIGHTS : ACHIEVEMENTS;
             const activeExperience = IS_SERVICENOW ? SERVICENOW_JOURNEY : EXPERIENCE;
 
-            if (!IS_SERVICENOW) return <WorldPortfolio projects={projects} onRefresh={refreshProjects} refreshing={refreshing} />;
+            if (!IS_SERVICENOW) return <PortfolioExperience profile={PORTFOLIO_PROFILE} projects={projects} experience={EXPERIENCE} skills={RAW_SKILLS} certifications={SERVICENOW_CREDENTIALS} achievements={ACHIEVEMENTS} onRefresh={refreshProjects} refreshing={refreshing} />;
 
             return (
                 <div className={`min-h-screen selection:bg-accent selection:text-black pb-20 dark:text-gray-200 text-gray-700 ${partyMode ? 'party-mode' : ''}`}>

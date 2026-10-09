@@ -48,3 +48,20 @@ or copyrighted recordings are downloaded. Verify the audio lifecycle with
 All scenery is modeled procedurally. Three.js 0.180.0 and its controls/renderers
 are vendored locally with their MIT license. There is no build step; serve the
 existing `public` directory.
+# Two ways to visit
+
+The main portfolio opens in Explore 3D by default. The persistent mode switch
+opens Quick View (`/?view=quick`), a scrollable cream-and-sage layout. Quick View
+can be bookmarked and linked to individual sections, for example
+`/?view=quick#experience`. It does not create a WebGL world or start room audio.
+
+Both views receive the same profile, projects, experience, skills, credentials,
+and achievements from `public/index.html`. Repository-backed engineering notes
+are stored on those project records and survive the existing project refresh.
+The profile's contact and résumé links are also shared with the world journals.
+
+Project links such as `/?project=dwight#projects` enter the workshop through its
+door and focus the corresponding computer after the entry journey finishes.
+Browser Back/Forward restores the requested mode. The ServiceNow site keeps its
+existing independent layout.
+
