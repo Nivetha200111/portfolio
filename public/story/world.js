@@ -701,6 +701,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (!insideRoom || journey || !lookDown || !event.buttons) return;
     flying = false;
     pendingStation = null;
+    host.setAttribute('aria-busy', 'false');
     lookYaw -= (event.clientX - lookDown[0]) * .004;
     lookPitch = THREE.MathUtils.clamp(lookPitch - (event.clientY - lookDown[1]) * .004, -.95, .95);
     lookDown = [event.clientX, event.clientY];
