@@ -2,9 +2,10 @@ import * as THREE from './vendor/three.module.js';
 import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createInterior } from './interiors.js';
+import { createWorldAudio } from './audio.js';
 
 // Everything in this world is modeled here: no remote models or textures.
-export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, projectCount = 7 } = {}) {
+export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onSoundChange, projectCount = 7, skills = [] } = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, .1, 160);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -31,8 +32,13 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     controls.autoRotateSpeed = .32; controls.zoomSpeed = .6;
   }
 
-  const world = new THREE.Group();
-  scene.add(world);
+  const exterior = new THREE.Group(); scene.add(exterior);
+  const world = new THREE.Group(); exterior.add(world);
+  const audio = immersive ? createWorldAudio({ onState: () => {
+    rooms.forEach(room => room.setSound(audio.muted, audio.ready)); onSoundChange?.(audio.muted, audio.ready);
+  } }) : null;
+  const veil = document.createElement('div'); veil.className = 'world-threshold'; veil.setAttribute('aria-hidden', 'true');
+  if (immersive) host.appendChild(veil);
   const hemisphere = new THREE.HemisphereLight(0xfff5dc, 0x72816b, 2.5);
   scene.add(hemisphere);
   const sun = new THREE.DirectionalLight(0xffedcf, 3.1);
@@ -76,6 +82,18 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     object.scale.set(sx, sy, sz);
     return object;
   };
+  function hingedDoor(parent, x, y, z, width, height, color = palette.wood) {
+    block('#3b4b3d', x, y + height / 2, z, width, height, .06, parent);
+    const pivot = new THREE.Group(); pivot.position.set(x - width / 2, y, z + .06); parent.add(pivot);
+    pivot.userData.height = height; pivot.userData.width = width;
+    block(color, width / 2, height / 2, 0, width, height, .065, pivot);
+    for (const yy of [.28, .75]) block('#8d9470', width / 2, height * yy, .04, width * .75, height * .33, .025, pivot);
+    ellipsoid('#dfbf69', width * .82, height * .48, .08, .035, .035, .025, pivot);
+    for (const xx of [x - width / 2 - .035, x + width / 2 + .035]) block('#9b815b', xx, y + height / 2, z + .03, .065, height + .13, .15, parent);
+    block('#9b815b', x, y + height + .065, z + .03, width + .2, .07, .15, parent);
+    for (const yy of [.2, .85]) cylinder('#a5976b', .018, .018, .09, 0, height * yy, .01, pivot);
+    return pivot;
+  }
   const cylinder = (color, top, bottom, height, x, y, z, parent = world, segments = 12) => {
     const object = mesh(new THREE.CylinderGeometry(top, bottom, height, segments), color, parent);
     object.position.set(x, y, z);
@@ -141,8 +159,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   world.add(cottage);
   block(palette.cream, 0, 1, 0, 2.3, 2, 1.9, cottage);
   roof(cottage, 2.8, 2.5, 2, palette.roof);
-  const cottageDoor = block(palette.wood, -.4, .65, 1, .56, 1.3, .12, cottage);
-  ellipsoid('#dfbf69', -.25, .65, 1.08, .04, .04, .035, cottage);
+  const cottageDoor = hingedDoor(cottage, -.4, 0, 1, .56, 1.3);
   block('#799a9a', .66, 1.1, 1, .62, .66, .08, cottage);
   block(palette.cream, .66, 1.1, 1.06, .045, .7, .045, cottage);
   block(palette.cream, .66, 1.1, 1.06, .68, .045, .045, cottage);
@@ -165,7 +182,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   cylinder('#ebdfbc', .6, .9, 3.6, 0, 1.8, 0, mill);
   const millRoof = mesh(new THREE.ConeGeometry(.9, 1.3, 12), '#829183', mill);
   millRoof.position.y = 4.15;
-  block('#675a48', 0, .6, .84, .45, 1.2, .07, mill);
+  const millDoor = hingedDoor(mill, 0, 0, .84, .45, 1.2, '#675a48');
   block('#779291', 0, 2.5, .66, .35, .45, .08, mill);
   const rotor = new THREE.Group(); rotor.position.set(0, 3.1, .95); mill.add(rotor);
   cylinder(palette.wood, .18, .18, .25, 0, 0, 0, rotor).rotation.x = Math.PI / 2;
@@ -181,7 +198,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   cylinder('#e5d8b8', 1.1, 1.2, 1.8, 0, .9, 0, observatory);
   const dome = mesh(new THREE.SphereGeometry(1.2, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), '#7faaa2', observatory);
   dome.position.y = 1.8;
-  block('#486659', 0, .6, 1.17, .48, 1.2, .08, observatory);
+  const observatoryDoor = hingedDoor(observatory, 0, 0, 1.17, .48, 1.2, '#486659');
   cylinder('#d0bc8d', 1.24, 1.24, .12, 0, 1.8, 0, observatory, 24);
   const telescope = cylinder('#c7aa68', .17, .2, .95, .65, 2.65, .72, observatory);
   telescope.rotation.x = .9; telescope.rotation.z = -.55;
@@ -275,6 +292,18 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   const flag = block('#d6b066', .41, 1.6, 0, .2, .12, .025, mailbox);
   cylinder(palette.wood, .018, .018, .45, .33, 1.45, 0, mailbox);
 
+  // Small magical doorways connect the outdoor landmarks to their larger rooms.
+  const doors = { projects: cottageDoor, experience: millDoor, certifications: observatoryDoor };
+  for (const [id, x, z, color] of [['skills', 2.9, 3.6, '#68866a'], ['contact', 4.55, 3.7, '#a7775d'], ['achievements', -1.1, -.1, '#b29665'], ['story', -4.9, 3.5, '#6a8871']]) {
+    const porch = new THREE.Group(); porch.position.set(x, .45, z); porch.userData.place = id; world.add(porch);
+    doors[id] = hingedDoor(porch, 0, 0, 0, .65, 1.55, color);
+    roof(porch, .98, .55, 1.65, id === 'skills' ? '#a6be9b' : palette.roof);
+    block('#bca379', 0, -.015, .3, 1.1, .09, .9, porch);
+    for (const xx of [-.53, .53]) cylinder(palette.wood, .04, .06, 1.6, xx, .8, 0, porch);
+    porch.userData.interactive = true;
+  }
+  doors.map = doors.story;
+
   const places = {
     story: { title: 'My story', subtitle: 'The wandering journal', point: [-5.3, 1.7, 4.8] },
     projects: { title: 'Projects', subtitle: 'The little workshop', point: [-4, 4.2, 1.1] },
@@ -284,7 +313,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     certifications: { title: 'Certifications', subtitle: 'The observatory', point: [.9, 4.4, -4.1] },
     contact: { title: 'Say hello', subtitle: 'The garden mailbox', point: [5.6, 2.4, 4.1] }
   };
-  const labels = [], interactiveObjects = [cottage, mill, observatory, mailbox, spirit];
+  const labels = [], interactiveObjects = [cottage, mill, observatory, mailbox, spirit, ...world.children.filter(object => object.userData.interactive)];
   [cottage, mill, observatory, mailbox, spirit].forEach((object, i) => { object.userData.place = ['projects', 'experience', 'certifications', 'contact', 'story'][i]; });
   const bookElement = document.createElement('div');
   bookElement.className = 'world-surface';
@@ -293,6 +322,10 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   let selectedPlace = null, flying = false, fitDistance = 28;
   const rooms = new Map(), walkKeys = new Set();
   let insideRoom = null, trip = null, lookYaw = 0, lookPitch = 0, lookDown = null, activeDesk = null;
+  let journey = null, queuedPlace;
+  let activeScreenMode = false;
+  let pendingStation = null;
+  let lastPlantLabels = -1;
   const destination = new THREE.Vector3(), destinationTarget = new THREE.Vector3();
   if (immersive) {
     scene.add(book); book.visible = false;
@@ -327,12 +360,12 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     for (let j = 0; j < 5; j++) {
       const p = new THREE.Mesh(sphere, cloudMaterial); p.position.set((j - 2) * 1.2, random() * .5, 0); p.scale.set(1.5, .55 + random() * .5, .75); cloud.add(p);
     }
-    scene.add(cloud); clouds.push({ group: cloud, x: cloud.position.x, phase: random() * 6 });
+    exterior.add(cloud); clouds.push({ group: cloud, x: cloud.position.x, phase: random() * 6 });
   }
   const mountainMaterial = new THREE.MeshBasicMaterial({ color: '#b8c9bd', transparent: true, opacity: .25, depthWrite: false });
   for (let i = 0; i < 8; i++) {
     const mountain = new THREE.Mesh(new THREE.ConeGeometry(5 + random() * 4, 7 + random() * 8, 5), mountainMaterial);
-    mountain.position.set(-28 + i * 9, -6, -28 - random() * 6); scene.add(mountain);
+    mountain.position.set(-28 + i * 9, -6, -28 - random() * 6); exterior.add(mountain);
   }
   const petalGeometry = new THREE.BufferGeometry();
   const petalPositions = new Float32Array(45 * 3);
@@ -345,7 +378,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const bird = new THREE.Group();
     const left = block('#697b6d', -.14, 0, 0, .32, .025, .085, bird);
     const right = block('#697b6d', .14, 0, 0, .32, .025, .085, bird);
-    scene.add(bird); birds.push({ group: bird, left, right, phase: i * 1.3 });
+    exterior.add(bird); birds.push({ group: bird, left, right, phase: i * 1.3 });
   }
 
   let progress = 0, current = 0, playing = true, visible = true, disposed = false, localTime = 0, lastTime = 0, inFrame = false;
@@ -366,6 +399,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (playing) localTime += delta;
     current = playing ? THREE.MathUtils.damp(current, progress, 4, delta || .016) : progress;
     if (immersive) {
+      if (journey) advanceJourney(playing ? elapsed : Infinity);
       if (flying) {
         const amount = playing ? 1 - Math.exp(-3.8 * (elapsed || .016)) : 1;
         camera.position.lerp(destination, amount); controls.target.lerp(destinationTarget, amount);
@@ -375,11 +409,25 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           if (trip === 'outside') finishExit();
           else if (trip) finishEntrance(trip);
           camera.rotation.order = 'YXZ'; lookYaw = camera.rotation.y; lookPitch = camera.rotation.x;
+          if (pendingStation !== null) { const index = pendingStation; pendingStation = null; onStation?.(index); }
+          if (!journey) host.setAttribute('aria-busy', 'false');
         }
       }
       if (insideRoom) {
+        insideRoom.screens.forEach(screen => { screen.element.style.pointerEvents = flying || journey ? 'none' : 'auto'; });
         insideRoom.update(localTime);
-        if (!flying) {
+        if (insideRoom.kind === 'skills' && (!playing || localTime - lastPlantLabels > .14)) {
+          lastPlantLabels = localTime; insideRoom.group.updateMatrixWorld(true); camera.updateMatrixWorld();
+          const forward = camera.getWorldDirection(new THREE.Vector3());
+          insideRoom.skillPlants.forEach(plant => {
+            const offset = plant.label.getWorldPosition(new THREE.Vector3()).sub(camera.position), distance = offset.length();
+            raycaster.set(camera.position, offset.normalize());
+            const hit = raycaster.intersectObjects(insideRoom.pickable, true)[0];
+            let object = hit?.object; while (object && object.userData.plant === undefined) object = object.parent;
+            plant.label.visible = offset.dot(forward) > 0 && (!hit || hit.distance > distance - .15 || object?.userData.plant === plant.index);
+          });
+        }
+        if (!flying && !journey) {
           camera.rotation.set(lookPitch, lookYaw, 0, 'YXZ');
           const speed = delta * 3.3;
           let dx = 0, dz = 0;
@@ -392,8 +440,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           if (Math.abs(nextX) < 7.25 && Math.abs(nextZ) < 6.25 && !insideRoom.colliders.some(c => Math.abs(nextX - c.x) < c.width && Math.abs(nextZ - c.z) < c.depth)) { camera.position.x = nextX; camera.position.z = nextZ; }
         }
       } else {
-        controls.autoRotate = playing && !selectedPlace && !flying;
-        if (!flying) controls.update(delta);
+        controls.autoRotate = playing && !selectedPlace && !flying && !journey;
+        if (!flying && !journey) controls.update(delta);
       }
       if (book.visible) {
         if (insideRoom) { book.quaternion.identity(); book.scale.setScalar(.008); }
@@ -407,8 +455,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           book.scale.setScalar(scale);
         }
       }
-      labels.forEach(label => { label.visible = !selectedPlace; });
-      if (!selectedPlace) {
+      labels.forEach(label => { label.visible = !selectedPlace && !journey; });
+      if (!selectedPlace && !journey) {
         world.updateMatrixWorld(true); camera.updateMatrixWorld();
         const focal = host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
         const rectangles = [];
@@ -452,7 +500,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     camera.position.x += smoothPointer.x * .65; camera.position.y += smoothPointer.y * .3;
     camera.lookAt(target);
     }
-    world.position.y = playing ? Math.sin(localTime * .55) * .1 : 0;
+    if (!journey) world.position.y = playing ? Math.sin(localTime * .55) * .1 : 0;
     windUniform.value = localTime * 1.3;
     trees.forEach(tree => { tree.rotation.z = Math.sin(localTime * .65 + tree.position.x) * .018; });
     rotor.rotation.z = -localTime * .35;
@@ -478,7 +526,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const { width, height } = host.getBoundingClientRect();
     renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
     cssRenderer?.setSize(width, height);
-    if (immersive && !insideRoom) {
+    if (immersive && !insideRoom && !journey) {
       const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
       fitDistance = 7.6 / Math.sin(Math.min(halfHorizontal, THREE.MathUtils.degToRad(camera.fov / 2)));
       controls.maxDistance = Math.max(65, fitDistance * 1.6);
@@ -486,8 +534,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
         camera.position.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
         controls.target.set(0, 1, 0);
       } else focus(selectedPlace);
-    } else if (immersive && insideRoom) {
-      if (activeDesk !== null) focusStation(activeDesk, false);
+    } else if (immersive && insideRoom && !journey) {
+      if (activeDesk !== null) focusStation(activeDesk, false, activeScreenMode);
       else if (insideRoom.kind !== 'projects') finishEntrance(insideRoom.kind, false);
     }
     render(lastTime);
@@ -500,7 +548,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   function loop() { renderer.setAnimationLoop(playing && visible && !document.hidden ? render : null); render(lastTime); }
   function ensureRoom(id) {
     if (!rooms.has(id)) {
-      const room = createInterior(id, { material: mat, projectCount, onExit: () => onSelect?.(null), onStation });
+      const room = createInterior(id, { material: mat, projectCount, skills, onExit: () => onSelect?.(null), onNavigate: onSelect, onPlant: focusPlant, onSound: setSound, muted: audio.muted, audioReady: audio.ready });
       room.kind = id; rooms.set(id, room); scene.add(room.group);
     }
     return rooms.get(id);
@@ -508,10 +556,11 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   function finishEntrance(id, notify = true) {
     trip = null;
     activeDesk = null;
+    pendingStation = null;
     insideRoom?.group && (insideRoom.group.visible = false);
-    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false;
+    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false; exterior.visible = false;
     camera.fov = 65; camera.updateProjectionMatrix();
-    if (id === 'projects') {
+    if (id === 'projects' || id === 'skills') {
       camera.position.set(0, 2.7, 5.6); controls.target.set(0, 2.5, -4.7); book.visible = false;
     } else {
       const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
@@ -521,54 +570,138 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
       controls.target.copy(insideRoom.boardPoint);
     }
     camera.lookAt(controls.target); camera.rotation.order = 'YXZ'; lookYaw = camera.rotation.y; lookPitch = camera.rotation.x;
-    if (notify) onInterior?.({ kind: id, screens: insideRoom.screens });
+    if (notify) { onInterior?.({ kind: id, screens: insideRoom.screens }); audio.room(id); }
   }
   function finishExit() {
-    insideRoom.group.visible = false; insideRoom = null; trip = null; world.visible = true;
+    insideRoom.group.visible = false; insideRoom = null; trip = null; world.visible = true; exterior.visible = true;
     book.visible = false;
     camera.fov = 34; camera.updateProjectionMatrix();
     camera.position.set(-3.1, 2.2, 3.6); controls.target.set(0, 1, 0);
     destinationTarget.set(0, 1, 0); destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
-    controls.enabled = true; flying = true; activeDesk = null; onInterior?.({ kind: null, screens: [] });
+    controls.enabled = true; flying = false; activeDesk = null; onInterior?.({ kind: null, screens: [] });
     if (!playing) { camera.position.copy(destination); controls.target.copy(destinationTarget); flying = false; }
   }
-  function focusStation(index, notify = true) {
-    if (insideRoom?.kind !== 'projects') return;
+  function focusStation(index, notify = true, browsing = false) {
+    if (insideRoom?.kind !== 'projects' || journey) return;
     const station = insideRoom.screens[index]; if (!station) return;
     const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-    const distance = Math.max(3, 1.36 / Math.tan(halfHorizontal) * 1.18);
+    const distance = Math.max(browsing ? 1.65 : 3, 1.36 / Math.tan(halfHorizontal) * (browsing ? 1.08 : 1.18));
     destinationTarget.copy(station.point);
     destination.copy(station.point).addScaledVector(station.normal, distance);
     destination.y = 2.55; flying = true; trip = null;
-    activeDesk = index;
-    if (notify) onStation?.(index);
+    activeDesk = index; activeScreenMode = browsing;
+    if (notify) pendingStation = index;
+    insideRoom.screens.forEach(screen => { screen.element.style.pointerEvents = 'none'; });
+    host.setAttribute('aria-busy', 'true');
     if (!playing) render(lastTime);
+  }
+  function focusPlant(index) {
+    const plant = insideRoom?.skillPlants[index]; if (!plant || journey) return;
+    const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+    destinationTarget.copy(plant.point); destination.copy(plant.point).addScaledVector(plant.normal, Math.max(2.1, .85 / Math.tan(halfHorizontal)));
+    destination.y = 2.5; flying = true; activeDesk = null;
+    if (!playing) render(lastTime);
+  }
+  function setSound(muted) {
+    audio.setMuted(muted); rooms.forEach(room => room.setSound(muted, audio.ready)); onSoundChange?.(muted, audio.ready);
+  }
+  const ease = t => t * t * t * (t * (t * 6 - 15) + 10);
+  function threshold(opacity) {
+    veil.style.opacity = String(opacity); cssRenderer.domElement.style.opacity = String(1 - opacity);
+  }
+  function cameraPhase(name, duration, view, { start, update, end } = {}) {
+    let from, fromTarget, fromRotation, to, toRotation, fromFov;
+    return { name, duration,
+      begin() {
+        start?.(); from = camera.position.clone(); fromFov = camera.fov;
+        fromRotation = camera.quaternion.clone();
+        fromTarget = camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(Math.max(1, camera.position.distanceTo(controls.target))).add(camera.position);
+        to = view(); toRotation = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(to.position, to.target, camera.up));
+      },
+      tick(t) {
+        const s = ease(t); camera.position.lerpVectors(from, to.position, s); controls.target.lerpVectors(fromTarget, to.target, s);
+        camera.quaternion.slerpQuaternions(fromRotation, toRotation, s); camera.fov = THREE.MathUtils.lerp(fromFov, to.fov ?? fromFov, s); camera.updateProjectionMatrix(); update?.(s);
+      },
+      end() { lookYaw = camera.rotation.y; lookPitch = camera.rotation.x; end?.(); }
+    };
+  }
+  function startJourney(phases, complete) {
+    flying = false; trip = null; pendingStation = null; walkKeys.clear(); controls.enabled = false;
+    journey = { phases, index: 0, elapsed: 0, begun: false, complete };
+    veil.style.pointerEvents = 'auto'; host.setAttribute('aria-busy', 'true');
+  }
+  function advanceJourney(elapsed) {
+    let remaining = elapsed;
+    while (journey) {
+      const phase = journey.phases[journey.index];
+      if (!journey.begun) { phase.begin(); journey.begun = true; veil.dataset.phase = phase.name; }
+      const used = Math.min(remaining, phase.duration - journey.elapsed);
+      journey.elapsed += used; remaining -= used; phase.tick(journey.elapsed / phase.duration);
+      if (journey.elapsed < phase.duration) break;
+      phase.end(); journey.index++; journey.elapsed = 0; journey.begun = false;
+      if (journey.index === journey.phases.length) {
+        const complete = journey.complete; journey = null; threshold(0); veil.style.pointerEvents = 'none'; delete veil.dataset.phase;
+        host.setAttribute('aria-busy', 'false'); controls.enabled = !insideRoom;
+        if (queuedPlace !== undefined) { const id = queuedPlace; queuedPlace = undefined; focus(id); }
+        else complete?.();
+      }
+      if (!remaining) break;
+    }
+  }
+  function doorway(id) {
+    const door = doors[id] || doors.story; door.rotation.y = 0; world.updateMatrixWorld(true);
+    const point = door.localToWorld(new THREE.Vector3(door.userData.width / 2, door.userData.height * .55, 0));
+    const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(door.parent.getWorldQuaternion(new THREE.Quaternion()));
+    return { door, point, normal };
+  }
+  function beginEntrance(id) {
+    const { door, point, normal } = doorway(id);
+    const outside = distance => ({ position: point.clone().addScaledVector(normal, distance), target: point.clone().addScaledVector(normal, -.5), fov: 58 });
+    let roomView;
+    book.visible = false;
+    startJourney([
+      cameraPhase('approach-door', 1.35, () => outside(1.25)),
+      cameraPhase('open-door', .8, () => outside(.75), { start: () => audio.door(true), update: t => { door.rotation.y = -t * 1.4; } }),
+      cameraPhase('cross-threshold', .65, () => outside(.025), { update: t => threshold(ease(Math.max(0, (t - .35) / .65))), end: () => {
+        finishEntrance(id); roomView = { position: camera.position.clone(), target: controls.target.clone(), fov: 65 };
+        insideRoom.setDoor(1); camera.position.set(0, 2.5, 8.1); controls.target.set(0, 2.4, -4.7); camera.lookAt(controls.target);
+      } }),
+      cameraPhase('enter-room', 1.1, () => roomView, { update: t => { threshold(1 - Math.min(1, t * 2)); insideRoom.setDoor(1 - t); }, end: () => { if (playing) audio.door(false); } })
+    ]);
+  }
+  function beginExit(next = null) {
+    const leaving = insideRoom, { door, point, normal } = doorway(leaving.kind);
+    audio.room(null); book.visible = false;
+    startJourney([
+      cameraPhase('walk-to-exit', 1.15, () => ({ position: new THREE.Vector3(0, 2.45, 5.15), target: new THREE.Vector3(0, 2.1, 6.82), fov: 65 })),
+      cameraPhase('open-exit', .8, () => ({ position: new THREE.Vector3(0, 2.45, 6), target: new THREE.Vector3(0, 2.1, 7.2), fov: 65 }), { start: () => audio.door(true), update: t => leaving.setDoor(t) }),
+      cameraPhase('leave-room', .65, () => ({ position: new THREE.Vector3(0, 2.45, 7.5), target: new THREE.Vector3(0, 2.1, 9), fov: 65 }), { update: t => threshold(ease(Math.max(0, (t - .3) / .7))), end: () => {
+        finishExit(); door.rotation.y = -1.4;
+        camera.position.copy(point).addScaledVector(normal, .2); controls.target.copy(point).addScaledVector(normal, 4); camera.lookAt(controls.target);
+      } }),
+      cameraPhase('return-to-garden', 1.4, () => ({ position: new THREE.Vector3(16, 11, 20).normalize().multiplyScalar(fitDistance), target: new THREE.Vector3(0, 1, 0), fov: 34 }), { start: () => { if (playing) audio.door(false); }, update: t => { threshold(1 - Math.min(1, t * 2)); door.rotation.y = -1.4 * (1 - t); } })
+    ], () => { if (next) beginEntrance(next); });
   }
   function focus(id) {
     selectedPlace = id;
-    book.visible = false; controls.enabled = false;
-    if (id && insideRoom) {
-      finishEntrance(id);
-    } else if (id) {
-      const entrance = { projects: [-3.1, 1.7, 2.1], experience: [3.5, 1.8, .3], certifications: [.15, 1.8, -1.8], contact: [4.5, 1.7, 4], skills: [2.95, 1.7, 4.2], achievements: [-1.1, 1.8, .1], story: [-3.7, 1.7, 5.3], map: [-3.7, 1.7, 5.3] };
-      destination.fromArray(entrance[id]); destinationTarget.copy(destination).add(new THREE.Vector3(0, -.08, -1));
-      trip = id; flying = true;
-      if (id === 'projects') cottageDoor.rotation.y = -1.1;
-    } else if (insideRoom) {
-      trip = 'outside'; destination.set(0, 2.7, 6.6); destinationTarget.set(0, 2.7, 8); flying = true;
-    } else {
-      destinationTarget.set(0, 1, 0);
-      destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
+    if (journey) { queuedPlace = id; return; }
+    if (id === insideRoom?.kind) return;
+    if (insideRoom) beginExit(id);
+    else if (id) beginEntrance(id);
+    else {
+      destinationTarget.set(0, 1, 0); destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
       controls.enabled = true; flying = true;
     }
     if (!playing) render(lastTime);
   }
   const raycaster = new THREE.Raycaster();
   let pointerDown = null;
-  const down = event => { pointerDown = [event.clientX, event.clientY]; lookDown = [event.clientX, event.clientY]; if (insideRoom) renderer.domElement.setPointerCapture(event.pointerId); };
+  const down = event => { if (journey) return; pointerDown = [event.clientX, event.clientY]; lookDown = [event.clientX, event.clientY]; if (insideRoom) renderer.domElement.setPointerCapture(event.pointerId); };
   function look(event) {
-    if (!insideRoom || !lookDown || !event.buttons) return;
+    if (!insideRoom || journey || !lookDown || !event.buttons) return;
     flying = false;
+    pendingStation = null;
+    host.setAttribute('aria-busy', 'false');
     lookYaw -= (event.clientX - lookDown[0]) * .004;
     lookPitch = THREE.MathUtils.clamp(lookPitch - (event.clientY - lookDown[1]) * .004, -.95, .95);
     lookDown = [event.clientX, event.clientY];
@@ -576,16 +709,17 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   }
   function pick(event) {
     lookDown = null;
-    if (!immersive || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
+    if (!immersive || journey || flying || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
     const rect = renderer.domElement.getBoundingClientRect();
     raycaster.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1), camera);
     const hit = raycaster.intersectObjects(insideRoom ? insideRoom.pickable : interactiveObjects, true)[0];
     if (!hit) return;
     let object = hit.object;
     if (insideRoom) {
-      while (object && !object.userData.exit && object.userData.station === undefined && !object.userData.walk) object = object.parent;
+      while (object && !object.userData.exit && object.userData.station === undefined && object.userData.plant === undefined && !object.userData.walk) object = object.parent;
       if (object?.userData.exit) onSelect?.(null);
       else if (object?.userData.station !== undefined) focusStation(object.userData.station);
+      else if (object?.userData.plant !== undefined) focusPlant(object.userData.plant);
       else if (object?.userData.walk) {
         destination.set(THREE.MathUtils.clamp(hit.point.x, -7, 7), 2.7, THREE.MathUtils.clamp(hit.point.z, -6, 6));
         destinationTarget.copy(destination).add(new THREE.Vector3(-Math.sin(lookYaw), Math.sin(lookPitch), -Math.cos(lookYaw))); flying = true;
@@ -597,7 +731,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   }
   const controlsChanged = () => { if (!playing) render(lastTime); };
   const keyDown = event => {
-    if (!insideRoom || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.ctrlKey || event.metaKey) return;
+    if (!insideRoom || journey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.ctrlKey || event.metaKey) return;
     const key = event.key.toLowerCase();
     if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
       walkKeys.add(key); event.preventDefault();
@@ -630,17 +764,18 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   const restored = () => { loop(); onReady?.(); };
   renderer.domElement.addEventListener('webglcontextlost', lost);
   renderer.domElement.addEventListener('webglcontextrestored', restored);
-  resize(); loop(); onReady?.();
+  resize(); loop(); if (audio) onSoundChange?.(audio.muted, audio.ready); onReady?.();
   return {
     panelElement: bookElement,
     setLocation(id) { if (immersive && (id === null || places[id] || id === 'map')) focus(id); },
     focusStation,
-    showRoom() { if (insideRoom?.kind === 'projects') { activeDesk = null; destination.set(0, 2.7, 5.6); destinationTarget.set(0, 2.5, -4.7); flying = true; if (!playing) render(lastTime); } },
+    setMuted: setSound,
+    showRoom() { if (insideRoom?.kind === 'projects' && !journey) { activeDesk = null; destination.set(0, 2.7, 5.6); destinationTarget.set(0, 2.5, -4.7); flying = true; if (!playing) render(lastTime); } },
     setEvening(value) { progress = value ? 1 : 0; if (!playing) render(lastTime); },
     setProgress(value) { progress = THREE.MathUtils.clamp(value, 0, 1); if (!playing || !visible) render(lastTime); },
     setPlaying(value) { playing = value; loop(); },
     dispose() {
-      disposed = true; renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
+      disposed = true; audio?.dispose(); veil.remove(); renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
       host.removeEventListener('pointermove', move); document.removeEventListener('visibilitychange', loop);
       renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointerup', pick);
       renderer.domElement.removeEventListener('pointermove', look); document.removeEventListener('keydown', keyDown); document.removeEventListener('keyup', keyUp); window.removeEventListener('blur', blur);

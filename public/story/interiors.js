@@ -1,11 +1,13 @@
 import * as THREE from './vendor/three.module.js';
 import { CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js';
+import { createSkillPlants } from './plants.js';
 
 // Actual rooms, furniture and computer screens. Their DOM surfaces live in 3D.
-export function createInterior(kind, { material, projectCount = 7, onExit, onStation }) {
+export function createInterior(kind, { material, projectCount = 7, skills = [], onExit, onSound, onPlant, onNavigate, muted = false, audioReady = false }) {
   const group = new THREE.Group();
   group.visible = false;
   const pickable = [], screens = [], moving = [], colliders = [];
+  let skillPlants = [];
   const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
   const sphereGeometry = new THREE.SphereGeometry(1, 16, 10);
   const box = (color, x, y, z, sx, sy, sz, parent = group) => {
@@ -59,9 +61,18 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
   for (const x of [-7.7, 0, 7.7]) box('#776448', x, 6.1, 0, .22, .35, 14);
   for (const z of [-6.7, 0, 6.7]) box('#776448', 0, 6.1, z, 16, .32, .23);
   for (const x of [-7.8, 7.8]) for (const z of [-6.8, 6.8]) box('#88704e', x, 3, z, .3, 6, .3);
-  box('#768767', 0, 1.8, 6.95, 2.1, 3.6, .2).userData.exit = true;
-  const door = box('#526d56', 0, 1.7, 6.8, 1.7, 3.2, .08); door.userData.exit = true; pickable.push(door);
-  ball('#c7ad65', -.65, 1.7, 6.7, .08, .08, .06);
+  // Hinges at the jamb, inset panels, brass hardware, and a lit doorway.
+  box('#b4c8a1', 0, 1.8, 7.15, 2, 3.6, .08);
+  for (const x of [-1.05, 1.05]) box('#957b52', x, 1.85, 6.9, .19, 3.7, .25);
+  box('#957b52', 0, 3.75, 6.9, 2.3, .2, .25);
+  const door = new THREE.Group(); door.position.set(-.91, 0, 6.82); door.userData.exit = true; group.add(door); pickable.push(door);
+  box('#526d56', .91, 1.8, 0, 1.82, 3.5, .13, door);
+  for (const y of [1, 2.6]) {
+    box('#678261', .91, y, -.08, 1.48, 1.28, .08, door);
+    for (const x of [.17, 1.65]) box('#9aa578', x, y, -.13, .045, 1.3, .025, door);
+  }
+  for (const y of [.65, 2.95]) cylinder('#b5a069', .03, y, 0, .06, .28, door);
+  ball('#d2b36b', 1.58, 1.8, -.16, .09, .09, .08, door);
   const exitButton = document.createElement('button'); exitButton.className = 'room-exit'; exitButton.textContent = '← Back to the garden'; exitButton.addEventListener('click', onExit);
   const exitSign = new CSS3DSprite(exitButton); exitSign.position.set(0, 4.3, 6.8); exitSign.scale.setScalar(.012); group.add(exitSign);
   plaque('Drag to look · WASD to walk · Tap the floor to move', 0, 5.6, -6.7, 7);
@@ -83,6 +94,41 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
     const light = new THREE.PointLight('#ffdaa2', 2.5, 11, 2); light.position.set(x, 4.8, z); group.add(light);
   }
   plant(-6.8, 4.9, 1.5); plant(6.8, 4.9, 1.3);
+
+  // Woven rug, skirting, carved trim, a clock, and motes in the window light.
+  for (const x of [-7.8, 7.8]) box('#9c8059', x, .22, 0, .15, .3, 13.7);
+  for (const z of [-6.8, 6.8]) box('#9c8059', 0, .22, z, 15.7, .3, .15);
+  const rugColor = { projects: '#839870', skills: '#8ea67e', experience: '#ab8d70', certifications: '#708f95', contact: '#c0a07d' }[kind] || '#a29977';
+  box(rugColor, 0, .045, 3.8, 4.5, .018, 2.25);
+  for (let i = 0; i < 15; i++) for (const z of [2.62, 4.98]) box('#d3c5a1', -2.1 + i * .3, .048, z, .055, .012, .23);
+  for (const x of [-2, 2]) box('#d3c5a1', x, .06, 3.8, .055, .009, 2);
+  const clock = cylinder('#927b56', 6.1, 4.7, -6.75, .42, .1); clock.rotation.x = Math.PI / 2;
+  const clockFace = cylinder('#efdfb8', 6.1, 4.7, -6.68, .35, .03); clockFace.rotation.x = Math.PI / 2;
+  box('#566a50', 6.1, 4.82, -6.64, .035, .26, .02).rotation.z = -.3;
+  box('#566a50', 6.21, 4.7, -6.63, .22, .035, .02);
+  const dustGeometry = new THREE.BufferGeometry(), dustPositions = new Float32Array(54 * 3);
+  for (let i = 0; i < 54; i++) { dustPositions[i * 3] = -6.5 + (i * .73 % 8); dustPositions[i * 3 + 1] = .6 + (i * .37 % 4.5); dustPositions[i * 3 + 2] = -4 + (i * .91 % 8); }
+  dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+  const dust = new THREE.Points(dustGeometry, new THREE.PointsMaterial({ color: '#ffedbd', size: .023, transparent: true, opacity: .45, depthWrite: false })); group.add(dust);
+
+  // The music control is on a real gramophone in every room.
+  const phonograph = new THREE.Group(); phonograph.position.set(-4.3, 0, kind === 'skills' ? 5.5 : 3.5); group.add(phonograph);
+  box('#9d7853', 0, 1.1, 0, 1.3, .65, .85, phonograph);
+  for (const x of [-.5, .5]) for (const z of [-.3, .3]) box('#806546', x, .38, z, .08, .76, .08, phonograph);
+  const vinyl = cylinder('#344b42', 0, 1.46, 0, .4, .045, phonograph); moving.push({ object: vinyl, kind: 'record', phase: 0 });
+  cylinder('#d3b571', 0, 1.49, 0, .1, .018, phonograph);
+  cylinder('#b9a272', -.38, 1.85, -.27, .045, .75, phonograph);
+  const horn = new THREE.Mesh(new THREE.CylinderGeometry(.43, .075, .72, 24, 1, true), new THREE.MeshToonMaterial({ color: '#c3a366', side: THREE.DoubleSide }));
+  horn.position.set(-.2, 2.2, -.18); horn.rotation.z = -.8; horn.rotation.x = .5; phonograph.add(horn);
+  box('#c4b175', .22, 1.57, -.12, .5, .035, .035, phonograph).rotation.y = -.5;
+  const musicButton = document.createElement('button'); musicButton.className = 'room-music';
+  let recordPlaying = audioReady && !muted;
+  const setSound = (value, ready) => {
+    recordPlaying = ready && !value; musicButton.dataset.wantPlay = String(!recordPlaying);
+    musicButton.textContent = recordPlaying ? '♫ Room music · mute' : '♫ Play room music'; musicButton.setAttribute('aria-pressed', String(recordPlaying));
+  };
+  setSound(muted, audioReady); musicButton.addEventListener('click', () => onSound(musicButton.dataset.wantPlay !== 'true'));
+  const musicSign = new CSS3DObject(musicButton); musicSign.position.set(0, 1.12, .44); musicSign.scale.setScalar(.0038); phonograph.add(musicSign);
 
   function shelf(x, z, angle = 0) {
     const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = angle; group.add(g);
@@ -107,6 +153,16 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
     for (let row = 0; row < 3; row++) for (let key = 0; key < 10; key++) box('#8c957c', -.48 + key * .105, 1.53, .45 + row * .09, .07, .025, .055, g);
     cylinder('#ddbd89', 1.2, 1.63, .3, .14, .3, g); // tea, of course
     const saucer = cylinder('#d9ccaa', 1.2, 1.45, .3, .23, .025, g);
+    for (let i = 0; i < 3; i++) {
+      const steam = new THREE.Mesh(sphereGeometry, new THREE.MeshBasicMaterial({ color: '#f8efd7', transparent: true, opacity: .16, depthWrite: false }));
+      steam.position.set(1.2, 1.9 + i * .16, .3); steam.scale.set(.035, .13, .035); g.add(steam); moving.push({ object: steam, kind: 'steam', phase: i });
+    }
+    ball('#a8b794', .89, 1.5, .61, .12, .045, .17, g); // mouse
+    cylinder('#ad9970', -.96, 1.6, -.35, .13, .3, g);
+    for (let i = 0; i < 4; i++) box(['#b78767', '#789474'][i % 2], -.99 + i * .025, 1.91, -.35, .018, .45, .018, g).rotation.z = (i - 2) * .12;
+    box('#e9cd83', 1.1, 3.12, -.14, .25, .27, .015, g).rotation.z = -.12;
+    const wire = new THREE.CatmullRomCurve3([new THREE.Vector3(.89, 1.47, .61), new THREE.Vector3(1.35, 1.44, .8), new THREE.Vector3(1.6, 1.42, -.5), new THREE.Vector3(.3, 1.7, -.38)]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(wire, 14, .012, 4, false), material('#697c60')));
     box('#c4b790', -1.2, 1.46, .1, .47, .045, .65, g).rotation.y = -.25;
     // A little chair you can walk around.
     box('#879a70', 0, .62, 1.65, .85, .13, .8, g);
@@ -138,9 +194,11 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
     const titles = { experience: 'The windmill · Systems & stories', skills: 'The greenhouse · Always growing', achievements: 'The wishing tree · Little milestones', certifications: 'The observatory · Look a little further', contact: 'The post office · Leave a little note', story: 'The reading nook · A wandering journal', map: 'The map room · Where shall we wander?' };
     plaque(titles[kind] || titles.story, 0, 5.25, -6.65, 7);
     // This physical timber noticeboard holds the corresponding journal.
-    box('#7e6d4c', 0, 3.1, -3.8, 5.15, 5.7, .2);
-    for (const x of [-2.6, 2.6]) box('#b4a078', x, 3.1, -3.65, .14, 5.8, .18);
-    for (const y of [.25, 5.95]) box('#b4a078', 0, y, -3.65, 5.35, .14, .18);
+    if (kind !== 'skills') {
+      box('#7e6d4c', 0, 3.1, -3.8, 5.15, 5.7, .2);
+      for (const x of [-2.6, 2.6]) box('#b4a078', x, 3.1, -3.65, .14, 5.8, .18);
+      for (const y of [.25, 5.95]) box('#b4a078', 0, y, -3.65, 5.35, .14, .18);
+    }
     if (kind === 'experience') {
       for (let i = 0; i < 3; i++) {
         const gear = new THREE.Group(); gear.position.set(-5 + i * .9, 2 + i * .9, -6.2); group.add(gear);
@@ -150,7 +208,15 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
       }
       shelf(5, -5.7); cylinder('#857758', -5, 1.4, -1, .45, 2.8);
     } else if (kind === 'skills') {
-      for (const x of [-5.7, 5.7]) for (const z of [-5.5, -2, 1.5]) plant(x, z, 1.2 + (z + 6) * .12);
+      for (const x of [-4.4, 4.4]) for (let row = 0; row < 5; row++) {
+        const z = -5.5 + row * 2.2;
+        box('#a18c62', x, .75, z, 6.1, .14, 1.25);
+        for (const xx of [x - 2.8, x + 2.8]) box('#7e7454', xx, .37, z, .12, .74, .12);
+      }
+      skillPlants = createSkillPlants({ group, material, skills, onSelect: onPlant, pickable, moving });
+      plaque('Every skill starts with a seed · Tap a plant to explore', 0, 4.25, -6.7, 7);
+      const gardenNav = document.createElement('button'); gardenNav.className = 'room-music'; gardenNav.textContent = '← World map'; gardenNav.addEventListener('click', () => onNavigate('map'));
+      const gardenSign = new CSS3DObject(gardenNav); gardenSign.position.set(0, 1.5, -6.7); gardenSign.scale.setScalar(.007); group.add(gardenSign);
       const glass = new THREE.Mesh(new THREE.SphereGeometry(8.5, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#b4d4c2', transparent: true, opacity: .12, side: THREE.DoubleSide })); glass.position.y = 4; group.add(glass);
       for (let i = 0; i < 5; i++) { const arch = new THREE.Mesh(new THREE.TorusGeometry(8, .055, 5, 48, Math.PI), material('#839b78')); arch.position.y = 4; arch.rotation.y = i * Math.PI / 5; group.add(arch); }
     } else if (kind === 'achievements') {
@@ -175,11 +241,16 @@ export function createInterior(kind, { material, projectCount = 7, onExit, onSta
     }
   }
   return {
-    group, screens, pickable, colliders,
+    group, screens, pickable, colliders, door, setSound, skillPlants,
+    setDoor(openness) { door.rotation.y = -openness * 1.35; },
     boardPoint: new THREE.Vector3(0, 3.1, -3.62),
     update(time) {
+      dust.position.y = Math.sin(time * .22) * .08;
       moving.forEach(({ object, kind, phase }) => {
-        if (kind === 'gear') object.rotation.z = time * .18 * (phase % 2 ? -1 : 1);
+        if (kind === 'record' && recordPlaying) object.rotation.y = time * .65;
+        else if (kind === 'steam') { object.position.y = 1.84 + ((time * .12 + phase / 3) % 1) * .65; object.position.x = 1.2 + Math.sin(time + phase) * .035; }
+        else if (kind === 'bloom') object.rotation.y = time * .18;
+        else if (kind === 'gear') object.rotation.z = time * .18 * (phase % 2 ? -1 : 1);
         else if (kind === 'leaf') object.rotation.z = Math.sin(time + phase) * .1;
         else if (kind === 'curtain') object.rotation.y = Math.sin(time * .6 + phase) * .025;
         else object.rotation.z = Math.sin(time * .65 + phase) * .035;
