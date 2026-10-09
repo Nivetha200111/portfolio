@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Caslon+Display&display=swap');
+
+/* A little book before the professional portfolio. */
+.story { height: 400vh; position: relative; color: #344c40; --story-ink: #344c40; --story-paper: #f8f6ec; }
+.story-stage { position: sticky; top: 0; height: 100svh; min-height: 650px; overflow: hidden; background: #e1eae1; font-family: 'DM Sans', sans-serif; isolation: isolate; }
+.story-sky { position: absolute; inset: 0; background: radial-gradient(ellipse at 75% 30%, #fff7de 0%, transparent 50%), linear-gradient(180deg, #d8e8e3 0%, #edf1dd 60%, #f7edda 100%); transition: opacity 1s; }
+.story-sunset { position: absolute; inset: 0; background: radial-gradient(ellipse at 72% 38%, #ffe6b5, transparent 52%), linear-gradient(#b7c9d1, #ecd3bf 60%, #f8e5cd); opacity: 0; }
+.story-world { position: absolute; inset: 0 0 0 38%; z-index: 1; }
+.story-world canvas { width: 100%; height: 100%; display: block; touch-action: pan-y; }
+.story-grain { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: .055; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23000' filter='url(%23g)' opacity='.5' d='M0 0h200v200H0z'/%3E%3C/svg%3E"); }
+.story-topline { position: absolute; top: 112px; left: 5.5%; right: 5.5%; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.story-label { display: flex; gap: 12px; align-items: center; text-transform: uppercase; letter-spacing: .18em; font-size: 10px; font-weight: 600; }
+.story-label svg { width: 22px; height: 22px; }
+.story-tools { display: flex; align-items: center; gap: 18px; font-size: 11px; }
+.story-tools a { color: #344c40; text-decoration: none; border-bottom: 1px solid #344c4070; padding-bottom: 3px; }
+.story-toggle { border: 1px solid #344c4033; border-radius: 100px; padding: 9px 14px; background: #fff9; color: #344c40; font-size: 11px; cursor: pointer; }
+.story-copy { position: absolute; top: 26%; left: 8%; width: 36%; max-width: 440px; z-index: 4; }
+.story-eyebrow { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .22em; color: #617767; margin-bottom: 20px; }
+.story h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-size: clamp(58px, 6.2vw, 104px); line-height: .97; letter-spacing: -.045em; font-weight: 400; margin: 0 0 25px; }
+.story h2 em { color: #81945b; font-weight: 400; }
+.story-stage:not([data-chapter="0"]) h2 { font-size: clamp(52px, 5.2vw, 86px); }
+.story-description { font-size: 14px; line-height: 1.85; max-width: 340px; color: #536557; margin: 0 0 22px; }
+.story-note { display: flex; align-items: center; gap: 9px; font-size: 11px; color: #65776b; }
+.story-note::before { content: ''; width: 5px; height: 5px; background: #82935e; border-radius: 50%; }
+.story-begin { display: inline-flex; align-items: center; gap: 30px; margin-top: 28px; padding: 14px 22px; background: #344c40; color: #f8f6ec; border: 0; border-radius: 100px; font-size: 12px; text-decoration: none; cursor: pointer; box-shadow: 0 6px 24px #344c4020; }
+.story-begin:hover { background: #4b6250; }
+.story-copy-inner { animation: story-appear .7s ease both; }
+@keyframes story-appear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.story-bottom { position: absolute; left: 5.5%; right: 5.5%; bottom: 35px; z-index: 5; border-top: 1px solid #344c4029; padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 26px; }
+.story-scroll { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.story-scroll span { width: 22px; height: 33px; border: 1px solid #344c4066; border-radius: 20px; position: relative; }
+.story-scroll span::before { content: ''; width: 3px; height: 6px; border-radius: 3px; background: #344c40; position: absolute; top: 6px; left: 8px; animation: story-scroll 2s infinite; }
+@keyframes story-scroll { 60% { transform: translateY(10px); opacity: .3; } }
+.story-chapters { display: flex; gap: 8px; }
+.story-chapters button { display: flex; align-items: center; gap: 10px; padding: 10px 15px; border: 1px solid transparent; border-radius: 100px; font-size: 11px; color: #637369; background: transparent; cursor: pointer; }
+.story-chapters button[aria-current="step"] { background: #fffc; border-color: #344c4022; color: #344c40; }
+.story-chapters small { font-family: Georgia, serif; opacity: .6; }
+.story-page { font-family: Georgia, serif; font-size: 13px; letter-spacing: .12em; white-space: nowrap; }
+.story-caption { position: absolute; bottom: 130px; right: 9%; z-index: 4; color: #617767; font-size: 10px; font-style: italic; letter-spacing: .035em; }
+.story-loading { position: absolute; top: 60%; left: 67%; transform: translate(-50%, -50%); font-family: Georgia, serif; font-style: italic; color: #617767; font-size: 16px; z-index: 2; max-width: 240px; text-align: center; }
+.story :is(button,a):focus-visible { outline: 2px solid #344c40; outline-offset: 5px; }
+html[data-story-active="true"] header { background: #f4f7ecb5 !important; backdrop-filter: blur(16px); border-bottom: 1px solid #344c4015; }
+html[data-story-active="true"] header :is(nav a,button,a, .font-mono) { color: #344c40 !important; }
+html[data-story-active="true"] header a[href="#badges"] { border-color: #344c4025; background: #fff6; }
+html[data-story-active="true"] header .bg-card\/95 { background: #f4f7ecf5; }
+html[data-story-active="true"] header .bg-accent { background: #82935e; }
+#portfolio { scroll-margin-top: 70px; }
+@media (min-width: 1600px) { .story-copy { left: 11%; } }
+@media (max-width: 900px) {
+  .story-stage { min-height: 700px; }
+  .story-topline { top: 96px; }
+  .story-copy { top: 23%; left: 6%; width: 40%; }
+  .story h2 { font-size: 64px; }
+  .story-description { font-size: 13px; }
+  .story-chapters { gap: 0; }
+  .story-chapters button { padding: 9px 10px; }
+  .story-scroll { font-size: 9px; }
+}
+@media (max-width: 600px) {
+  .story { height: 360vh; }
+  .story-stage { min-height: 660px; }
+  .story-topline { top: 92px; left: 6%; right: 6%; }
+  .story-label { font-size: 8px; gap: 7px; letter-spacing: .12em; }
+  .story-tools { gap: 10px; font-size: 10px; }
+  .story-toggle { padding: 7px 10px; font-size: 9px; }
+  .story-copy { top: 153px; width: 85%; max-width: none; }
+  .story-eyebrow { font-size: 9px; margin-bottom: 12px; }
+  .story h2 { font-size: clamp(47px, 12.5vw, 65px); margin-bottom: 13px; max-width: 350px; }
+  .story-stage:not([data-chapter="0"]) h2 { font-size: clamp(42px, 11.5vw, 58px); }
+  .story-description { font-size: 12px; line-height: 1.7; max-width: 320px; margin-bottom: 12px; }
+  .story-note { font-size: 9px; }
+  .story-begin { margin-top: 14px; padding: 10px 17px; font-size: 11px; }
+  .story-world { top: 49%; bottom: 60px; left: 0; }
+  .story-bottom { left: 6%; right: 6%; bottom: 20px; padding-top: 12px; gap: 10px; }
+  .story-scroll { display: none; }
+  .story-chapters { flex: 1; justify-content: space-between; }
+  .story-chapters button { font-size: 9px; padding: 8px; gap: 5px; }
+  .story-page { font-size: 10px; }
+  .story-caption { display: none; }
+  .story-loading { top: 70%; left: 50%; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-copy-inner, .story-scroll span::before { animation: none; }
+  .story-sky { transition: none; }
+  html { scroll-behavior: auto !important; }
+}
