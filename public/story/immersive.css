@@ -27,7 +27,7 @@
 .world-book.board-certifications { background: #354f56; }
 .world-book.board-contact { background: #f3e7c9; }
 .world-book.board-contact :is(p,h1,h2,h3,button,a,span,li,strong) { color: #42573e; }
-.workshop-screen { width: 760px; height: 530px; color: #325840; background: #e7efd7; backface-visibility: hidden; overflow: hidden; font-family: 'DM Sans', sans-serif; pointer-events: auto; }
+.workshop-screen { width: 760px; height: 530px; color: #325840; background: #e7efd7; backface-visibility: visible; overflow: hidden; font-family: 'DM Sans', sans-serif; pointer-events: auto; }
 .station-desktop { display: flex; flex-direction: column; height: 100%; background: linear-gradient(150deg, #ecf0dc, #d4e4c1); }
 .station-bar { display: flex; justify-content: space-between; align-items: center; height: 38px; padding: 0 24px; background: #53765a; color: #f3efd3; font: 15px 'DM Sans', sans-serif; }
 .station-content { flex: 1; overflow: auto; padding: 22px 30px; scrollbar-width: thin; }

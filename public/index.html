@@ -1505,7 +1505,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=2').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1643,7 +1643,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=2').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
