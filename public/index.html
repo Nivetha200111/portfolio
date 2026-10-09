@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Step into Nivetha Sivakumar's storybook 3D garden, then explore her full-stack projects, AI, automation, and enterprise experience.">
+    <link rel="stylesheet" href="/story/story.css">
+    <link rel="stylesheet" href="/story/immersive.css">
     <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
     <script>
         if (window.location.hostname.toLowerCase() === 'servicenow.nivetha.info' || new URLSearchParams(window.location.search).get('site') === 'servicenow') {
@@ -1261,6 +1264,7 @@
             const [mobileOpen, setMobileOpen] = useState(false);
             const navItems = IS_SERVICENOW
                 ? [
+                    { label: 'My Story', href: '#story' },
                     { label: 'Credentials', href: '#credentials' },
                     { label: 'Skills', href: '#skills' },
                     { label: 'Journey', href: '#experience' },
@@ -1268,6 +1272,7 @@
                     { label: 'Contact', href: '#contact' }
                 ]
                 : [
+                    { label: 'My Story', href: '#story' },
                     { label: 'Projects', href: '#projects' },
                     { label: 'Certifications', href: '#credentials' },
                     { label: 'Experience', href: '#experience' },
@@ -1302,13 +1307,13 @@
                         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="font-mono text-xl font-bold tracking-tighter flex items-center gap-2 dark:text-white text-gray-900">
                             <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>{IS_SERVICENOW ? 'NS/SNOW' : 'NS.'}
                         </motion.div>
-                        <nav className="hidden md:flex items-center gap-8 text-sm font-medium dark:text-gray-400 text-gray-600">
+                        <nav className="hidden xl:flex items-center gap-8 text-sm font-medium dark:text-gray-400 text-gray-600">
                             {navItems.map((item) => (
                                 <a key={item.href} href={item.href} className="dark:hover:text-white hover:text-gray-900 transition-colors relative group">{item.label}<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span></a>
                             ))}
                         </nav>
                         {/* Mobile menu button */}
-                        <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-gray-900" aria-label="Toggle menu">
+                        <button onClick={() => setMobileOpen(!mobileOpen)} className="xl:hidden p-2 dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-gray-900" aria-label="Toggle menu" aria-expanded={mobileOpen}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 {mobileOpen ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></> : <><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>}
                             </svg>
@@ -1335,7 +1340,7 @@
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="md:hidden overflow-hidden border-t border-border"
+                                className="xl:hidden overflow-hidden border-t border-border"
                             >
                                 <div className="flex flex-col px-6 py-4 gap-1 bg-card/95 backdrop-blur-xl">
                                     {navItems.map((item) => (
@@ -1476,6 +1481,231 @@
             );
         };
 
+        const STORY_CHAPTERS = IS_SERVICENOW ? [
+            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha. I build on ServiceNow — turning ideas into interfaces, connected workflows, and useful applications. Come wander through my little world.", note: 'A story told in four chapters', caption: 'Somewhere between a daydream and a line of code.' },
+            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little curiosity.<br /><em>A lot of possibility.</em></>, description: 'In July 2025, I started building my foundation: UI Builder, flows, platform navigation, and AI. One small discovery opened the door to the next.', note: 'July 2025 · The foundations', caption: 'A workshop for all the things that could be.' },
+            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Making the pieces<br /><em>work together.</em></>, description: 'Next came IntegrationHub, Flow Designer, and automated testing. Like the sails of a windmill, each part has a purpose — and the magic happens when they move together.', note: 'August 2025 · Automation & integration', caption: 'Little connections. Beautiful momentum.' },
+            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>Roots in systems.<br /><em>Eyes on tomorrow.</em></>, description: 'CSA in March 2026. CAD in July. With a foundation in administration and application development, I bring ideas to life — including AI that turns incidents into project intelligence.', note: '2026 · Certified administrator & developer', caption: 'The next chapter is still being written.' }
+        ] : [
+            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha. I turn curious ideas into full-stack apps, AI tools, and little automations that make life easier. Come wander through my world.", note: 'Code alchemist. Systems tinkerer. Always curious.', caption: 'Somewhere between a daydream and a line of code.' },
+            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little spark.<br /><em>A bigger idea.</em></>, description: 'Smart glasses for Alzheimer’s. A gaming algorithm. Hackathons and open source. My work starts with a question, then grows through making, testing, and trying again.', note: 'Patents, possibilities & a maker’s mindset', caption: 'A workshop for all the things that could be.' },
+            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Small details.<br /><em>Big systems.</em></>, description: 'At TCS, I worked on enterprise modernization — connecting mainframe workflows with Java, AI-assisted development, and automation. Big systems taught me to care about the little details.', note: '2024–2026 · Systems Engineer at TCS', caption: 'Little connections. Beautiful momentum.' },
+            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>A world of ideas.<br /><em>More to build.</em></>, description: 'From ApplyX’s AI-powered job applications to full-stack tools and automation pipelines, I build things that turn complexity into possibility. The next chapter? Let’s write it together.', note: 'Full-stack development · AI · Automation', caption: 'The next chapter is still being written.' }
+        ];
+
+        const StoryGarden = () => {
+            const sectionRef = useRef(null);
+            const worldRef = useRef(null);
+            const engineRef = useRef(null);
+            const progressRef = useRef(0);
+            const [chapter, setChapter] = useState(0);
+            const [status, setStatus] = useState('Growing a little world…');
+            const [playing, setPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            const playingRef = useRef(playing);
+
+            useEffect(() => {
+                let cancelled = false;
+                import('/story/world.js').then(({ createStoryWorld }) => {
+                    if (cancelled) return;
+                    engineRef.current = createStoryWorld(worldRef.current, {
+                        onReady: () => setStatus(''),
+                        onError: message => setStatus(message)
+                    });
+                    engineRef.current.setProgress(progressRef.current);
+                    engineRef.current.setPlaying(playingRef.current);
+                }).catch(() => {
+                    if (!cancelled) setStatus('The 3D garden is taking a rest. Scroll to read the story, or explore my work below.');
+                });
+                return () => { cancelled = true; engineRef.current?.dispose(); engineRef.current = null; };
+            }, []);
+
+            useEffect(() => {
+                playingRef.current = playing;
+                engineRef.current?.setPlaying(playing);
+            }, [playing]);
+
+            useEffect(() => {
+                let frame = 0;
+                const update = () => {
+                    frame = 0;
+                    const section = sectionRef.current;
+                    const bounds = section.getBoundingClientRect();
+                    const progress = Math.max(0, Math.min(1, -bounds.top / (section.offsetHeight - window.innerHeight)));
+                    progressRef.current = progress;
+                    setChapter(Math.min(3, Math.floor(progress * 3 + .5)));
+                    engineRef.current?.setProgress(progress);
+                    section.style.setProperty('--story-progress', progress);
+                    const sunset = section.querySelector('.story-sunset');
+                    if (sunset) sunset.style.opacity = Math.max(0, (progress - .45) / .55);
+                    document.documentElement.dataset.storyActive = bounds.bottom > window.innerHeight * .5;
+                };
+                const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+                const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+                const changeMotion = event => setPlaying(!event.matches);
+                preference.addEventListener('change', changeMotion);
+                window.addEventListener('scroll', schedule, { passive: true });
+                window.addEventListener('resize', schedule);
+                update();
+                return () => {
+                    cancelAnimationFrame(frame);
+                    preference.removeEventListener('change', changeMotion);
+                    window.removeEventListener('scroll', schedule);
+                    window.removeEventListener('resize', schedule);
+                    delete document.documentElement.dataset.storyActive;
+                };
+            }, []);
+
+            const goToChapter = index => {
+                const section = sectionRef.current;
+                const top = window.scrollY + section.getBoundingClientRect().top;
+                window.scrollTo({ top: top + index / 3 * (section.offsetHeight - window.innerHeight), behavior: playing ? 'smooth' : 'instant' });
+            };
+            const item = STORY_CHAPTERS[chapter];
+            return (
+                <section id="story" className="story" ref={sectionRef} aria-label="Nivetha's story in a 3D garden">
+                    <div className="story-stage" data-chapter={chapter}>
+                        <div className="story-sky" />
+                        <div className="story-sunset" />
+                        <div className="story-world" ref={worldRef} />
+                        <div className="story-grain" />
+                        <div className="story-topline">
+                            <div className="story-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true"><path d="M12 21V10M12 14C4 14 3 6 3 6s9-1 9 8ZM12 10C12 3 21 3 21 3s0 8-9 7Z" /></svg>
+                                Nivetha's little world
+                            </div>
+                            <div className="story-tools">
+                                <button className="story-toggle" onClick={() => setPlaying(value => !value)} aria-pressed={!playing} aria-label={playing ? 'Pause garden animation' : 'Play garden animation'}>{playing ? 'Ⅱ Pause' : '▷ Play'}</button>
+                                <a href="#portfolio">Skip to portfolio ↗</a>
+                            </div>
+                        </div>
+                        <div className="story-copy" aria-live="polite" aria-atomic="true">
+                            <div key={chapter} className="story-copy-inner">
+                                <p className="story-eyebrow">{item.eyebrow}</p>
+                                <h2>{item.title}</h2>
+                                <p className="story-description">{item.description}</p>
+                                <p className="story-note">{item.note}</p>
+                                {chapter < 3 ? <button className="story-begin" onClick={() => goToChapter(chapter + 1)}>{chapter === 0 ? 'Let’s begin' : 'Turn the page'} <span aria-hidden="true">↓</span></button> : <a className="story-begin" href="#projects">Explore what I build <span aria-hidden="true">↗</span></a>}
+                            </div>
+                        </div>
+                        {status && <p className="story-loading" role="status">{status}</p>}
+                        <p className="story-caption">{item.caption}</p>
+                        <div className="story-bottom">
+                            <div className="story-scroll"><span aria-hidden="true" />Scroll to wander</div>
+                            <nav className="story-chapters" aria-label="Story chapters">
+                                {STORY_CHAPTERS.map((entry, index) => <button key={entry.name} onClick={() => goToChapter(index)} aria-current={chapter === index ? 'step' : undefined}><small>0{index + 1}</small>{entry.name}</button>)}
+                            </nav>
+                            <div className="story-page">0{chapter + 1} / 04</div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const WORLD_PLACES = [
+            ['projects', 'The workshop', 'Projects & experiments'],
+            ['experience', 'The windmill', 'Enterprise engineering'],
+            ['skills', 'The garden', 'Tools of my trade'],
+            ['achievements', 'The wishing tree', 'Milestones & recognition'],
+            ['certifications', 'The observatory', 'Learning & credentials'],
+            ['contact', 'The mailbox', 'Contact & résumé']
+        ];
+
+        const WorldPortfolio = ({ projects, onRefresh, refreshing }) => {
+            const host = useRef(null);
+            const engine = useRef(null);
+            const [panelElement, setPanelElement] = useState(null);
+            const readDestination = () => {
+                const id = window.location.hash.slice(1);
+                const aliases = { resume: 'contact', credentials: 'certifications', portfolio: 'map', world: null };
+                return Object.prototype.hasOwnProperty.call(aliases, id) ? aliases[id] : ['story', 'map', ...WORLD_PLACES.map(entry => entry[0])].includes(id) ? id : 'story';
+            };
+            const [place, setPlace] = useState(readDestination);
+            const [page, setPage] = useState(0);
+            const [playing, setPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            const playingRef = useRef(playing);
+            const [evening, setEvening] = useState(false);
+            const [status, setStatus] = useState('A little world is waking up…');
+            const [fallback, setFallback] = useState(false);
+            const select = id => { setPlace(id); setPage(0); window.history.replaceState(null, '', '#' + id); };
+            const close = () => { setPlace(null); window.history.replaceState(null, '', '#world'); };
+
+            useEffect(() => {
+                let cancelled = false;
+                import('/story/world.js').then(({ createStoryWorld }) => {
+                    if (cancelled) return;
+                    engine.current = createStoryWorld(host.current, {
+                        immersive: true,
+                        onSelect: select,
+                        onReady: () => { setStatus(''); setFallback(false); },
+                        onError: message => { setStatus(message); setFallback(true); }
+                    });
+                    engine.current.setPlaying(playingRef.current);
+                    setPanelElement(engine.current.panelElement);
+                }).catch(() => {
+                    if (!cancelled) { setFallback(true); setStatus('This device could not open the 3D world. Your journal is still here to explore.'); }
+                });
+                return () => { cancelled = true; engine.current?.dispose(); engine.current = null; };
+            }, []);
+
+            useEffect(() => {
+                if (!engine.current) return;
+                const storyStops = ['story', 'projects', 'experience', 'certifications'];
+                engine.current.setLocation(place === 'story' ? storyStops[page] : place === 'map' ? 'story' : place);
+            }, [place, page, panelElement]);
+            useEffect(() => {
+                playingRef.current = playing;
+                engine.current?.setPlaying(playing);
+            }, [playing, panelElement]);
+            useEffect(() => { engine.current?.setEvening(evening); }, [evening, panelElement]);
+            useEffect(() => {
+                const keydown = event => { if (event.key === 'Escape') close(); };
+                const hashChanged = () => { setPlace(readDestination()); setPage(0); };
+                const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+                const motionChanged = event => setPlaying(!event.matches);
+                window.addEventListener('keydown', keydown);
+                window.addEventListener('hashchange', hashChanged);
+                preference.addEventListener('change', motionChanged);
+                return () => { window.removeEventListener('keydown', keydown); window.removeEventListener('hashchange', hashChanged); preference.removeEventListener('change', motionChanged); };
+            }, []);
+
+            const projectIndex = Math.min(page, Math.max(0, projects.length - 1));
+            const project = projects[projectIndex];
+            const item = STORY_CHAPTERS[Math.min(page, 3)];
+            const book = place && (
+                <article aria-label={place === 'story' ? 'The story journal' : `${place} journal`}>
+                    <div className="book-top"><span>{place === 'story' ? 'Nivetha’s wandering journal' : place === 'map' ? 'A map of my little world' : WORLD_PLACES.find(entry => entry[0] === place)?.[1]}</span><button className="book-close" onClick={close} aria-label="Close journal and explore the world">×</button></div>
+                    {place === 'story' && <>
+                        {page === 0 && <img className="book-profile" src="/pfp.jpg" alt="Nivetha Sivakumar" />}
+                        {page === 0 ? <><p className="book-caption">A small world. A real journey.</p><h1>Nivetha<br />Sivakumar</h1><p>Code alchemist. Systems tinkerer.<br />Every story starts with a seed.</p><p>{item.description}</p><button className="book-action" onClick={close}>Step into my world ↗</button><p style={{fontSize: 12, marginTop: 14}}>Drag to wander. Scroll or pinch to get closer. Tap a landmark to explore.</p></> : <><p className="book-caption">{item.eyebrow}</p><h2>{item.title}</h2><p>{item.description}</p><p className="book-caption">{item.note}</p></>}
+                        <div className="book-nav"><button onClick={() => setPage(value => value - 1)} disabled={page === 0}>← Previous</button><span>0{page + 1} / 04</span>{page < 3 ? <button onClick={() => setPage(value => value + 1)}>Turn the page →</button> : <button onClick={() => select('projects')}>Visit the workshop →</button>}</div>
+                    </>}
+                    {place === 'map' && <><h2>Where shall<br /><em>we wander?</em></h2><p>Every place holds a piece of my portfolio. Pick a destination, or close the journal and tap a landmark.</p><div className="book-map">{WORLD_PLACES.map(([id, title, subtitle]) => <button key={id} onClick={() => select(id)}>{title}<span>{subtitle}</span></button>)}</div></>}
+                    {place === 'projects' && <>
+                        <p className="book-caption">Ideas made real · {projects.length} projects</p>
+                        <h2>The little<br /><em>workshop.</em></h2>
+                        {project && <><h3>{project.name}</h3><p>{project.description}</p><div className="book-tags">{(project.stack || [project.language]).filter(Boolean).map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links">{project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit project ↗</a>}<a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Read the code ↗</a></div></>}
+                        <div className="book-nav"><button onClick={() => setPage(projectIndex - 1)} disabled={projectIndex === 0}>← Previous build</button><span>{projectIndex + 1} / {projects.length}</span><button onClick={() => setPage(projectIndex + 1)} disabled={projectIndex >= projects.length - 1}>Next build →</button></div>
+                        <div className="book-nav"><a href="https://github.com/Nivetha200111" target="_blank" rel="noopener noreferrer">My GitHub ↗</a><button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Finding new builds…' : 'Refresh the workshop ↻'}</button></div>
+                    </>}
+                    {place === 'experience' && <><h2>Small details.<br /><em>Big systems.</em></h2>{EXPERIENCE.map(job => <div key={job.company}><p className="book-caption">{job.dates}</p><h3>{job.title}</h3><p>{job.company}</p><ul className="book-list">{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul><div className="book-tags">{job.awards.map(award => <span key={award}>{award}</span>)}</div></div>)}</>}
+                    {place === 'skills' && <><h2>A garden<br /><em>of skills.</em></h2><p>Different tools. One habit: keep learning, keep building.</p><div className="book-tags">{RAW_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><button className="book-action" onClick={() => select('projects')}>See them in the workshop ↗</button></>}
+                    {place === 'achievements' && <><h2>Little seeds.<br /><em>Lasting milestones.</em></h2>{ACHIEVEMENTS.map(achievement => <div className="book-row" key={achievement.title}><strong>{achievement.title}</strong><p>{achievement.desc}</p></div>)}</>}
+                    {place === 'certifications' && <><h2>Always looking<br /><em>a little further.</em></h2><p>My ServiceNow learning path spans administration, application development, flows, integration, automated testing, interfaces, and AI.</p><div className="book-tags">{SERVICENOW_PRIORITY_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links"><a href="https://www.credly.com/users/nivetha-s.f4035a62" target="_blank" rel="noopener noreferrer">Verified credentials ↗</a><a href="https://servicenow.nivetha.info" target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a></div></>}
+                    {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have an idea, an interesting problem, or an opportunity? Leave a little note in my mailbox.</p><div className="book-links"><a href="mailto:nnivetha373@gmail.com">Send me a note ↗</a><a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="/resume.pdf" target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href="/resume.pdf" download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>nnivetha373@gmail.com</p></>}
+                    {place !== 'story' && <div className="book-nav"><button onClick={() => select('map')}>← World map</button><button onClick={close}>Back to the garden ↗</button></div>}
+                    <div className="book-nav"><button onClick={() => select('story')}>Read my story</button><button onClick={() => setEvening(value => !value)} aria-pressed={evening}>{evening ? 'Morning ☀' : 'Golden hour ☀'}</button><button onClick={() => setPlaying(value => !value)} aria-pressed={!playing}>{playing ? 'Pause the breeze Ⅱ' : 'Let it wander ▷'}</button></div>
+                </article>
+            );
+            return <main className="world-portfolio" aria-label="Nivetha Sivakumar’s interactive 3D portfolio">
+                <div className="story-sky" /><div className="story-sunset" style={{opacity: evening ? 1 : 0}} />
+                <div className="story-world" ref={host} />
+                <div className="story-grain" />
+                {status && !fallback && <p className="story-loading" role="status">{status}</p>}
+                {panelElement && !fallback && ReactDOM.createPortal(book, panelElement)}
+                {fallback && <div className="world-fallback"><h1>Nivetha’s little world</h1><p role="status">{status}</p><div>{[['story', 'My story'], ...WORLD_PLACES].map(([id, title]) => <button key={id} onClick={() => select(id)}>{title}</button>)}</div>{book && <div className="world-book">{book}</div>}</div>}
+            </main>;
+        };
+
         const App = () => {
             const [selectedProject, setSelectedProject] = useState(null);
             const [activeSkill, setActiveSkill] = useState(null);
@@ -1596,6 +1826,8 @@
             const activeAchievements = IS_SERVICENOW ? SERVICENOW_HIGHLIGHTS : ACHIEVEMENTS;
             const activeExperience = IS_SERVICENOW ? SERVICENOW_JOURNEY : EXPERIENCE;
 
+            if (!IS_SERVICENOW) return <WorldPortfolio projects={projects} onRefresh={refreshProjects} refreshing={refreshing} />;
+
             return (
                 <div className={`min-h-screen selection:bg-accent selection:text-black pb-20 dark:text-gray-200 text-gray-700 ${partyMode ? 'party-mode' : ''}`}>
                     <KonamiCode onActivate={handleKonami} />
@@ -1605,8 +1837,9 @@
                     <Header />
 
                     <main>
+                        <StoryGarden />
                         {/* HERO */}
-                        <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20 relative overflow-hidden">
+                        <section id="portfolio" className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20 relative overflow-hidden">
                             <div className="absolute inset-0 z-0 overflow-hidden">
                                 <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] hero-orb-a blur-[110px] animate-float will-change-transform" style={{ animationDuration: '20s' }} />
                                 <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] hero-orb-b blur-[110px] animate-float will-change-transform" style={{ animationDuration: '25s', animationDelay: '-8s' }} />
