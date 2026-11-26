@@ -45,9 +45,26 @@ monitor provide mute controls, and the preference is remembered. No audio assets
 or copyrighted recordings are downloaded. Verify the audio lifecycle with
 `node --test tests/world-audio.test.mjs`.
 
-All scenery is modeled procedurally. Three.js 0.180.0 and its controls/renderers
-are vendored locally with their MIT license. There is no build step; serve the
-existing `public` directory.
+The outdoor garden is photoreal (`realism.js`). Scanned CC0 trees, shrubs, ferns,
+flowers, grass, moss and rocks, PBR materials for the island and buildings, and a
+dusk HDRI sky all come from Poly Haven and live in `assets/` (see its README). The
+buildings keep their modeled shapes with real plaster, clay-tile, wood, brass and
+copper materials. Below the horizon a calm sea reflects the sky. Brass rings, mirror
+orbs, rising droplets from the pond, bubbles and an upside-down islet keep it
+dreamlike. The rooms are still the original stylized models, and so is the
+ServiceNow prologue. If any asset fails to load, the stylized garden is shown.
+
+A Quality switch (bottom-left, remembered in localStorage as `garden-quality`)
+offers Auto, Sharp (full resolution, even if frames slow) and Fast (about a third
+of the grass, moss and flowers, lower resolution).
+
+Performance: in Auto, render resolution adapts to the measured frame rate, shadows refresh
+every third frame, and small screens or machines with 4 or fewer cores get a
+lighter planting. Add `?debug` to the URL to expose `window.__storyDebug`
+(renderer, scene, camera) for profiling.
+
+Three.js 0.180.0, its controls, renderers and loaders are vendored locally with
+their MIT license. There is no build step; serve the existing `public` directory.
 # Two ways to visit
 
 The main portfolio opens in Explore 3D by default. The persistent mode switch

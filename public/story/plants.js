@@ -31,7 +31,24 @@ const species = {
   Cassandra: ['Violet eye flower', '#967bb2', '#8db9ad', 'eye'],
   COBOL: ['Amber heritage fern', '#bf9753', '#78925c', 'fern'],
   JCL: ['Copper script fern', '#bb8063', '#91a778', 'fern'],
-  NLP: ['Word-leaf vine', '#cfb17f', '#75a594', 'vine']
+  NLP: ['Word-leaf vine', '#cfb17f', '#75a594', 'vine'],
+  'Azure OpenAI': ['Azure rosette', '#0078d4', '#8fb8b0', 'rosette'],
+  Claude: ['Terracotta starburst', '#d97757', '#8aa478', 'rosette'],
+  'Amazon Bedrock': ['Amber bedrock succulent', '#ff9900', '#7f9a68', 'citrus'],
+  RAG: ['Library ivy', '#9a7bb0', '#7ea27a', 'vine'],
+  MCP: ['Tethered vine', '#5c6f68', '#93ad8c', 'vine'],
+  'Multi-agent systems': ['Colony clover', '#7fa35b', '#a5bf86', 'gcp'],
+  ServiceNow: ['Now green sapling', '#62d84e', '#3f6d4e', 'hex'],
+  'Script Includes': ['Script fern', '#4f8f6d', '#86a777', 'fern'],
+  'Business Rules': ['Rule-straight bamboo', '#6a8f4a', '#b2ba7a', 'bars'],
+  'Scripted REST APIs': ['Relay creeper', '#2f8f83', '#8fb3a1', 'vine'],
+  'UI Builder': ['Pattern orchid', '#7c6bd6', '#7fa17b', 'figma'],
+  'Flow Designer': ['Flowing reed', '#3b9ab2', '#9cbf9a', 'flutter'],
+  IntegrationHub: ['Hub lily', '#3d7a6a', '#a7bf95', 'hex'],
+  CMDB: ['Catalog cactus', '#5e8aa8', '#7c9d82', 'database'],
+  'REST APIs': ['Messenger vine', '#b98a4f', '#7da482', 'vine'],
+  'GitHub Actions': ['Pipeline bamboo', '#2088ff', '#93a985', 'bars'],
+  'Test automation': ['Watchful eye flower', '#c0504d', '#83a271', 'eye']
 };
 
 export function createSkillPlants({ group, material, skills, onSelect, pickable, moving }) {

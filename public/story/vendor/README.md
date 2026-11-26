@@ -4,6 +4,9 @@ https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js
 https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.min.js
 https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/renderers/CSS3DRenderer.js
 https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js
+examples/jsm/loaders/GLTFLoader.js, examples/jsm/loaders/HDRLoader.js,
+examples/jsm/utils/BufferGeometryUtils.js and examples/jsm/libs/meshopt_decoder.module.js
+(copied from the three@0.180.0 npm package)
 
 Served locally so the story does not depend on an external runtime CDN.
 Imports are rewritten to reference the local three.module.js and three.core.js.

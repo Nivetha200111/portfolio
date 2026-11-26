@@ -1,14 +1,16 @@
 import * as THREE from './vendor/three.module.js';
 import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js?v=2';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { createInterior } from './interiors.js';
+import { createInterior } from './interiors.js?v=2';
 import { createWorldAudio } from './audio.js';
+import { createRealism } from './realism.js?v=10';
 
-// Everything in this world is modeled here: no remote models or textures.
+// The buildings and rooms are modeled here. In the full-screen world, realism.js swaps the
+// outdoor scenery for scanned CC0 plants, rock, materials and sky served from ./assets.
 export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onArrival, onSoundChange, projectCount = 7, skills = [] } = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, .1, 160);
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: immersive ? 'high-performance' : 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
@@ -114,6 +116,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   tip.rotation.z = Math.PI;
   tip.position.set(0, -2.6, -.2);
   ellipsoid(palette.grass, 0, -.1, 0, 6.85, .7, 5.6);
+  const terrainParts = () => world.children.slice();
   for (let i = 0; i < 24; i++) {
     const a = i / 24 * Math.PI * 2;
     const x = Math.cos(a) * 6, z = Math.sin(a) * 4.8;
@@ -121,6 +124,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (i % 2 === 0) ellipsoid(palette.rock, x * .95, -1.1, z * .93, .8, .8 + random(), .7);
   }
 
+  const terrain = terrainParts();
   // The winding footpath is a ribbon through the actual 3D terrain.
   const path = new THREE.CatmullRomCurve3([
     new THREE.Vector3(-3.4, .59, 4.5), new THREE.Vector3(-2.1, .6, 2.7),
@@ -138,7 +142,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   ribbon.setAttribute('position', new THREE.Float32BufferAttribute(ribbonVertices, 3));
   ribbon.setIndex(ribbonIndices);
   ribbon.computeVertexNormals();
-  mesh(ribbon, '#dfcf9f');
+  const footpath = mesh(ribbon, '#dfcf9f');
 
   function roof(parent, width, depth, y, color) {
     const s = new THREE.Shape();
@@ -218,12 +222,14 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   tree(-4.9, -1.2, 1.25); tree(-3.4, -3, .85); tree(4.9, .6, .95);
   tree(1.8, 3.3, .8); tree(-5, 1.8, .65); tree(2, -4, .65);
   // An airy peach blossom tree, with individual clusters rather than a texture.
+  const blossomFrom = world.children.length;
   cylinder(palette.wood, .1, .22, 2.2, -1.1, 1.4, -1.65);
   for (let i = 0; i < 16; i++) {
     const a = random() * Math.PI * 2, r = random() * 1.1;
     ellipsoid(i % 3 ? '#ddb4a0' : '#edd0b9', -1.1 + Math.cos(a) * r, 2.6 + random() * .7, -1.65 + Math.sin(a) * r, .55, .42, .55);
   }
 
+  const blossomParts = world.children.slice(blossomFrom);
   // Meadow grass and flowers use instancing, keeping hundreds of stems inexpensive.
   const flowers = 230;
   const stemGeometry = new THREE.CylinderGeometry(.012, .018, .24, 4);
@@ -340,7 +346,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
       const label = new CSS3DSprite(button); label.position.fromArray(place.point); label.scale.setScalar(.018);
       label.userData.anchor = label.position.clone();
       const lineGeometry = new THREE.BufferGeometry().setFromPoints([label.position, label.position.clone().add(new THREE.Vector3(0, -.7, 0))]);
-      const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color: '#647d61', transparent: true, opacity: .4 }));
+      const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color: '#fff1d6', transparent: true, opacity: .55 }));
       world.add(line); label.userData.line = line;
       world.add(label); labels.push(label);
     }
@@ -362,10 +368,11 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     }
     exterior.add(cloud); clouds.push({ group: cloud, x: cloud.position.x, phase: random() * 6 });
   }
+  const mountains = [];
   const mountainMaterial = new THREE.MeshBasicMaterial({ color: '#b8c9bd', transparent: true, opacity: .25, depthWrite: false });
   for (let i = 0; i < 8; i++) {
     const mountain = new THREE.Mesh(new THREE.ConeGeometry(5 + random() * 4, 7 + random() * 8, 5), mountainMaterial);
-    mountain.position.set(-28 + i * 9, -6, -28 - random() * 6); exterior.add(mountain);
+    mountain.position.set(-28 + i * 9, -6, -28 - random() * 6); exterior.add(mountain); mountains.push(mountain);
   }
   const petalGeometry = new THREE.BufferGeometry();
   const petalPositions = new Float32Array(45 * 3);
@@ -380,6 +387,15 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const right = block('#697b6d', .14, 0, 0, .32, .025, .085, bird);
     exterior.add(bird); birds.push({ group: bird, left, right, phase: i * 1.3 });
   }
+
+  // The full-screen world swaps its hand-modeled scenery for scanned plants, rock, sky
+  // and real materials. The prologue's canvas keeps the stylized look.
+  const realism = immersive ? createRealism({
+    renderer, scene, exterior, world, hemisphere, sun, pond, path: footpath, buildings: [world],
+    hide: [...terrain, ...blossomParts, ...trees, stems, blossoms, grass, spirit, petals, ...smoke, ...clouds.map(cloud => cloud.group), ...mountains]
+  }) : null;
+  if (realism) exterior.visible = false;
+  if (immersive && new URLSearchParams(window.location.search).has('debug')) window.__storyDebug = { renderer, scene, camera, exterior };
 
   let progress = 0, current = 0, playing = true, visible = true, disposed = false, localTime = 0, lastTime = 0, inFrame = false;
   const pointer = new THREE.Vector2(), smoothPointer = new THREE.Vector2();
@@ -517,6 +533,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const evening = THREE.MathUtils.smoothstep(current, .55, 1);
     sun.color.setRGB(1, .92 - evening * .17, .78 - evening * .22);
     sun.intensity = 3.1 - evening * .55;
+    if (realism && exterior.visible) realism.update(localTime, camera, evening);
     renderer.render(scene, camera);
     if (cssRenderer) cssRenderer.render(scene, camera);
     inFrame = false;
@@ -558,7 +575,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     activeDesk = null;
     pendingStation = null;
     insideRoom?.group && (insideRoom.group.visible = false);
-    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false; exterior.visible = false;
+    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false; exterior.visible = false; realism?.setOutdoors(false);
     camera.fov = 65; camera.updateProjectionMatrix();
     if (id === 'projects' || id === 'skills') {
       camera.position.set(0, 2.7, 5.6); controls.target.set(0, 2.5, -4.7); book.visible = false;
@@ -573,7 +590,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (notify) { onInterior?.({ kind: id, screens: insideRoom.screens }); audio.room(id); }
   }
   function finishExit() {
-    insideRoom.group.visible = false; insideRoom = null; trip = null; world.visible = true; exterior.visible = true;
+    insideRoom.group.visible = false; insideRoom = null; trip = null; world.visible = true; exterior.visible = !realism || realism.loaded; realism?.setOutdoors(true);
     book.visible = false;
     camera.fov = 34; camera.updateProjectionMatrix();
     camera.position.set(-3.1, 2.2, 3.6); controls.target.set(0, 1, 0);
@@ -767,18 +784,27 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   const restored = () => { loop(); onReady?.(); };
   renderer.domElement.addEventListener('webglcontextlost', lost);
   renderer.domElement.addEventListener('webglcontextrestored', restored);
-  resize(); loop(); if (audio) onSoundChange?.(audio.muted, audio.ready); onReady?.();
+  resize(); loop(); if (audio) onSoundChange?.(audio.muted, audio.ready);
+  // Hold the loading message until the scanned garden is in place. If an asset fails,
+  // the stylized garden is still complete, so it is shown instead.
+  if (realism) realism.ready.catch(error => { console.warn('Realistic garden unavailable', error); return false; }).then(() => {
+    if (disposed) return;
+    if (!insideRoom) exterior.visible = true;
+    render(lastTime); onReady?.();
+  });
+  else onReady?.();
   return {
     panelElement: bookElement,
     setLocation(id) { if (immersive && (id === null || places[id] || id === 'map')) focus(id); },
     focusStation,
     setMuted: setSound,
+    setQuality(value) { realism?.setQuality(value); if (!playing) render(lastTime); },
     showRoom() { if (insideRoom?.kind === 'projects' && !journey) { activeDesk = null; destination.set(0, 2.7, 5.6); destinationTarget.set(0, 2.5, -4.7); flying = true; if (!playing) render(lastTime); } },
     setEvening(value) { progress = value ? 1 : 0; if (!playing) render(lastTime); },
     setProgress(value) { progress = THREE.MathUtils.clamp(value, 0, 1); if (!playing || !visible) render(lastTime); },
     setPlaying(value) { playing = value; loop(); },
     dispose() {
-      disposed = true; audio?.dispose(); veil.remove(); renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
+      disposed = true; audio?.dispose(); realism?.dispose(); veil.remove(); renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
       host.removeEventListener('pointermove', move); document.removeEventListener('visibilitychange', loop);
       renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointerup', pick);
       renderer.domElement.removeEventListener('pointermove', look); document.removeEventListener('keydown', keyDown); document.removeEventListener('keyup', keyUp); window.removeEventListener('blur', blur);

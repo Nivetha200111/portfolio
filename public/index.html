@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Step into Nivetha Sivakumar's storybook 3D garden, then explore her full-stack projects, AI, automation, and enterprise experience.">
     <link rel="stylesheet" href="/story/story.css">
-    <link rel="stylesheet" href="/story/immersive.css">
+    <link rel="stylesheet" href="/story/immersive.css?v=2">
     <link rel="stylesheet" href="/story/quick-view.css?v=1">
     <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
     <script>
@@ -329,7 +329,7 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" src="/story/quick-view.jsx?v=1"></script>
+    <script type="text/babel" src="/story/quick-view.jsx?v=2"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         const { motion, useScroll, AnimatePresence, useMotionValue, useMotionTemplate, useReducedMotion } = window.Motion;
@@ -346,38 +346,88 @@
 
         const PORTFOLIO_PROFILE = {
             name: 'Nivetha Sivakumar',
-            role: 'Software Engineer & Systems Tinkerer',
+            role: 'Software Engineer · AI Engineer · ServiceNow Developer',
             tagline: 'Code alchemist. Systems tinkerer.',
-            introduction: 'I build useful software at the intersection of AI, automation, and full-stack development. From enterprise modernization to small experiments, I like turning complicated problems into thoughtful tools.',
+            introduction: 'Software engineer with nearly two years of full-time experience building LLM agents, ServiceNow applications and full-stack software. I work with Azure OpenAI, Claude and Amazon Bedrock, and I build the evaluation checks, approval gates and test automation that keep agents safe to ship.',
+            location: 'Trichy, Tamil Nadu, India',
+            education: { degree: "B.Tech, Artificial Intelligence & Data Science", school: "K. Ramakrishnan College of Engineering", score: "CGPA 9.21/10", year: "2024" },
             email: 'nnivetha373@gmail.com',
             github: 'https://github.com/Nivetha200111',
             linkedin: 'https://www.linkedin.com/in/nivetha-sivakumar2001/',
-            resume: '/resume.pdf',
-            photo: '/pfp.png',
+            resume: '/resume.pdf?v=2',
+            photo: '/pfp.png?v=2',
             credentials: 'https://www.credly.com/users/nivetha-s.f4035a62',
             serviceNow: 'https://servicenow.nivetha.info'
         };
 
+        // Featured projects come from the résumé. They stay pinned when the workshop
+        // refreshes from GitHub, so private repositories (Diocle) are not dropped.
         const PROJECTS = [
             {
+                name: "Diocle",
+                featured: true,
+                repoUrl: null,
+                liveUrl: "https://diocle.vercel.app",
+                description: "Agentic COBOL-to-Java verification, built solo for the Meta AI Hackathon 2026. Muse Spark translates COBOL to Java, a tool-using repair agent fixes mismatches, and a verifier runs GnuCOBOL and Java on the same inputs and requires every output byte to match.",
+                language: "Python",
+                stack: ["Python", "Java", "Next.js", "MCP", "GitHub Actions"],
+                engineering: {
+                    kind: 'verifier', title: 'Diocle',
+                    decisions: 'A reviewer agent refuses to certify suspicious results. Mutation tests plus tampering and oracle-leak checks harden the grader. Ships as a Next.js app, Python services, an MCP server and a VS Code extension.',
+                    outcome: 'Certified the AWS CardDemo programs, 11 of 32 Open Mainframe Project course programs and 14 of 15 synthetic banking runs. A breaker agent caught 4 of 10 translations that had passed 1,000 held-out records.'
+                },
+                tags: ["AI agents", "Modernization"]
+            },
+            {
+                name: "kiwistack",
+                featured: true,
+                repoUrl: "https://github.com/Nivetha200111/kiwistack",
+                liveUrl: null,
+                description: "An MIT-licensed Claude Code plugin with a zero-dependency Node MCP server that writes UI Builder pages and scoped-app changes into a kiwi/ update set. Production instances are blocked, and out-of-box edits and deletes need approval.",
+                language: "JavaScript",
+                stack: ["JavaScript", "Node.js", "MCP", "ServiceNow", "ATF"],
+                engineering: {
+                    kind: 'plugin', title: 'KiwiStack',
+                    decisions: 'A multi-agent team (recon, designer, builder, QA, security, reviewer) works through ATF runs, screenshots and an app-security audit.',
+                    outcome: '58 tests against a fake in-memory instance, and an end-to-end run on a Brazil PDI.'
+                },
+                tags: ["Open source", "MCP"]
+            },
+            {
+                name: "keystone",
+                featured: true,
+                repoUrl: "https://github.com/Nivetha200111/keystone",
+                liveUrl: "https://keystone-phi-pink.vercel.app",
+                description: "A five-agent system, co-built for ServiceNow StackUp 2026, that turns messy infrastructure data into governed CMDB updates, with prioritized findings, human-approved remediation through ServiceNow IRE and auditable decision records.",
+                language: "JavaScript",
+                stack: ["JavaScript", "ServiceNow", "CMDB", "IRE", "Multi-agent systems"],
+                engineering: {
+                    kind: 'cmdb', title: 'Keystone',
+                    decisions: 'Each agent owns one step of the migration, and every remediation waits for a human to approve it before it reaches IRE.',
+                    outcome: 'Won first place at ServiceNow StackUp 2026, with a ₹50,000 prize.'
+                },
+                tags: ["ServiceNow", "AI agents"]
+            },
+            {
                 name: "ApplyX",
+                featured: true,
                 repoUrl: "https://github.com/Nivetha200111/applyx",
                 liveUrl: "https://applyx.vercel.app",
-                description: "AI-assisted résumé tailoring, application tracking, and mock interviews, bringing job-search preparation into one platform.",
+                description: "A full-stack, AI-assisted job application platform: job discovery, skill-aware matching, application tracking and AI-assisted workflows.",
                 language: "TypeScript",
-                stack: ["TypeScript", "Next.js", "React", "PostgreSQL", "Gemini", "Vercel"],
+                stack: ["TypeScript", "Next.js", "React", "Python", "PostgreSQL"],
                 engineering: {
                     kind: 'tailoring', title: 'ApplyX',
-                    decisions: 'Next.js App Router and PostgreSQL for application records; AI tailoring with semantic answer evaluation for mock interviews.',
-                    outcome: 'A master résumé becomes a role-specific PDF or DOCX, with application tracking and interview feedback in the same workflow.'
+                    decisions: 'A React/Next.js and TypeScript frontend over a Python and PostgreSQL backend.',
+                    outcome: 'Discovery, matching and tracking live in one place, with AI help where it saves time.'
                 },
-                tags: ["Automation", "AI"]
+                tags: ["Full stack", "AI"]
             },
             {
                 name: "problemstosolve",
                 repoUrl: "https://github.com/Nivetha200111/problemstosolve",
                 liveUrl: "https://problemstosolve.vercel.app",
-                description: "A curated platform that discovers and showcases unique real-world problems waiting to be solved by innovators and entrepreneurs.",
+                description: "A collection of real-world problems that still need solving, for builders looking for something worth working on.",
                 language: "Python",
                 stack: ["Python", "Next.js", "React", "Vercel"],
                 tags: ["Web", "Algorithm"]
@@ -392,7 +442,7 @@
                 engineering: {
                     kind: 'planner', title: 'SNowPrep',
                     decisions: 'A modular browser interface with local progress storage, an exam simulator, and serverless endpoints for AI tutoring and Telegram reminders.',
-                    outcome: 'Study plans, recall practice, notes, and progress live together for CSA, CAD, and CIS-ITSM preparation.'
+                    outcome: 'Study plans, recall practice, notes and progress tracking for CSA, CAD and CIS-ITSM preparation.'
                 },
                 tags: ["SaaS"]
             },
@@ -400,7 +450,7 @@
                 name: "goggins-study",
                 repoUrl: "https://github.com/Nivetha200111/goggins-study",
                 liveUrl: "https://goggins-study.vercel.app",
-                description: "Productivity and discipline tracking app inspired by David Goggins' philosophy, helping users build mental toughness and accountability habits.",
+                description: "A study and discipline tracker inspired by David Goggins: set hard goals, log the work and stay accountable.",
                 language: "TypeScript",
                 stack: ["TypeScript", "React", "Vercel", "Git"],
                 tags: ["Productivity"]
@@ -409,7 +459,7 @@
                 name: "Bindora",
                 repoUrl: "https://github.com/Nivetha200111/Bindora",
                 liveUrl: "https://bindora.vercel.app",
-                description: "An intelligent digital binder and organizational platform designed to help students manage coursework, assignments, and study materials efficiently.",
+                description: "A digital binder that keeps a student's coursework, assignments and study materials in one place.",
                 language: "Python",
                 stack: ["Python", "Flask", "SQL", "Vercel", "Git"],
                 tags: ["Education"]
@@ -418,7 +468,7 @@
                 name: "LunchTube",
                 repoUrl: "https://github.com/Nivetha200111/LunchTube",
                 liveUrl: "https://lunch-tube.vercel.app",
-                description: "A fun decision-making tool that helps you discover what to eat by combining video content with meal recommendations.",
+                description: "For when you can't decide what to eat: meal recommendations paired with videos.",
                 language: "TypeScript",
                 stack: ["TypeScript", "React", "Next.js", "Vercel", "Git"],
                 tags: ["Utility"]
@@ -427,7 +477,7 @@
                 name: "dwight",
                 repoUrl: "https://github.com/Nivetha200111/dwight_vercel",
                 liveUrl: "https://dwightvercel.vercel.app",
-                description: "Neural ACO Emergency Response Simulator combining neural-augmented ant-colony optimization, IoT sensor fusion, LSTM fire prediction, and Q-learning for smart-building evacuation scenarios.",
+                description: "An emergency evacuation simulator for smart buildings. It combines neural-augmented ant-colony optimization, IoT sensor fusion, LSTM fire prediction and Q-learning.",
                 language: "Python",
                 stack: ["Python", "NumPy", "Pygame", "Kalman filtering", "A*", "ACO"],
                 engineering: {
@@ -441,36 +491,49 @@
 
         const EXPERIENCE = [
             {
+                company: "KeenStack",
+                title: "Software Engineer (AI Track)",
+                dates: "Apr 2026 to Present",
+                bullets: [
+                    "ServiceNow Instance Setup Agent: a Scripted REST hub shared by a Next.js intake portal and a Copilot/MCP entry point. An LLM turns module templates into schema-validated setup plans; after a consultant approves, an executor applies the changes through the Table and CI/CD APIs inside update sets, with rollback.",
+                    "LLM API integrations: connected Azure OpenAI, Claude and Amazon Bedrock over REST, and prototyped configurable ITSM, CMDB and knowledge agents with multi-model routing and validation.",
+                    "ServiceNow SPM AI Agent: reusable Script Includes, Business Rules and client-side components for demand-to-project workflows (skill eligibility, resource availability, idempotent assignment generation), plus an estimation agent for staffing and effort that passed all five defined test cases.",
+                    "ClausePilot / Contract Management Pro: owned the design and demos of a contract lifecycle proof of concept (intake, approval, redline, DocuSign e-signature) built with Business Rules, Script Includes and a Scripted REST intake API. The client later approved an implementation."
+                ],
+                awards: ["Living the Stack Award", "Stack Intelligence Award", "Stack Together Award", "StackUp 2026 winner"]
+            },
+            {
                 company: "Tata Consultancy Services (TCS)",
                 title: "Systems Engineer (Prime)",
                 dates: "Oct 2024 to Feb 2026",
                 bullets: [
-                    "Modernized legacy systems at a Fortune 500 global FinTech firm using an in house RAG based agentic AI tool to generate optimized Java code from mainframe workflows",
-                    "Collaborated with cross functional agile teams to deliver high quality code",
-                    "Wrote scripts to automate data migration and backend tasks",
-                    "Utilized prompt engineering in Python and Java to accelerate code generation"
+                    "Built reusable Python regression and migration-validation automation that cut repetitive manual testing by an estimated 40%. Promoted to Systems Engineer (Prime) within the first year.",
+                    "Worked on an enterprise payments modernization from COBOL/JCL to Java using internal RAG tooling: learned an unfamiliar legacy codebase and took part in code reviews, debugging, migration analysis and Agile delivery."
                 ],
-                awards: ["Star Performer", "Champion of Growth"]
+                awards: ["Star Performer", "Testing Champion", "Champion of Growth"]
             }
         ];
 
         const RAW_SKILLS = [
-            "Python", "Java", "COBOL", "JCL", "JavaScript", "TypeScript", "SQL",
-            "React", "Flutter", "Flask", "Angular", "Node.js", "Next.js",
-            "Git", "Postman", "Power BI", "Pandas", "Figma",
-            "Azure", "GCP", "Vercel",
-            "DB2", "IMS", "MySQL", "PostgreSQL", "Cassandra",
-            "OpenAI API", "Llama3", "NLP"
+            "Python", "Java", "JavaScript", "TypeScript", "SQL",
+            "Azure OpenAI", "Claude", "Amazon Bedrock", "RAG", "MCP", "Multi-agent systems",
+            "ServiceNow", "Script Includes", "Business Rules", "Scripted REST APIs", "UI Builder", "Flow Designer", "IntegrationHub", "CMDB",
+            "React", "Next.js", "Node.js", "Flask", "REST APIs", "PostgreSQL", "DB2",
+            "Git", "GitHub Actions", "Test automation"
         ];
 
         const ACHIEVEMENTS = [
-            { title: "Patent Holder", desc: "Smart glasses for Alzheimers" },
-            { title: "Copyright Grant", desc: "Gaming algorithm" },
-            { title: "Top 20", desc: "GUVI Hackathon" },
-            { title: "Hackathon Winner", desc: "HiLife AI Internal" },
-            { title: "Semi-Finalist", desc: "TNSI Ideathon" },
-            { title: "Open Source", desc: "GSSOC 2024" }
+            { title: "StackUp 2026 · 1st Place", desc: "Keystone, a multi-agent CMDB migration system (₹50,000)" },
+            { title: "Living the Stack Award", desc: "KeenStack, Nov 2026, for authenticity and empathy" },
+            { title: "Stack Intelligence Award", desc: "KeenStack, Jun 2026, for LLM API integrations" },
+            { title: "Stack Together Award", desc: "KeenStack, Sep 2026, for the SPM AI agent" },
+            { title: "Top 20 of 82,000 teams", desc: "Government hackathon" },
+            { title: "Patent", desc: "South African patent: smart glasses for Alzheimer's" },
+            { title: "Copyright", desc: "Indian copyright: Connect4 AI algorithm" },
+            { title: "TCS recognition", desc: "Star Performer, Testing Champion, Champion of Growth" }
         ];
+
+        const EDUCATION = PORTFOLIO_PROFILE.education;
 
         const SERVICENOW_ROLES = [
             "ServiceNow Developer",
@@ -499,7 +562,7 @@
         ];
 
         const SERVICENOW_STATS = [
-            { label: "Credentials", value: "9" },
+            { label: "Credentials", value: "11" },
             { label: "Accreditations", value: "0" },
             { label: "Skills Earned", value: "27" },
             { label: "Badges", value: "27" }
@@ -507,11 +570,29 @@
 
         const SERVICENOW_CREDENTIALS = [
             {
+                name: "ServiceNow Contract Management Pro",
+                category: "Suite",
+                language: "Suite",
+                completed: "2026-10-01",
+                monthOnly: true,
+                description: "Contract lifecycle management on ServiceNow: intake, approval, redline and e-signature flows.",
+                stack: ["Contract Management Pro", "Business Rules", "Script Includes", "Scripted REST APIs"]
+            },
+            {
+                name: "ServiceNow Certified Application Developer (CAD)",
+                category: "Mainline",
+                language: "Mainline",
+                completed: "2026-07-01",
+                monthOnly: true,
+                description: "Mainline developer certification covering scoped applications, server and client scripting, security and application delivery.",
+                stack: ["Application Development", "Script Includes", "Business Rules", "Client Scripts", "Scripted REST APIs"]
+            },
+            {
                 name: "ServiceNow Certified System Administrator (CSA)",
                 category: "Mainline",
                 language: "Mainline",
                 completed: "2026-03-16",
-                description: "Core mainline certification covering platform administration, navigation, access, and foundational governance.",
+                description: "Mainline certification for platform administration: navigation, access control, data and governance.",
                 stack: ["ServiceNow Administration", "CSA", "Knowledge Management", "Service Catalog", "Mainline"]
             },
             {
@@ -519,7 +600,7 @@
                 category: "Suite",
                 language: "Suite",
                 completed: "2025-08-04",
-                description: "Suite-level application development credential spanning platform fundamentals, builder workflows, and developer core skills.",
+                description: "Suite certification for core application development skills.",
                 stack: ["Application Development", "Workflow Studio", "ServiceNow AI Platform", "Flow Designer"]
             },
             {
@@ -527,7 +608,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2026-03-11",
-                description: "Micro-cert covering the platform basics, user navigation, and the foundational ServiceNow ecosystem.",
+                description: "Micro-certification on platform basics and navigation.",
                 stack: ["Welcome to ServiceNow", "Knowledge Management", "Service Catalog"]
             },
             {
@@ -535,7 +616,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-08-04",
-                description: "Flow-focused credential centered on automation design, orchestration, and reusable workflow structures.",
+                description: "Micro-certification on building flows and subflows in Flow Designer.",
                 stack: ["Flow Designer", "Create a Flow", "Create a Subflow", "Introduction to Flows"]
             },
             {
@@ -543,7 +624,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-08-04",
-                description: "ATF credential validating platform testing, regression coverage, and automation quality practices.",
+                description: "Micro-certification on the Automated Test Framework and regression testing.",
                 stack: ["Automated Test Framework", "Workflow Studio", "Triggers"]
             },
             {
@@ -551,7 +632,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-08-02",
-                description: "Predictive intelligence credential covering data-driven recommendations, classification, and platform AI capability.",
+                description: "Micro-certification on Predictive Intelligence: classification and recommendations.",
                 stack: ["Predictive Intelligence", "Agent Intelligence", "Now Intelligence"]
             },
             {
@@ -559,7 +640,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-08-01",
-                description: "IntegrationHub credential spanning spokes, orchestration patterns, and cross-system service connectivity.",
+                description: "Micro-certification on IntegrationHub, store spokes and building new spokes.",
                 stack: ["IntegrationHub", "Using Store Spokes", "Create New Spokes"]
             },
             {
@@ -567,7 +648,7 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-07-26",
-                description: "UI Builder credential focused on assembling structured platform experiences and reusable interface patterns.",
+                description: "Micro-certification on building pages and reusable components in UI Builder.",
                 stack: ["UI Builder", "Visual Task Boards", "Platform Analytics Experience"]
             },
             {
@@ -575,10 +656,21 @@
                 category: "Micro",
                 language: "Micro",
                 completed: "2025-07-23",
-                description: "AI-oriented micro-cert validating platform AI awareness, value framing, and agentic workflow fluency.",
+                description: "Micro-certification on ServiceNow's agentic AI features and where they fit.",
                 stack: ["Agentic AI", "ServiceNow AI Platform", "Now Intelligence"]
             }
         ];
+
+        const ANTHROPIC_CREDENTIAL = {
+            name: "Anthropic courses: AI Fluency Framework & Foundations, Claude 101, Claude Code 101, Claude Code in Action, Introduction to agent skills, Introduction to subagents, AI Capabilities and Limitations",
+            category: "Anthropic",
+            language: "Anthropic",
+            completed: "2026-06-01",
+            monthOnly: true,
+            description: "Seven Anthropic courses on AI fluency, Claude, Claude Code, agent skills and subagents.",
+            stack: ["Claude", "Claude Code", "Agent skills", "Subagents"]
+        };
+        const PORTFOLIO_CREDENTIALS = [...SERVICENOW_CREDENTIALS.slice(0, 3), ANTHROPIC_CREDENTIAL, ...SERVICENOW_CREDENTIALS.slice(3)];
 
         const SERVICENOW_JOURNEY = [
             {
@@ -665,7 +757,7 @@
 
         const ACTIVE_SKILLS = IS_SERVICENOW ? SERVICENOW_SKILLS : RAW_SKILLS;
         const ACTIVE_PRIORITY_SKILLS = IS_SERVICENOW ? SERVICENOW_PRIORITY_SKILLS : [
-            "Python", "Java", "JavaScript", "TypeScript", "React", "SQL", "Node.js", "Next.js", "Azure", "GCP"
+            "Python", "Java", "TypeScript", "Azure OpenAI", "Claude", "Amazon Bedrock", "MCP", "ServiceNow", "React", "Next.js"
         ];
         const formatDate = (value, options = { year: 'numeric', month: 'short', day: 'numeric' }) => {
             if (!value) return '';
@@ -992,7 +1084,7 @@
                                 {project.completed && (
                                     <span className="text-xs font-mono text-gray-500 flex items-center gap-1">
                                         <Icon name="checkCircle" size={14} className="text-accent" />
-                                        {formatDate(project.completed)}
+                                        {formatDate(project.completed, project.monthOnly ? { year: 'numeric', month: 'short' } : undefined)}
                                     </span>
                                 )}
                             </div>
@@ -1085,7 +1177,7 @@
                                     {project.completed && (
                                         <span className="flex items-center gap-1">
                                             <Icon name="checkCircle" size={14} className="text-accent" />
-                                            Completed {formatDate(project.completed)}
+                                            Completed {formatDate(project.completed, project.monthOnly ? { year: 'numeric', month: 'short' } : undefined)}
                                         </span>
                                     )}
                                     {project.stars > 0 && (
@@ -1513,15 +1605,15 @@
         };
 
         const STORY_CHAPTERS = IS_SERVICENOW ? [
-            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha. I build on ServiceNow — turning ideas into interfaces, connected workflows, and useful applications. Come wander through my little world.", note: 'A story told in four chapters', caption: 'Somewhere between a daydream and a line of code.' },
-            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little curiosity.<br /><em>A lot of possibility.</em></>, description: 'In July 2025, I started building my foundation: UI Builder, flows, platform navigation, and AI. One small discovery opened the door to the next.', note: 'July 2025 · The foundations', caption: 'A workshop for all the things that could be.' },
-            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Making the pieces<br /><em>work together.</em></>, description: 'Next came IntegrationHub, Flow Designer, and automated testing. Like the sails of a windmill, each part has a purpose — and the magic happens when they move together.', note: 'August 2025 · Automation & integration', caption: 'Little connections. Beautiful momentum.' },
-            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>Roots in systems.<br /><em>Eyes on tomorrow.</em></>, description: 'CSA in March 2026. CAD in July. With a foundation in administration and application development, I bring ideas to life — including AI that turns incidents into project intelligence.', note: '2026 · Certified administrator & developer', caption: 'The next chapter is still being written.' }
+            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha. I build on ServiceNow: interfaces, connected workflows and applications. Have a look around.", note: 'A story told in four chapters', caption: 'Drag to look around. Tap a building to go inside.' },
+            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little curiosity.<br /><em>A lot of possibility.</em></>, description: 'In July 2025 I started with the basics: UI Builder, flows, platform navigation and the AI features.', note: 'July 2025 · The foundations', caption: 'The workshop holds my projects.' },
+            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Making the pieces<br /><em>work together.</em></>, description: 'Next came IntegrationHub, Flow Designer and automated testing: the parts that connect the platform to other systems and keep changes tested.', note: 'August 2025 · Automation & integration', caption: 'The windmill holds my work history.' },
+            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>Roots in systems.<br /><em>Eyes on tomorrow.</em></>, description: 'CSA in March 2026, CAD in July and Contract Management Pro in October. At KeenStack I build ServiceNow AI agents: an instance setup agent, an SPM estimation agent and Keystone, a multi-agent CMDB migration that won StackUp 2026.', note: '2026 · Administrator, developer, AI agents', caption: 'The observatory holds my certifications.' }
         ] : [
-            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha. I turn curious ideas into full-stack apps, AI tools, and little automations that make life easier. Come wander through my world.", note: 'Code alchemist. Systems tinkerer. Always curious.', caption: 'Somewhere between a daydream and a line of code.' },
-            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little spark.<br /><em>A bigger idea.</em></>, description: 'Smart glasses for Alzheimer’s. A gaming algorithm. Hackathons and open source. My work starts with a question, then grows through making, testing, and trying again.', note: 'Patents, possibilities & a maker’s mindset', caption: 'A workshop for all the things that could be.' },
-            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Small details.<br /><em>Big systems.</em></>, description: 'At TCS, I worked on enterprise modernization — connecting mainframe workflows with Java, AI-assisted development, and automation. Big systems taught me to care about the little details.', note: '2024–2026 · Systems Engineer at TCS', caption: 'Little connections. Beautiful momentum.' },
-            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>A world of ideas.<br /><em>More to build.</em></>, description: 'From ApplyX’s AI-powered job applications to full-stack tools and automation pipelines, I build things that turn complexity into possibility. The next chapter? Let’s write it together.', note: 'Full-stack development · AI · Automation', caption: 'The next chapter is still being written.' }
+            { name: 'A seed', eyebrow: 'A small world. A real journey.', title: <>Every story<br />starts with <em>a seed.</em></>, description: "Hi, I'm Nivetha, a software engineer in Trichy. I build LLM agents, ServiceNow applications and full-stack software. Have a look around.", note: 'Software engineer · AI engineer · ServiceNow developer', caption: 'Drag to look around. Tap a building to go inside.' },
+            { name: 'Curiosity', eyebrow: 'Chapter 01 / The little workshop', title: <>A little spark.<br /><em>A bigger idea.</em></>, description: 'It started in college: a South African patent for smart glasses that help people with Alzheimer’s, an Indian copyright for a Connect4 AI, and a top-20 finish out of 82,000 teams at a government hackathon. B.Tech in AI & Data Science, CGPA 9.21.', note: 'Patent, copyright & hackathons', caption: 'The workshop holds my projects.' },
+            { name: 'Connection', eyebrow: 'Chapter 02 / The windmill', title: <>Small details.<br /><em>Big systems.</em></>, description: 'At TCS I helped move a payments system from COBOL/JCL to Java and wrote Python regression automation that cut manual testing by about 40%. Since April 2026 I have been at KeenStack, building ServiceNow AI agents with approval gates and rollback.', note: '2024 to now · TCS, then KeenStack', caption: 'The windmill holds my work history.' },
+            { name: 'Possibility', eyebrow: 'Chapter 03 / An open horizon', title: <>A world of ideas.<br /><em>More to build.</em></>, description: 'Lately: Diocle, which checks COBOL-to-Java translations byte for byte; KiwiStack, an open-source MCP plugin for ServiceNow; and Keystone, which won first place at StackUp 2026. If you are working on something similar, I would like to hear about it.', note: 'Diocle · KiwiStack · Keystone', caption: 'The observatory holds my certifications.' }
         ];
 
         const StoryGarden = () => {
@@ -1536,7 +1628,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=3').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=15').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1634,7 +1726,7 @@
 
         const WORLD_PLACES = [
             ['projects', 'The workshop', 'Projects & experiments'],
-            ['experience', 'The windmill', 'Enterprise engineering'],
+            ['experience', 'The windmill', 'KeenStack & TCS'],
             ['skills', 'The garden', 'Tools of my trade'],
             ['achievements', 'The wishing tree', 'Milestones & recognition'],
             ['certifications', 'The observatory', 'Learning & credentials'],
@@ -1668,6 +1760,7 @@
             const [embeddedScreen, setEmbeddedScreen] = useState(null);
             const [screenReload, setScreenReload] = useState(0);
             const [soundMuted, setSoundMuted] = useState(false);
+            const [quality, setQuality] = useState(() => { try { return localStorage.getItem('garden-quality') || 'auto'; } catch { return 'auto'; } });
             const [audioReady, setAudioReady] = useState(false);
             const projectsRef = useRef(projects);
             projectsRef.current = projects;
@@ -1678,7 +1771,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=3').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=15').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
@@ -1719,6 +1812,10 @@
             }, [playing, panelElement]);
             useEffect(() => { engine.current?.setEvening(evening); }, [evening, panelElement]);
             useEffect(() => {
+                engine.current?.setQuality(quality);
+                try { localStorage.setItem('garden-quality', quality); } catch {}
+            }, [quality, panelElement]);
+            useEffect(() => {
                 const keydown = event => { if (event.key === 'Escape') close(); };
                 const hashChanged = () => { setPlace(readDestination()); setPage(0); };
                 const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -1744,15 +1841,15 @@
                     {place === 'projects' && <>
                         <p className="book-caption">Ideas made real · {projects.length} projects</p>
                         <h2>The little<br /><em>workshop.</em></h2>
-                        {project && <><h3>{project.name}</h3><p>{project.description}</p><div className="book-tags">{(project.stack || [project.language]).filter(Boolean).map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links">{project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit project ↗</a>}<a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Read the code ↗</a></div></>}
+                        {project && <><h3>{project.name}</h3><p>{project.description}</p><div className="book-tags">{(project.stack || [project.language]).filter(Boolean).map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links">{project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit project ↗</a>}{project.repoUrl && <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Read the code ↗</a>}</div></>}
                         <div className="book-nav"><button onClick={() => setPage(projectIndex - 1)} disabled={projectIndex === 0}>← Previous build</button><span>{projectIndex + 1} / {projects.length}</span><button onClick={() => setPage(projectIndex + 1)} disabled={projectIndex >= projects.length - 1}>Next build →</button></div>
                         <div className="book-nav"><a href={profile.github} target="_blank" rel="noopener noreferrer">My GitHub ↗</a><button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Finding new builds…' : 'Refresh the workshop ↻'}</button></div>
                     </>}
-                    {place === 'experience' && <><h2>Small details.<br /><em>Big systems.</em></h2>{EXPERIENCE.map(job => <div key={job.company}><p className="book-caption">{job.dates}</p><h3>{job.title}</h3><p>{job.company}</p><ul className="book-list">{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul><div className="book-tags">{job.awards.map(award => <span key={award}>{award}</span>)}</div></div>)}</>}
-                    {place === 'skills' && <><h2>A garden<br /><em>of skills.</em></h2><p>Different tools. One habit: keep learning, keep building.</p><div className="book-tags">{RAW_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><button className="book-action" onClick={() => select('projects')}>See them in the workshop ↗</button></>}
+                    {place === 'experience' && <><h2>Small details.<br /><em>Big systems.</em></h2>{EXPERIENCE.map(job => <div key={job.company}><p className="book-caption">{job.dates}</p><h3>{job.title}</h3><p>{job.company}</p><ul className="book-list">{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul><div className="book-tags">{job.awards.map(award => <span key={award}>{award}</span>)}</div></div>)}<div><p className="book-caption">{EDUCATION.year}</p><h3>{EDUCATION.degree}</h3><p>{EDUCATION.school} · {EDUCATION.score}</p></div></>}
+                    {place === 'skills' && <><h2>A garden<br /><em>of skills.</em></h2><p>The tools I use at work and in my own projects.</p><div className="book-tags">{RAW_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><button className="book-action" onClick={() => select('projects')}>See them in the workshop ↗</button></>}
                     {place === 'achievements' && <><h2>Little seeds.<br /><em>Lasting milestones.</em></h2>{ACHIEVEMENTS.map(achievement => <div className="book-row" key={achievement.title}><strong>{achievement.title}</strong><p>{achievement.desc}</p></div>)}</>}
-                    {place === 'certifications' && <><h2>Always looking<br /><em>a little further.</em></h2><p>My ServiceNow learning path spans administration, application development, flows, integration, automated testing, interfaces, and AI.</p><div className="book-tags">{SERVICENOW_PRIORITY_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links"><a href={profile.credentials} target="_blank" rel="noopener noreferrer">Verified credentials ↗</a><a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a></div></>}
-                    {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have an idea, an interesting problem, or an opportunity? Leave a little note in my mailbox.</p><div className="book-links"><a href={`mailto:${profile.email}`}>Send me a note ↗</a><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href={profile.resume} download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>{profile.email}</p></>}
+                    {place === 'certifications' && <><h2>Always looking<br /><em>a little further.</em></h2><p>ServiceNow CSA, CAD and Contract Management Pro, with micro-certifications in IntegrationHub, ATF, UI Builder and Flow Designer. In June 2026 I also completed seven Anthropic courses, from Claude 101 to subagents.</p><div className="book-tags">{SERVICENOW_PRIORITY_SKILLS.map(skill => <span key={skill}>{skill}</span>)}</div><div className="book-links"><a href={profile.credentials} target="_blank" rel="noopener noreferrer">Verified credentials ↗</a><a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a></div></>}
+                    {place === 'contact' && <><h2>The next chapter?<br /><em>Let’s write it.</em></h2><p>Have a problem to solve or a role to talk about? Email me or find me on LinkedIn.</p><div className="book-links"><a href={`mailto:${profile.email}`}>Send me a note ↗</a><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">Open my résumé ↗</a><a href={profile.resume} download="Nivetha-Sivakumar-Resume.pdf">Take a copy ↓</a></div><p style={{marginTop: 18}}>{profile.email}</p></>}
                     {place !== 'story' && <div className="book-nav"><button onClick={() => select('map')}>← World map</button><button onClick={close}>Back to the garden ↗</button></div>}
                     <div className="book-nav"><button onClick={() => select('story')}>Read my story</button><button onClick={() => setEvening(value => !value)} aria-pressed={evening}>{evening ? 'Morning ☀' : 'Golden hour ☀'}</button><button onClick={() => setPlaying(value => !value)} aria-pressed={!playing}>{playing ? 'Pause the breeze Ⅱ' : 'Let it wander ▷'}</button></div>
                     {!fallback && <div className="book-nav"><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play room music ♫' : 'Mute room music ♫'}</button></div>}
@@ -1762,6 +1859,10 @@
                 <div className="story-sky" /><div className="story-sunset" style={{opacity: evening ? 1 : 0}} />
                 <div className="story-world" ref={host} />
                 <div className="story-grain" />
+                {!fallback && !status && !roomInfo.kind && <div className="world-quality" role="group" aria-label="Graphics quality">
+                    <span aria-hidden="true">Quality</span>
+                    {[['auto', 'Auto', 'Adjusts sharpness to keep motion smooth'], ['sharp', 'Sharp', 'Full resolution, even if motion slows'], ['fast', 'Fast', 'Fewer small plants and lower resolution for slower devices']].map(([id, label, hint]) => <button key={id} title={hint} aria-label={`${label} quality`} aria-pressed={quality === id} onClick={() => setQuality(id)}>{label}</button>)}
+                </div>}
                 {status && !fallback && <p className="story-loading" role="status">{status}</p>}
                 {panelElement && !fallback && ReactDOM.createPortal(book, panelElement)}
                 {!fallback && roomInfo.kind === 'projects' && roomInfo.screens.map((screen, index) => {
@@ -1774,9 +1875,9 @@
                         <div className="station-bar"><span>◉ ◉ ◉</span><span>Nivetha / workshop / station 0{index + 1}</span></div>
                         {browsing ? <div className="station-web">
                             <div className="station-browser-bar"><button onClick={backToBuild}>← Back to build</button><span>{build.name}</span><button onClick={() => setScreenReload(value => value + 1)} aria-label="Reload project">↻</button><a href={build.liveUrl} target="_blank" rel="noopener noreferrer" aria-label="Open project in a full browser">↗</a></div>
-                            {PROJECT_SCREEN_NOTICES[build.name] ? <div className="station-unavailable"><h2>{build.name}</h2><p>{PROJECT_SCREEN_NOTICES[build.name]}</p><div className="station-links"><a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a><a href={build.liveUrl} target="_blank" rel="noopener noreferrer">Open full page ↗</a></div></div> : <div className="station-web-viewport"><iframe key={`${build.name}-${screenReload}`} src={build.liveUrl} title={`${build.name} live project`} sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads" referrerPolicy="strict-origin-when-cross-origin" /></div>}
+                            {PROJECT_SCREEN_NOTICES[build.name] ? <div className="station-unavailable"><h2>{build.name}</h2><p>{PROJECT_SCREEN_NOTICES[build.name]}</p><div className="station-links">{build.repoUrl && <a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a>}<a href={build.liveUrl} target="_blank" rel="noopener noreferrer">Open full page ↗</a></div></div> : <div className="station-web-viewport"><iframe key={`${build.name}-${screenReload}`} src={build.liveUrl} title={`${build.name} live project`} sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads" referrerPolicy="strict-origin-when-cross-origin" /></div>}
                         </div> : <div className="station-content"><p className="station-eyebrow">{build.language} · {build.tags?.join(' / ')}</p><h2>{build.name}</h2>
-                            {active ? <><p>{build.description}</p><div className="station-tags">{(build.stack || []).map(skill => <span key={skill}>{skill}</span>)}</div><div className="station-links">{build.liveUrl && <button className="station-open" onClick={() => { engine.current?.focusStation(index, false, true); setEmbeddedScreen({ station: index, project: build.name }); }}>Launch project ▷</button>}<a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a></div><div className="station-pager"><button disabled={buildIndex === 0} onClick={() => setBuildIndex(value => value - 1)}>← Previous build</button><span>{buildIndex + 1} / {projects.length}</span><button disabled={buildIndex >= projects.length - 1} onClick={() => setBuildIndex(value => value + 1)}>Next build →</button></div></> : <><p>A little experiment, made real.</p><button className="station-open" onClick={() => engine.current?.focusStation(index)}>Sit at this computer →</button></>}
+                            {active ? <><p>{build.description}</p><div className="station-tags">{(build.stack || []).map(skill => <span key={skill}>{skill}</span>)}</div><div className="station-links">{build.liveUrl && <button className="station-open" onClick={() => { engine.current?.focusStation(index, false, true); setEmbeddedScreen({ station: index, project: build.name }); }}>Launch project ▷</button>}{build.repoUrl && <a href={build.repoUrl} target="_blank" rel="noopener noreferrer">Source code ↗</a>}</div><div className="station-pager"><button disabled={buildIndex === 0} onClick={() => setBuildIndex(value => value - 1)}>← Previous build</button><span>{buildIndex + 1} / {projects.length}</span><button disabled={buildIndex >= projects.length - 1} onClick={() => setBuildIndex(value => value + 1)}>Next build →</button></div></> : <><p>A little experiment, made real.</p><button className="station-open" onClick={() => engine.current?.focusStation(index)}>Sit at this computer →</button></>}
                         </div>}<div className="station-footer"><button onClick={close}>← Leave the workshop</button><button onClick={() => { setStationIndex(null); setEmbeddedScreen(null); engine.current?.showRoom(); }}>Look around</button><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play music ♫' : 'Mute music ♫'}</button>{active && !browsing && <button onClick={onRefresh} disabled={refreshing}>{refreshing ? 'Syncing…' : 'Sync builds ↻'}</button>}</div>
                     </div>, screen.element, `station-${index}`);
                 })}
@@ -1884,7 +1985,11 @@
                             setShowConfetti(true);
                             setTimeout(() => setShowConfetti(false), 3000);
                         }
-                        setProjects(data.projects.map(project => ({ ...PROJECTS.find(original => original.name.toLowerCase() === project.name.toLowerCase()), ...project, engineering: PROJECTS.find(original => original.name.toLowerCase() === project.name.toLowerCase())?.engineering })));
+                        const curated = name => PROJECTS.find(original => original.name.toLowerCase() === name.toLowerCase());
+                        const fetched = data.projects.map(project => ({ ...curated(project.name), ...project, engineering: curated(project.name)?.engineering }));
+                        // Résumé projects stay first, keep their written descriptions, and survive even when their repository is private.
+                        const featured = PROJECTS.filter(project => project.featured).map(project => ({ ...fetched.find(entry => entry.name.toLowerCase() === project.name.toLowerCase()), ...project }));
+                        setProjects([...featured, ...fetched.filter(entry => !curated(entry.name)?.featured)]);
                         setLastRefreshed(new Date().toLocaleTimeString());
                     } else {
                         console.error('Failed to refresh projects:', data.error);
@@ -1904,7 +2009,7 @@
             const activeAchievements = IS_SERVICENOW ? SERVICENOW_HIGHLIGHTS : ACHIEVEMENTS;
             const activeExperience = IS_SERVICENOW ? SERVICENOW_JOURNEY : EXPERIENCE;
 
-            if (!IS_SERVICENOW) return <PortfolioExperience profile={PORTFOLIO_PROFILE} projects={projects} experience={EXPERIENCE} skills={RAW_SKILLS} certifications={SERVICENOW_CREDENTIALS} achievements={ACHIEVEMENTS} onRefresh={refreshProjects} refreshing={refreshing} />;
+            if (!IS_SERVICENOW) return <PortfolioExperience profile={PORTFOLIO_PROFILE} projects={projects} experience={EXPERIENCE} skills={RAW_SKILLS} certifications={PORTFOLIO_CREDENTIALS} achievements={ACHIEVEMENTS} onRefresh={refreshProjects} refreshing={refreshing} />;
 
             return (
                 <div className={`min-h-screen selection:bg-accent selection:text-black pb-20 dark:text-gray-200 text-gray-700 ${partyMode ? 'party-mode' : ''}`}>
@@ -1931,7 +2036,7 @@
                                         transition={{ duration: 0.4 }}
                                         title="hey there :)"
                                     >
-                                        <img src="/pfp.png" alt="Nivetha Sivakumar" className="w-full h-full object-cover" />
+                                        <img src="/pfp.png?v=2" alt="Nivetha Sivakumar" className="w-full h-full object-cover" />
                                     </motion.div>
                                 </motion.div>
                                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full dark:bg-white/5 bg-black/5 border border-border backdrop-blur-md text-accent text-sm font-mono mb-8"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>{timeGreeting}</motion.div>
@@ -1939,8 +2044,8 @@
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl dark:text-gray-400 text-gray-600 font-light mb-6 font-mono"><TypingRole /></motion.p>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
                                     {IS_SERVICENOW
-                                        ? <>9 credentials, 27 skills, and 27 badges across admin, development, integration, testing, and AI. <span className="dark:text-gray-300 text-gray-700">CSA-certified with hands-on depth in flows, ATF, and IntegrationHub.</span></>
-                                        : <>Building full-stack apps and automation pipelines. <span className="dark:text-gray-300 text-gray-700">1.5 years of experience in enterprise modernization.</span></>}
+                                        ? <>11 credentials, 27 skills and 27 badges across admin, development, integration, testing and AI. <span className="dark:text-gray-300 text-gray-700">CSA and CAD certified, with Contract Management Pro and hands-on work in flows, ATF and IntegrationHub.</span></>
+                                        : <>Building LLM agents, ServiceNow applications and full-stack software. <span className="dark:text-gray-300 text-gray-700">Software Engineer (AI Track) at KeenStack, previously at TCS.</span></>}
                                 </motion.p>
                                 {IS_SERVICENOW && (
                                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="flex flex-wrap justify-center gap-3 mb-10">

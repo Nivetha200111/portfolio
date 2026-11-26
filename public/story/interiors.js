@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import { CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.js?v=2';
-import { createSkillPlants } from './plants.js';
+import { createSkillPlants } from './plants.js?v=2';
 
 // Actual rooms, furniture and computer screens. Their DOM surfaces live in 3D.
 export function createInterior(kind, { material, projectCount = 7, skills = [], onExit, onSound, onPlant, onNavigate, muted = false, audioReady = false }) {
