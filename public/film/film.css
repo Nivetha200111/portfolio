@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap');
+
+/* The film: one fixed shader canvas, type set over it, scroll as the timeline. */
+.film { --accent: #ffd9a3; position: relative; height: 1920svh; background: #07060c; color: #fff; font-family: Geist, system-ui, sans-serif; }
+/* Each chapter borrows an accent from its scene. */
+.film[data-chapter='0'] { --accent: #ffd9a3; }   /* dunes at sunrise */
+.film[data-chapter='1'] { --accent: #bfe0ff; }   /* open sky over the clouds */
+.film[data-chapter='2'] { --accent: #8ff0e2; }   /* turquoise sea in the hall */
+.film[data-chapter='3'] { --accent: #ffc98a; }   /* lamplight through the door */
+.film[data-chapter='4'] { --accent: #dfe6ff; }   /* moonlight */
+.film[data-chapter='5'] { --accent: #ffb79a; }   /* sunset */
+.film-canvas { position: fixed; inset: 0; width: 100%; height: 100svh; display: block; overflow: hidden; }
+.film-canvas > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.film-canvas .world-dom, .film-canvas .world-threshold { display: none; }
+.film-veil { position: fixed; inset: 0; background: #07060c; pointer-events: none; transition: opacity 2.2s ease .2s; }
+.film-ready .film-veil, .film-error .film-veil { opacity: 0; }
+
+.film-top { position: fixed; top: 0; left: 0; right: 0; z-index: 3; display: flex; gap: 24px; padding: 28px clamp(22px, 4vw, 56px); font: 400 11px/1 'Geist Mono', monospace; letter-spacing: .16em; text-transform: uppercase; color: #fff; pointer-events: none; text-shadow: 0 1px 2px #000a, 0 1px 16px #000a; }
+.film-top span:last-child { opacity: .75; }
+.film-top span:last-child::before { content: '—'; margin-right: 24px; }
+
+/* A giant outlined chapter number drifts behind the story. */
+.film-numeral { position: fixed; right: -1vw; bottom: -6vw; z-index: 1; margin: 0; font: 400 clamp(220px, 38vw, 620px)/.8 'Instrument Serif', Georgia, serif; color: transparent; -webkit-text-stroke: 1px #ffffff2e; letter-spacing: -.06em; pointer-events: none; animation: film-numeral 1.6s cubic-bezier(.2, .7, .1, 1) both; }
+@keyframes film-numeral { from { opacity: 0; transform: translateY(8vw); } to { opacity: 1; transform: none; } }
+
+/* Chapter rail: where you are, and a way to jump. */
+.film-rail { position: fixed; right: clamp(16px, 2.4vw, 36px); top: 50%; z-index: 4; transform: translateY(-50%); display: grid; gap: 4px; padding: 10px 0; }
+.film-rail button { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 6px 4px; font: 400 10px/1 'Geist Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: #ffffffb3; text-shadow: 0 1px 2px #000c, 0 0 12px #000a; }
+.film-rail button b { font-weight: 400; max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0; transition: max-width .5s ease, opacity .4s ease; }
+.film-rail button span::after { content: ''; display: inline-block; width: 18px; height: 1px; margin-left: 10px; vertical-align: middle; background: currentColor; transition: width .4s ease; }
+.film-rail button:hover b, .film-rail button:focus-visible b, .film-rail button[aria-current='step'] b { max-width: 200px; opacity: 1; }
+.film-rail button[aria-current='step'] { color: var(--accent); }
+.film-rail button[aria-current='step'] span::after { width: 36px; }
+.film-rail button:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.film-rail-progress { display: none; }
+
+.film-stage { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+/* A cinematic grade on the reading side: darker toward the left edge and the bottom,
+   deeper while a dense block (lists, rows) is on screen. No boxes. */
+.film-stage::before { content: ''; position: absolute; inset: 0; pointer-events: none; transition: opacity 1s ease;
+  background: linear-gradient(90deg, #05040bcc 0%, #05040b8c 28%, #05040b33 48%, #05040b00 62%), linear-gradient(0deg, #05040b99 0%, #05040b00 38%); opacity: .7; }
+.film[data-dense='true'] .film-stage::before { opacity: 1; }
+.film-beat { position: absolute; left: clamp(22px, 6vw, 96px); bottom: clamp(60px, 11svh, 120px); max-width: min(660px, 82vw);
+  opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform 1.1s cubic-bezier(.2, .7, .1, 1); }
+.film-beat[data-on='true'] { opacity: 1; transform: none; pointer-events: auto; transition-delay: .1s; }
+.film-wide { max-width: min(880px, 82vw); }
+/* Frosted glass behind every block of text: legible over any sky, any sea. */
+/* Legibility without boxes: a soft pool of shadow behind each block of text, feathered
+   into the scene like a film title's grade. */
+.film-beat { isolation: isolate; text-shadow: 0 1px 2px #0009, 0 2px 24px #0008; }
+.film-beat::before { content: ''; position: absolute; z-index: -1; inset: -32% -34% -30% -30%; border-radius: 50%;
+  background: radial-gradient(closest-side, #05040bd9 0%, #05040bb3 45%, #05040b55 72%, #05040b00 100%); pointer-events: none; }
+.film-wide::before { inset: -22% -26% -22% -24%; background: radial-gradient(closest-side, #05040bee 0%, #05040bcc 50%, #05040b66 76%, #05040b00 100%); }
+
+.film-eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; font: 400 11px/1.4 'Geist Mono', monospace; letter-spacing: .18em; text-transform: uppercase; color: #ffffffd9; }
+.film-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); flex: none; }
+.film h1, .film h2, .film h3 { margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -.025em; line-height: .95; color: #fff; }
+.film h1 { font-size: clamp(64px, 11.5vw, 184px); }
+.film h1 > span, .film h1 > em { display: block; }
+.film h2 { font-size: clamp(48px, 7.4vw, 116px); }
+.film-panel h2 { font-size: clamp(44px, 6vw, 96px); }
+.film h3 { font-size: clamp(32px, 3.8vw, 58px); line-height: 1; }
+.film em { font-style: italic; color: var(--accent); transition: color 1s ease; }
+
+/* Kinetic titles: letters rise from behind a clip, one after another. */
+.k { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .04em .02em .12em; margin: -.04em -.02em -.12em; }
+.k > span { display: inline-block; transform: translateY(115%) rotate(8deg); transform-origin: left bottom; transition: transform 1s cubic-bezier(.16, .84, .1, 1) calc(var(--i) * 28ms + .12s); }
+.film-beat[data-on='true'] .k > span { transform: none; }
+
+.film-lede { margin: 20px 0 0; max-width: 50ch; font-size: clamp(15px, 1.15vw, 18px); line-height: 1.6; font-weight: 300; color: #fffffff0; }
+.film-hero .film-lede { font-size: clamp(16px, 1.4vw, 21px); }
+.film-hero::before { opacity: .7; }
+.film-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.film-links a { padding: 11px 18px; border: 1px solid #ffffff4d; border-radius: 100px; color: #fff; text-decoration: none; font: 400 12px/1 'Geist Mono', monospace; letter-spacing: .08em; background: #ffffff0f; transition: background .25s, border-color .25s, color .25s; }
+.film-links a:hover, .film-links a:focus-visible { background: var(--accent); border-color: var(--accent); color: #0a0912; outline: none; }
+
+.film-list { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; max-width: 74ch; }
+.film-list li { position: relative; padding-left: 20px; font-size: clamp(14px, 1vw, 16px); line-height: 1.55; font-weight: 300; color: #ffffffe6; }
+.film-list li::before { content: ''; position: absolute; left: 0; top: .72em; width: 9px; height: 1px; background: var(--accent); }
+.film-list strong { font-weight: 500; color: #fff; }
+.film-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.film-tags span { padding: 7px 12px; border-radius: 100px; background: #ffffff12; border: 1px solid #ffffff2a; font: 400 11px/1 'Geist Mono', monospace; letter-spacing: .06em; color: #fff; }
+.film-also { margin: 20px 0 0; font: 400 11px/1.6 'Geist Mono', monospace; letter-spacing: .08em; color: #ffffffbf; }
+
+/* Skills and rows arrive one by one. */
+.film-skills { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.film-skills li { font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(21px, 2.1vw, 34px); line-height: 1.15; color: #fff; opacity: 0; transform: translateY(12px); transition: opacity .6s ease calc(var(--i) * 35ms + .2s), transform .8s cubic-bezier(.2, .8, .1, 1) calc(var(--i) * 35ms + .2s); }
+.film-skills li:nth-child(3n + 2) { font-style: italic; color: var(--accent); }
+.film-beat[data-on='true'] .film-skills li { opacity: 1; transform: none; }
+
+.film-rows { margin: 0; padding: 0; list-style: none; display: grid; max-width: 840px; }
+.film-rows li { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: baseline; padding: 11px 0; border-top: 1px solid #ffffff22; opacity: 0; transform: translateX(-14px); transition: opacity .6s ease calc(var(--i) * 50ms + .2s), transform .8s cubic-bezier(.2, .8, .1, 1) calc(var(--i) * 50ms + .2s); }
+.film-beat[data-on='true'] .film-rows li { opacity: 1; transform: none; }
+.film-rows strong { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(20px, 1.7vw, 27px); line-height: 1.15; color: #fff; }
+.film-rows span { font-size: 14px; font-weight: 300; color: #ffffffd0; }
+.film-rows-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 36px; }
+.film-rows-compact li { grid-template-columns: 1fr; gap: 2px; padding: 9px 0; }
+.film-rows-compact strong { font-size: clamp(18px, 1.45vw, 23px); }
+.film-rows-compact span { font-size: 12px; }
+
+.film-email { display: inline-block; margin-top: 22px; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(28px, 3.6vw, 54px); color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+.film-email:hover, .film-email:focus-visible { color: #fff; outline: none; }
+.film-enter { display: inline-flex; align-items: center; gap: 14px; margin-top: 26px; padding: 15px 24px; border-radius: 100px; background: var(--accent); color: #0a0912; text-decoration: none; font: 500 14px/1 Geist, sans-serif; letter-spacing: .01em; text-shadow: none; box-shadow: 0 10px 40px -10px var(--accent); transition: transform .3s ease, box-shadow .3s ease; }
+.film-enter span { transition: transform .3s ease; }
+.film-enter:hover, .film-enter:focus-visible { transform: translateY(-2px); box-shadow: 0 16px 50px -10px var(--accent); outline: none; }
+.film-enter:hover span { transform: translateX(4px); }
+
+.film-cue { position: absolute; right: clamp(22px, 4vw, 56px); bottom: 34px; margin: 0; font: 400 11px/1 'Geist Mono', monospace; letter-spacing: .2em; text-transform: uppercase; color: #ffffffcc; text-shadow: 0 1px 8px #000a; transition: opacity .6s; }
+.film-cue[data-hidden='true'] { opacity: 0; }
+.film-cue::after { content: ''; display: block; width: 1px; height: 42px; margin: 12px auto 0; background: linear-gradient(#ffffffcc, transparent); animation: film-cue 2.4s ease-in-out infinite; }
+@keyframes film-cue { 0%, 100% { transform: scaleY(.4); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } }
+
+.film-error { position: fixed; left: 50%; bottom: 40px; z-index: 4; transform: translateX(-50%); padding: 12px 20px; border-radius: 100px; background: #07060ccc; font-size: 14px; }
+.film-error a { color: var(--accent); }
+
+/* The mode switch, dressed for the film. */
+.portfolio-mode-switch.mode-on-film { background: #0a0912a6; border-color: #ffffff2e; backdrop-filter: blur(14px); box-shadow: none; }
+.portfolio-mode-switch.mode-on-film a { color: #ffffffe0; }
+.portfolio-mode-switch.mode-on-film a[aria-current='page'] { background: #fff; color: #14110d; }
+
+@media (max-width: 760px) {
+  .film-top { padding-top: 70px; }
+  .film-top span:last-child { display: none; }
+  .film-rail { top: auto; bottom: 14px; right: 50%; transform: translateX(50%); display: flex; gap: 2px; padding: 6px 8px; border-radius: 100px; background: #0a0912a6; backdrop-filter: blur(12px); }
+  .film-rail button { padding: 6px; }
+  .film-rail button b, .film-rail button span::after { display: none; }
+  .film-beat { left: 14px; right: 14px; bottom: 62px; max-width: none; }
+  .film-beat::before { inset: -18% -12% -14% -12%; }
+  .film-rows li { grid-template-columns: 1fr; gap: 4px; }
+  .film-rows-compact { grid-template-columns: 1fr; } .film-rows-compact li:nth-child(n + 7) { display: none; }
+  .film-list li:nth-child(n + 3) { display: none; }
+  .film-numeral { font-size: 70vw; }
+  .film-cue { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-cue::after, .film-numeral { animation: none; }
+  .film-veil, .film-beat, .k > span, .film-skills li, .film-rows li { transition: none; }
+}

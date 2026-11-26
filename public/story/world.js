@@ -3,11 +3,11 @@ import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createInterior } from './interiors.js?v=2';
 import { createWorldAudio } from './audio.js';
-import { createRealism } from './realism.js?v=10';
+import { createRealism } from './realism.js?v=20';
 
 // The buildings and rooms are modeled here. In the full-screen world, realism.js swaps the
 // outdoor scenery for scanned CC0 plants, rock, materials and sky served from ./assets.
-export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onArrival, onSoundChange, projectCount = 7, skills = [] } = {}) {
+export function createStoryWorld(host, { onReady, onError, immersive = false, onSelect, onInterior, onStation, onArrival, onSoundChange, projectCount = 7, skills = [], cinematic = false } = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, .1, 160);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: immersive ? 'high-performance' : 'low-power' });
@@ -34,6 +34,12 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     controls.autoRotateSpeed = .32; controls.zoomSpeed = .6;
   }
 
+  // Cinematic mode (the film): the camera follows shots set from outside, with no
+  // orbiting, labels or picking. The shot eases in so scroll never feels jumpy.
+  const shot = { position: new THREE.Vector3(0, 26, 70), target: new THREE.Vector3(0, 2, 0), fov: 38, offset: 0 };
+  const shotTarget = new THREE.Vector3().copy(shot.target);
+  let shotFov = shot.fov, shotOffset = 0, shotPrimed = false;
+  if (cinematic && controls) { controls.enabled = false; renderer.domElement.style.pointerEvents = 'none'; }
   const exterior = new THREE.Group(); scene.add(exterior);
   const world = new THREE.Group(); exterior.add(world);
   const audio = immersive ? createWorldAudio({ onState: () => {
@@ -395,7 +401,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     hide: [...terrain, ...blossomParts, ...trees, stems, blossoms, grass, spirit, petals, ...smoke, ...clouds.map(cloud => cloud.group), ...mountains]
   }) : null;
   if (realism) exterior.visible = false;
-  if (immersive && new URLSearchParams(window.location.search).has('debug')) window.__storyDebug = { renderer, scene, camera, exterior };
+  if (immersive && new URLSearchParams(window.location.search).has('debug')) window.__storyDebug = { renderer, scene, camera, exterior, realism };
 
   let progress = 0, current = 0, playing = true, visible = true, disposed = false, localTime = 0, lastTime = 0, inFrame = false;
   const pointer = new THREE.Vector2(), smoothPointer = new THREE.Vector2();
@@ -455,6 +461,15 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           const nextZ = camera.position.z - dx * Math.sin(lookYaw) + dz * Math.cos(lookYaw);
           if (Math.abs(nextX) < 7.25 && Math.abs(nextZ) < 6.25 && !insideRoom.colliders.some(c => Math.abs(nextX - c.x) < c.width && Math.abs(nextZ - c.z) < c.depth)) { camera.position.x = nextX; camera.position.z = nextZ; }
         }
+      } else if (cinematic) {
+        const k = shotPrimed && playing ? 1 - Math.exp(-2.6 * (delta || .016)) : 1; shotPrimed = true;
+        camera.position.lerp(shot.position, k); shotTarget.lerp(shot.target, k);
+        shotFov += (shot.fov - shotFov) * k; shotOffset += (shot.offset - shotOffset) * k;
+        camera.fov = shotFov;
+        // Shift the frame so the subject sits beside the text rather than under it.
+        const w = host.clientWidth || 1, h = host.clientHeight || 1;
+        camera.setViewOffset(w, h, -shotOffset * w, 0, w, h);
+        camera.lookAt(shotTarget);
       } else {
         controls.autoRotate = playing && !selectedPlace && !flying && !journey;
         if (!flying && !journey) controls.update(delta);
@@ -471,8 +486,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           book.scale.setScalar(scale);
         }
       }
-      labels.forEach(label => { label.visible = !selectedPlace && !journey; });
-      if (!selectedPlace && !journey) {
+      labels.forEach(label => { label.visible = !selectedPlace && !journey && !cinematic; });
+      if (!selectedPlace && !journey && !cinematic) {
         world.updateMatrixWorld(true); camera.updateMatrixWorld();
         const focal = host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
         const rectangles = [];
@@ -534,7 +549,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     sun.color.setRGB(1, .92 - evening * .17, .78 - evening * .22);
     sun.intensity = 3.1 - evening * .55;
     if (realism && exterior.visible) realism.update(localTime, camera, evening);
-    renderer.render(scene, camera);
+    if (!realism?.render(camera)) renderer.render(scene, camera);
     if (cssRenderer) cssRenderer.render(scene, camera);
     inFrame = false;
   }
@@ -543,13 +558,14 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const { width, height } = host.getBoundingClientRect();
     renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
     cssRenderer?.setSize(width, height);
-    if (immersive && !insideRoom && !journey) {
+    if (immersive && !insideRoom && !journey && !cinematic) {
       const halfHorizontal = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
       fitDistance = 7.6 / Math.sin(Math.min(halfHorizontal, THREE.MathUtils.degToRad(camera.fov / 2)));
       controls.maxDistance = Math.max(65, fitDistance * 1.6);
       if (!selectedPlace) {
-        camera.position.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
-        controls.target.set(0, 1, 0);
+        // Low and level, like a film's establishing shot: the horizon and the sun glow in frame.
+        camera.position.set(17, 6, 21).normalize().multiplyScalar(fitDistance);
+        controls.target.set(0, 1.8, 0);
       } else focus(selectedPlace);
     } else if (immersive && insideRoom && !journey) {
       if (activeDesk !== null) focusStation(activeDesk, false, activeScreenMode);
@@ -566,7 +582,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   function ensureRoom(id) {
     if (!rooms.has(id)) {
       const room = createInterior(id, { material: mat, projectCount, skills, onExit: () => onSelect?.(null), onNavigate: onSelect, onPlant: focusPlant, onSound: setSound, muted: audio.muted, audioReady: audio.ready });
-      room.kind = id; rooms.set(id, room); scene.add(room.group);
+      room.kind = id; rooms.set(id, room); scene.add(room.group); realism?.enchantRoom(room, id);
     }
     return rooms.get(id);
   }
@@ -575,7 +591,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     activeDesk = null;
     pendingStation = null;
     insideRoom?.group && (insideRoom.group.visible = false);
-    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false; exterior.visible = false; realism?.setOutdoors(false);
+    insideRoom = ensureRoom(id); insideRoom.group.visible = true; world.visible = false; exterior.visible = false; realism?.setOutdoors(false, id);
     camera.fov = 65; camera.updateProjectionMatrix();
     if (id === 'projects' || id === 'skills') {
       camera.position.set(0, 2.7, 5.6); controls.target.set(0, 2.5, -4.7); book.visible = false;
@@ -594,7 +610,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     book.visible = false;
     camera.fov = 34; camera.updateProjectionMatrix();
     camera.position.set(-3.1, 2.2, 3.6); controls.target.set(0, 1, 0);
-    destinationTarget.set(0, 1, 0); destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
+    destinationTarget.set(0, 1.8, 0); destination.set(17, 6, 21).normalize().multiplyScalar(fitDistance);
     controls.enabled = true; flying = false; activeDesk = null; onInterior?.({ kind: null, screens: [] });
     if (!playing) { camera.position.copy(destination); controls.target.copy(destinationTarget); flying = false; }
   }
@@ -699,7 +715,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
         finishExit(); door.rotation.y = -1.4;
         camera.position.copy(point).addScaledVector(normal, .2); controls.target.copy(point).addScaledVector(normal, 4); camera.lookAt(controls.target);
       } }),
-      cameraPhase('return-to-garden', 1.4, () => ({ position: new THREE.Vector3(16, 11, 20).normalize().multiplyScalar(fitDistance), target: new THREE.Vector3(0, 1, 0), fov: 34 }), { start: () => { if (playing) audio.door(false); }, update: t => { threshold(1 - Math.min(1, t * 2)); door.rotation.y = -1.4 * (1 - t); } })
+      cameraPhase('return-to-garden', 1.4, () => ({ position: new THREE.Vector3(17, 6, 21).normalize().multiplyScalar(fitDistance), target: new THREE.Vector3(0, 1.8, 0), fov: 34 }), { start: () => { if (playing) audio.door(false); }, update: t => { threshold(1 - Math.min(1, t * 2)); door.rotation.y = -1.4 * (1 - t); } })
     ], () => { if (next) beginEntrance(next); });
   }
   function focus(id) {
@@ -709,7 +725,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (insideRoom) beginExit(id);
     else if (id) beginEntrance(id);
     else {
-      destinationTarget.set(0, 1, 0); destination.set(16, 11, 20).normalize().multiplyScalar(fitDistance);
+      destinationTarget.set(0, 1.8, 0); destination.set(17, 6, 21).normalize().multiplyScalar(fitDistance);
       controls.enabled = true; flying = true;
     }
     if (!playing) render(lastTime);
@@ -729,7 +745,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   }
   function pick(event) {
     lookDown = null;
-    if (!immersive || journey || flying || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
+    if (!immersive || cinematic || journey || flying || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
     const rect = renderer.domElement.getBoundingClientRect();
     raycaster.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1), camera);
     const hit = raycaster.intersectObjects(insideRoom ? insideRoom.pickable : interactiveObjects, true)[0];
@@ -801,6 +817,10 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     setQuality(value) { realism?.setQuality(value); if (!playing) render(lastTime); },
     showRoom() { if (insideRoom?.kind === 'projects' && !journey) { activeDesk = null; destination.set(0, 2.7, 5.6); destinationTarget.set(0, 2.5, -4.7); flying = true; if (!playing) render(lastTime); } },
     setEvening(value) { progress = value ? 1 : 0; if (!playing) render(lastTime); },
+    setShot({ position, target, fov = 38, offset = 0 }) {
+      shot.position.fromArray(position); shot.target.fromArray(target); shot.fov = fov; shot.offset = offset;
+      if (!playing) render(lastTime);
+    },
     setProgress(value) { progress = THREE.MathUtils.clamp(value, 0, 1); if (!playing || !visible) render(lastTime); },
     setPlaying(value) { playing = value; loop(); },
     dispose() {

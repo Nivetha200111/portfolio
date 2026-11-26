@@ -1,7 +1,13 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
-import { HDRLoader } from './vendor/HDRLoader.js';
 import { MeshoptDecoder } from './vendor/meshopt_decoder.module.js';
+import { EffectComposer } from './vendor/postprocessing/EffectComposer.js';
+import { RenderPass } from './vendor/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from './vendor/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from './vendor/postprocessing/OutputPass.js';
+import { remasterRoom, createWeave } from './rooms-real.js?v=4';
+import { createAtmosphere, SKY_GLSL } from './atmosphere.js?v=1';
+import { ShaderPass } from './vendor/postprocessing/ShaderPass.js';
 
 // The photoreal garden. Scanned CC0 plants, rocks, materials and sky from Poly Haven
 // (see assets/README.md) replace the hand-modeled outdoor scenery. The buildings keep
@@ -16,9 +22,6 @@ const once = (key, make) => {
 const loadModel = id => once(`model:${id}`, () => new Promise((resolve, reject) => {
   const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
   loader.load(`${BASE}models/${id}.glb`, gltf => resolve(gltf.scene), undefined, reject);
-}));
-const loadSky = () => once('sky', () => new Promise((resolve, reject) => {
-  new HDRLoader().setDataType(THREE.FloatType).load(`${BASE}sky/qwantani_dusk_2_puresky_2k.hdr`, resolve, undefined, reject);
 }));
 const textureLoader = new THREE.TextureLoader();
 const loadTexture = (path, srgb) => once(`texture:${path}`, () => new Promise((resolve, reject) => textureLoader.load(`${BASE}textures/${path}`, texture => {
@@ -67,9 +70,9 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
   // small plants (grass, moss, flowers), the main cost on integrated GPUs.
   const dpr = window.devicePixelRatio;
   const QUALITY = {
-    auto: { ceiling: Math.min(dpr, lite ? 1 : 1.25), floor: .7, adaptive: true, density: 1 },
-    sharp: { ceiling: Math.min(dpr, 1.5), floor: Math.min(dpr, 1.5), adaptive: false, density: 1 },
-    fast: { ceiling: Math.min(dpr, .9), floor: .6, adaptive: true, density: .35 }
+    auto: { ceiling: Math.min(dpr, lite ? 1 : 1.25), floor: .7, adaptive: true, density: 1, bloom: !lite, msaa: 0 },
+    sharp: { ceiling: Math.min(dpr, 1.5), floor: Math.min(dpr, 1.5), adaptive: false, density: 1, bloom: true, msaa: 2 },
+    fast: { ceiling: Math.min(dpr, .9), floor: .6, adaptive: true, density: .35, bloom: false, msaa: 0 }
   };
   let quality = 'auto', settings = QUALITY.auto;
   let pixelRatio = settings.ceiling, frameAverage = 16, lastFrame = 0, sinceChange = 0, frame = 0;
@@ -81,6 +84,7 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
   renderer.setPixelRatio(pixelRatio);
   function applyQuality() {
     settings = QUALITY[quality];
+    if (composer && composer.renderTarget1.samples !== settings.msaa) dropComposer();
     frameAverage = 16; sinceChange = 0; setRatio(settings.ceiling);
     created.children.forEach(child => {
       if (child.isInstancedMesh && child.userData.fullCount) child.count = Math.max(1, Math.round(child.userData.fullCount * settings.density));
@@ -95,11 +99,23 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     const next = frameAverage > 24 ? Math.max(settings.floor, pixelRatio - .15) : frameAverage < 15 ? Math.min(settings.ceiling, pixelRatio + .1) : pixelRatio;
     if (next !== pixelRatio) { sinceChange = 0; setRatio(next); }
   }
+  const magic = { value: 0 }; // 0 at golden hour, 1 at magic hour (the evening toggle)
+  let windowGlass = null, lanternGlow = null;
   let disposed = false, loaded = false, outdoors = true, sky = null, sunDirection = new THREE.Vector3(-.5, .45, -.6), sunColor = new THREE.Color('#ffd9a8');
   const created = new THREE.Group(); world.add(created);
   const floating = new THREE.Group(); exterior.add(floating);
   created.visible = floating.visible = false;
   const ownTextures = new Set(), ownMaterials = new Set();
+  let room = null, roomKit = null;
+  const pendingRooms = [];
+  // Rooms are built on demand; each one is made realistic as soon as assets are ready.
+  function enchantRoom(target, kind) {
+    if (target.real) return;
+    if (!loaded) { pendingRooms.push([target, kind]); return; }
+    target.real = remasterRoom(target, kind, roomKit);
+    const update = target.update;
+    target.update = time => { update(time); target.real.update(time); };
+  }
   const saved = { hemisphere: hemisphere.intensity, sunIntensity: sun.intensity, sunColor: sun.color.clone(), sunPosition: sun.position.clone(), shadow: (({ left, right, top, bottom, near, far }) => ({ left, right, top, bottom, near, far }))(sun.shadow.camera), mapSize: sun.shadow.mapSize.clone() };
   const standard = options => { const material = new THREE.MeshStandardMaterial(options); ownMaterials.add(material); return material; };
   const surface = (set, { tint = '#ffffff', roughness = 1, normalScale = 1, metalness = 0 } = {}) => standard({ ...set, color: tint, roughness, metalness, normalScale: new THREE.Vector2(normalScale, normalScale) });
@@ -190,7 +206,9 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     const canvas = standard({ color: '#ece2cc', roughness: .95, side: THREE.DoubleSide });
     const leather = standard({ color: '#3f5e4b', roughness: .55 });
     const paper = standard({ color: '#f1e7cf', roughness: .9 });
-    const glass = new THREE.MeshPhysicalMaterial({ color: '#2a383c', metalness: .1, roughness: .04, clearcoat: 1, envMapIntensity: 1.4 }); ownMaterials.add(glass);
+    // Windows glow warm, as if someone is home at dusk; the glass still mirrors the sky.
+    const glass = new THREE.MeshPhysicalMaterial({ color: '#1b2427', metalness: .1, roughness: .04, clearcoat: 1, envMapIntensity: 1.2, emissive: '#ffad55', emissiveIntensity: 1.1 }); ownMaterials.add(glass);
+    windowGlass = glass;
     const water = new THREE.MeshPhysicalMaterial({ color: '#1d3d44', metalness: 0, roughness: .04, ior: 1.33, clearcoat: 1, clearcoatRoughness: .03, normalMap: pondNormals, normalScale: new THREE.Vector2(.45, .45), envMapIntensity: 1.4 }); ownMaterials.add(water);
     const generic = new Map();
     const table = {
@@ -288,11 +306,6 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
   }
 
   // ------------------------------------------------- dreamlike, but real
-  const orbMaterial = standard({ color: '#ffffff', metalness: 1, roughness: .04 });
-  const orbs = [[-6.8, 4.6, 3.6, .55], [7.4, 6.2, 1.2, .8], [-2.4, 7.4, -6.6, .42], [6.1, 1.4, 5.8, .34]].map(([x, y, z, s], i) => {
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), orbMaterial); mesh.position.set(x, y, z); mesh.scale.setScalar(s); mesh.castShadow = true; floating.add(mesh);
-    return { mesh, y, phase: i * 1.7 };
-  });
   // The pond pours upward. A column of water rises out of it, its surface rippling as it
   // flows, and thins until it breaks into droplets that keep falling up into the sky.
   // Ripples come from a tileable normal map built here from layered waves.
@@ -366,100 +379,189 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     spread: .6 + random() * 1.9, rise: 3 + random() * 5, size: .02 + random() * .035
   }));
   const dropletMatrix = new THREE.Matrix4(), dropletPosition = new THREE.Vector3(), dropletScale = new THREE.Vector3(), dropletQuaternion = new THREE.Quaternion(), stretch = new THREE.Vector3(0, 1, 0);
-  // Two brass rings orbit the island like an armillary sphere.
-  const ringMaterial = standard({ color: '#d2ad62', metalness: 1, roughness: .28 });
-  const rings = [[10.2, 1.2, .2], [11.4, -1.05, -.5]].map(([radius, tx, tz]) => {
-    const holder = new THREE.Group(); holder.rotation.set(tx, 0, tz); holder.position.y = 1; floating.add(holder);
-    const spinner = new THREE.Group(); holder.add(spinner);
-    spinner.add(new THREE.Mesh(new THREE.TorusGeometry(radius, .04, 10, 240), ringMaterial));
-    for (let i = 0; i < 3; i++) { const bead = new THREE.Mesh(new THREE.SphereGeometry(.15, 24, 16), ringMaterial); const a = i / 3 * Math.PI * 2; bead.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 0); spinner.add(bead); }
-    return spinner;
-  });
   const islets = [];
 
-  // The sky dome shows the scanned dusk sky above the horizon. Below it (where a
-  // "pure sky" HDRI has nothing) a calm sea mirrors that sky, far beneath the island.
+  // The sky: a physically based atmosphere (see atmosphere.js) with the sun's disc,
+  // stars at magic hour, and a sea of cloud tops far below the island.
+  const atmosphere = createAtmosphere(renderer);
+  const skyUniforms = { uSkyLUT: { value: atmosphere.texture }, uSunDir: { value: new THREE.Vector3(0, .2, 1) }, uSunColor: { value: new THREE.Vector3(10, 8, 5) }, uTime: { value: 0 }, uNight: magic };
   const skyDome = new THREE.Mesh(new THREE.SphereGeometry(140, 64, 32), new THREE.ShaderMaterial({
-    uniforms: { uSky: { value: null }, uRotation: { value: 0 }, uTime: { value: 0 } },
-    side: THREE.BackSide, depthWrite: false, depthTest: false,
+    uniforms: skyUniforms, side: THREE.BackSide, depthWrite: false, depthTest: false,
     vertexShader: `varying vec3 vDir; void main() { vDir = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.); gl_Position = p.xyww; }`,
-    fragmentShader: `uniform sampler2D uSky; uniform float uRotation, uTime; varying vec3 vDir;
-      vec3 sky(vec3 d) {
-        float c = cos(-uRotation), s = sin(-uRotation);
-        d = vec3(c * d.x + s * d.z, d.y, -s * d.x + c * d.z);
-        return texture2D(uSky, vec2(atan(d.z, d.x) * .15915494 + .5, asin(clamp(d.y, -1., 1.)) * .31830989 + .5)).rgb;
-      }
+    fragmentShader: SKY_GLSL + `varying vec3 vDir;
       void main() {
-        vec3 d = normalize(vDir), col;
-        if (d.y >= 0.) col = sky(d);
-        else {
-          float depth = -d.y, calm = smoothstep(.0, .2, depth);
-          vec2 p = d.xz / max(depth, .03) * 2.2;
-          float n = sin(p.x * 1.7 + uTime * .5) * sin(p.y * 1.3 - uTime * .4) + sin(p.x * .6 - p.y * .9 + uTime * .3) * .6;
-          vec3 r = normalize(vec3(d.x + n * .014 * calm, depth, d.z + n * .014 * calm));
-          float fresnel = .03 + .97 * pow(1. - depth, 5.);
-          col = mix(vec3(.012, .026, .04), sky(r) * .92, clamp(fresnel * .85 + .12, 0., 1.));
-          col = mix(col, sky(normalize(vec3(d.x, .015, d.z))), (1. - smoothstep(.0, .05, depth)) * .7);
-        }
-        gl_FragColor = vec4(col, 1.);
+        gl_FragColor = vec4(skyColor(normalize(vDir)), 1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`
   }));
   skyDome.renderOrder = -100; skyDome.frustumCulled = false; floating.add(skyDome); ownMaterials.add(skyDome.material);
 
-  // ------------------------------------------------------------------ light
-  function findSun(texture) {
-    const { data, width, height } = texture.image;
-    let best = -1, bx = 0, by = 0;
-    for (let y = 0; y < height / 2; y += 2) for (let x = 0; x < width; x += 2) {
-      const i = (y * width + x) * 4, luminance = data[i] * .2126 + data[i + 1] * .7152 + data[i + 2] * .0722;
-      if (luminance > best) { best = luminance; bx = x; by = y; }
+  // ------------------------------------------------------------------ magic
+  // Fireflies drift low among the plants and blink; golden motes float through the air.
+  // Both are drawn in HDR so the bloom pass turns them into soft points of light.
+  function drifting(count, place, { size, color, blink, wander, rise }) {
+    const geometry = new THREE.BufferGeometry(), base = new Float32Array(count * 3), seed = new Float32Array(count);
+    for (let i = 0; i < count; i++) { const [x, y, z] = place(); base.set([x, y, z], i * 3); seed[i] = random(); }
+    geometry.setAttribute('position', new THREE.BufferAttribute(base, 3));
+    geometry.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    const material = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uScale: { value: 1 }, uMagic: magic },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: `uniform float uTime, uScale, uMagic; attribute float aSeed; varying float vGlow;
+        void main() {
+          float s = aSeed * 43.7, t = uTime;
+          float lift = fract(t * ${(rise / 3).toFixed(4)} + aSeed);
+          vec3 p = position + vec3(sin(t * .31 + s) * ${wander.toFixed(2)}, lift * 3. + sin(t * .53 + s * 1.7) * .25, cos(t * .27 + s * 2.3) * ${wander.toFixed(2)});
+          float pulse = ${blink ? 'pow(max(0., sin(t * (.7 + aSeed * .9) + s)), 5.)' : '.55 + .45 * sin(t * (1.3 + aSeed) + s)'};
+          vGlow = pulse * (${blink ? '.55 + uMagic * 1.1' : '.5 + uMagic * .5'}) * smoothstep(0., .1, lift) * (1. - smoothstep(.85, 1., lift));
+          vec4 mv = modelViewMatrix * vec4(p, 1.);
+          gl_PointSize = uScale * ${size.toFixed(1)} * (.6 + aSeed * .8) * (24. / -mv.z);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `varying float vGlow;
+        void main() { float d = length(gl_PointCoord - .5); if (d > .5) discard; float core = exp(-d * d * 28.);
+          gl_FragColor = vec4(vec3(${color.map(c => c.toFixed(2)).join(', ')}) * core * vGlow * 4., core * vGlow); }`
+    });
+    const points = new THREE.Points(geometry, material); points.frustumCulled = false; points.renderOrder = 4; created.add(points);
+    return material;
+  }
+  const fireflies = drifting(lite ? 70 : 150, () => {
+    const a = random() * Math.PI * 2, r = Math.sqrt(random()) * .92;
+    const x = Math.cos(a) * r * RX, z = Math.sin(a) * r * RZ;
+    return [x, heightAt(x, z) + .3 + random() * 1.6, z];
+  }, { size: 5, color: [1, .8, .32], blink: true, wander: .7, rise: .02 });
+  const motes = drifting(lite ? 120 : 320, () => {
+    const a = random() * Math.PI * 2, r = Math.sqrt(random()) * 1.15;
+    return [Math.cos(a) * r * RX, .5 + random() * 6.5, Math.sin(a) * r * RZ];
+  }, { size: 1.8, color: [1, .9, .72], blink: false, wander: 1.4, rise: .05 });
+
+  // Lanterns throw a warm pool of light on the ground beneath them.
+  const pools = [];
+  function lightLanterns() {
+    lanternGlow = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffc778').multiplyScalar(5) }); ownMaterials.add(lanternGlow);
+    const poolMaterial = new THREE.ShaderMaterial({
+      uniforms: { uMagic: magic, uFlicker: { value: 1 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      polygonOffset: true, polygonOffsetFactor: -2,
+      vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+      fragmentShader: `uniform float uMagic, uFlicker; varying vec2 vUv;
+        void main() { float d = length(vUv - .5) * 2.; float glow = pow(max(0., 1. - d), 2.2); gl_FragColor = vec4(vec3(1., .66, .3) * glow * (.32 + uMagic * .55) * uFlicker, glow); }`
+    });
+    ownMaterials.add(poolMaterial);
+    world.children.forEach(object => {
+      if (!object.isMesh || !object.material?.isMeshBasicMaterial || object.material.color.getHexString() !== 'ffe3a0') return;
+      object.material = lanternGlow;
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(1.5, 40), poolMaterial);
+      pool.rotation.x = -Math.PI / 2; pool.position.set(object.position.x, heightAt(object.position.x, object.position.z) + .05, object.position.z);
+      created.add(pool); pools.push(pool);
+    });
+    return poolMaterial;
+  }
+  let poolMaterial = null;
+
+  // Bloom: a soft glow around lanterns, lit windows, fireflies and bright highlights.
+  let composer = null, renderPass = null, bloom = null, grade = null;
+  function dropComposer() {
+    composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); composer.dispose();
+    composer = null; composerSize.set(-1, -1);
+  }
+  const composerSize = new THREE.Vector2(-1, -1), drawSize = new THREE.Vector2();
+  function render(camera) {
+    if (!loaded || !settings.bloom) return false;
+    if (!composer) {
+      // Multisampling a half-float target is costly on integrated GPUs, so only Sharp uses it.
+      const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: settings.msaa });
+      composer = new EffectComposer(renderer, target);
+      renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
+      bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), .5, .55, 1.6); composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+      // The film grade, after tone mapping: a gentle S-curve, cool shadows and warm
+      // highlights, a vignette, fine grain and a faint lens fringe toward the corners.
+      grade = new ShaderPass({
+        uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAmount: { value: 1 } },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+        fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uAmount; varying vec2 vUv;
+          float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+          void main() {
+            vec2 c = vUv - .5; float r2 = dot(c, c);
+            vec3 col = vec3(texture2D(tDiffuse, vUv + c * r2 * .012).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - c * r2 * .012).b);
+            float l = dot(col, vec3(.2126, .7152, .0722));
+            col = mix(col, col * col * (3. - 2. * col), .22 * uAmount);
+            col += mix(vec3(-.012, .004, .03), vec3(.035, .012, -.025), smoothstep(.15, .75, l)) * uAmount;
+            col *= 1. - r2 * .7 * uAmount;
+            col += (hash(vUv * 1931. + fract(uTime * 7.) * 113.) - .5) * .035 * uAmount;
+            gl_FragColor = vec4(col, 1.);
+          }`
+      });
+      composer.addPass(grade);
     }
-    const u = (bx + .5) / width, v = 1 - (by + .5) / height;
-    const azimuth = (u - .5) * Math.PI * 2, elevation = (v - .5) * Math.PI;
-    const i = (by * width + bx) * 4, peak = Math.max(data[i], data[i + 1], data[i + 2]);
-    return { direction: new THREE.Vector3(Math.cos(azimuth) * Math.cos(elevation), Math.sin(elevation), Math.sin(azimuth) * Math.cos(elevation)), color: new THREE.Color(data[i] / peak, data[i + 1] / peak, data[i + 2] / peak) };
+    renderer.getSize(drawSize);
+    const ratio = renderer.getPixelRatio();
+    if (drawSize.x !== composerSize.x || drawSize.y !== composerSize.y || ratio !== composer._pixelRatio) {
+      composer.setPixelRatio(ratio); composer.setSize(drawSize.x, drawSize.y); composerSize.copy(drawSize);
+    }
+    renderPass.camera = camera;
+    bloom.strength = .42 + magic.value * .38;
+    grade.uniforms.uTime.value = performance.now() / 1000;
+    composer.render();
+    return true;
   }
-  // Rotate the sky so its low sun comes from the viewer's right, lighting the faces the opening view sees.
+
+  // ------------------------------------------------------------------ light
+  // Golden hour by day; at magic hour the sun touches the horizon. Its azimuth puts the
+  // light on the viewer's right so it rakes across the island in the opening view.
+  const SUN_AZIMUTH = Math.atan2(.25, 1);
+  let skyElevation = null, hazeColor = new THREE.Color('#9aa6c4'), envTarget = null, lastSkyUpdate = -1;
+  const pmrem = new THREE.PMREMGenerator(renderer), envScene = new THREE.Scene();
+  envScene.add(new THREE.Mesh(skyDome.geometry, skyDome.material));
+  function computeSky(elevation) {
+    if (skyElevation !== null && Math.abs(elevation - skyElevation) < .004) return;
+    skyElevation = elevation;
+    sunDirection.set(Math.cos(elevation) * Math.cos(SUN_AZIMUTH), Math.sin(elevation), Math.cos(elevation) * Math.sin(SUN_AZIMUTH));
+    const light = atmosphere.sunlight(elevation);
+    skyUniforms.uSunDir.value.copy(sunDirection); skyUniforms.uSunColor.value.set(light.r, light.g, light.b);
+    hazeColor = atmosphere.update(sunDirection);
+    const peak = Math.max(light.r, light.g, light.b, 1e-4);
+    sunColor.setRGB(light.r / peak, light.g / peak, light.b / peak);
+    sunStrength = Math.min(3.6, (light.r * .3 + light.g * .6 + light.b * .1) * .32);
+    // Reflections and ambient light come from the same sky, so everything agrees.
+    const next = pmrem.fromScene(envScene, 0, .1, 300);
+    envTarget?.dispose(); envTarget = next; sky = next.texture;
+    if (loaded) applyLighting();
+  }
+  let sunStrength = 3.2;
   const skyRotation = new THREE.Euler();
-  function orientSky(found) {
-    const current = Math.atan2(found.direction.z, found.direction.x);
-    const wanted = Math.atan2(.25, 1);
-    skyRotation.set(0, current - wanted, 0);
-    sunDirection.copy(found.direction).applyEuler(skyRotation);
-    // A dusk sun sits on the horizon; lift the key light a little so the top of the island reads.
-    const flat = Math.hypot(sunDirection.x, sunDirection.z), lift = Math.max(Math.asin(THREE.MathUtils.clamp(sunDirection.y, -1, 1)), .42);
-    sunDirection.set(sunDirection.x / flat * Math.cos(lift), Math.sin(lift), sunDirection.z / flat * Math.cos(lift));
-    sunColor.copy(found.color).lerp(new THREE.Color('#ffffff'), .35);
-  }
   function applyLighting() {
     if (!loaded) return;
     if (outdoors) {
       scene.background = null; scene.environment = sky; scene.environmentRotation.copy(skyRotation);
-      scene.environmentIntensity = 1.05;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
-      hemisphere.intensity = .15;
-      sun.position.copy(sunDirection).multiplyScalar(30); sun.color.copy(sunColor); sun.intensity = 3.2;
+      scene.environmentIntensity = 1;
+      // Aerial perspective: distance fades into the colour of the air at the horizon.
+      scene.fog = new THREE.FogExp2(hazeColor, .0035);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
+      hemisphere.intensity = .1;
+      sun.position.copy(sunDirection).multiplyScalar(30); sun.color.copy(sunColor); sun.intensity = sunStrength;
       Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 70 }); sun.shadow.camera.updateProjectionMatrix();
       if (sun.shadow.mapSize.x !== 2048) { sun.shadow.mapSize.set(2048, 2048); sun.shadow.map?.dispose(); sun.shadow.map = null; }
       sun.shadow.normalBias = .03;
+      sun.castShadow = true;
     } else {
-      scene.background = null; scene.environment = null; renderer.shadowMap.autoUpdate = true;
-      renderer.toneMapping = THREE.NoToneMapping; renderer.toneMappingExposure = 1;
-      hemisphere.intensity = saved.hemisphere;
-      sun.position.copy(saved.sunPosition); sun.color.copy(saved.sunColor); sun.intensity = saved.sunIntensity;
-      Object.assign(sun.shadow.camera, saved.shadow); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.normalBias = .06;
+      // Indoors: the dusk sky gives soft reflections and the rooms' own lamps and
+      // window light do the rest. The garden's sun is switched off.
+      scene.fog = null;
+      scene.background = room === 'skills' ? sky : null; scene.backgroundRotation.copy(skyRotation); scene.environment = sky; scene.environmentRotation.copy(skyRotation);
+      scene.environmentIntensity = room === 'skills' ? .85 : .42;
+      renderer.shadowMap.autoUpdate = true;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
+      hemisphere.intensity = room === 'skills' ? .5 : .35;
+      sun.intensity = 0; sun.castShadow = false;
     }
   }
 
   const alphaIds = Object.keys(ALPHA);
-  const ready = Promise.all([loadSky(), Promise.all(MODELS.map(loadModel)), Promise.all(SURFACES.map(loadSurface)), Promise.all(alphaIds.map(loadAlpha))]).then(([skyTexture, modelList, surfaceList, alphaList]) => {
+  const ready = Promise.all([Promise.all(MODELS.map(loadModel)), Promise.all(SURFACES.map(loadSurface)), Promise.all(alphaIds.map(loadAlpha))]).then(([modelList, surfaceList, alphaList]) => {
     if (disposed) return false;
-    skyTexture.mapping = THREE.EquirectangularReflectionMapping;
-    sky = skyTexture; orientSky(findSun(skyTexture));
-    skyDome.material.uniforms.uSky.value = skyTexture;
-    skyDome.material.uniforms.uRotation.value = skyRotation.y;
+    computeSky(.2);
     alphaIds.forEach((id, i) => modelList[MODELS.indexOf(id)].traverse(object => {
       if (!object.isMesh || (ALPHA[id] && !ALPHA[id].test(object.material.name))) return;
       Object.assign(object.material, { alphaMap: alphaList[i], alphaTest: .5, transparent: false, depthWrite: true, side: THREE.DoubleSide, vertexColors: false });
@@ -473,6 +575,9 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     created.add(top.mesh);
     created.add(islandRoot(top.rim, top.segments, surface(surfaces.cliff_side, { tint: '#a39d95', normalScale: 1.6 })));
     remaster(surfaces);
+    poolMaterial = lightLanterns();
+    const weave = createWeave(); ownTextures.add(weave);
+    roomKit = { surfaces, models, standard, weave, random, own: material => { ownMaterials.add(material); return material; } };
 
     // Trees stand where the old ones did; a broad searsia becomes the wishing tree.
     const [islandTree] = models.island_tree_02, searsia = models.searsia_lucida, pines = models.pine_sapling_small;
@@ -506,13 +611,15 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
 
     hide.forEach(object => { object.visible = false; });
     created.visible = floating.visible = true; loaded = true; applyLighting(); applyQuality();
+    pendingRooms.splice(0).forEach(([target, kind]) => enchantRoom(target, kind));
     return true;
   });
 
   return {
     ready,
     get loaded() { return loaded; },
-    setOutdoors(value) { outdoors = value; applyLighting(); },
+    setOutdoors(value, kind = null) { outdoors = value; room = value ? null : kind; applyLighting(); },
+    enchantRoom,
     setQuality(value) { if (!QUALITY[value] || value === quality) return; quality = value; if (loaded) applyQuality(); else settings = QUALITY[value]; },
     update(time, camera, evening = 0) {
       if (!loaded) return;
@@ -522,8 +629,18 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
         renderer.shadowMap.autoUpdate = false;
         if (frame++ % 3 === 0) renderer.shadowMap.needsUpdate = true;
       }
-      renderer.toneMappingExposure = outdoors ? 1.1 - evening * .4 : 1;
+      renderer.toneMappingExposure = outdoors ? 1.3 - evening * .3 : 1.2;
       skyDome.position.copy(camera.position); skyDome.material.uniforms.uTime.value = time;
+      magic.value = evening;
+      // Magic hour lowers the sun to the horizon; the sky is re-rendered as it moves.
+      const wantedElevation = .2 - evening * .17;
+      if (Math.abs(wantedElevation - skyElevation) > .004 && time - lastSkyUpdate > .25) { lastSkyUpdate = time; computeSky(wantedElevation); }
+      const pointScale = renderer.domElement.height / 800;
+      for (const material of [fireflies, motes]) { material.uniforms.uTime.value = time; material.uniforms.uScale.value = pointScale; }
+      const flicker = .92 + Math.sin(time * 7.3) * .03 + Math.sin(time * 13.1) * .025;
+      if (poolMaterial) poolMaterial.uniforms.uFlicker.value = flicker;
+      if (lanternGlow) lanternGlow.color.set('#ffc778').multiplyScalar((4 + evening * 3) * flicker);
+      if (windowGlass) windowGlass.emissiveIntensity = (1.1 + evening * 2.2) * (.97 + Math.sin(time * 2.1) * .03);
       // Water flows up the column; the pond surface drifts more slowly.
       flowTime.value = time; flowNormals.offset.set(-time * .32, time * .05); pondNormals.offset.set(time * .015, time * .01);
       dropletSeeds.forEach((drop, i) => {
@@ -537,15 +654,15 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
         droplets.setMatrixAt(i, dropletMatrix.compose(dropletPosition, dropletQuaternion.setFromAxisAngle(stretch, a), dropletScale));
       });
       droplets.instanceMatrix.needsUpdate = true;
-      orbs.forEach(({ mesh, y, phase }) => { mesh.position.y = y + Math.sin(time * .7 + phase) * .4; });
       islets.forEach(({ group, y, phase }) => { group.position.y = y + Math.sin(time * .4 + phase) * .35; });
-      rings.forEach((spinner, i) => { spinner.rotation.z = time * (i ? -.045 : .06); });
     },
+    render,
     dispose() {
+      if (composer) dropComposer();
       disposed = true;
       ownMaterials.forEach(material => { material.normalMap?.dispose(); material.roughnessMap?.dispose(); material.dispose(); });
       ownTextures.forEach(texture => texture.dispose());
-      sky?.dispose();
+      envTarget?.dispose(); pmrem.dispose(); atmosphere.dispose();
     }
   };
 }

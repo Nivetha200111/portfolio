@@ -6,6 +6,7 @@ https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/renderers/CSS3DRenderer.
 https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js
 examples/jsm/loaders/GLTFLoader.js, examples/jsm/loaders/HDRLoader.js,
 examples/jsm/utils/BufferGeometryUtils.js and examples/jsm/libs/meshopt_decoder.module.js
+and postprocessing/{EffectComposer,RenderPass,UnrealBloomPass,OutputPass,ShaderPass,MaskPass,Pass}.js with shaders/{CopyShader,LuminosityHighPassShader,OutputShader}.js
 (copied from the three@0.180.0 npm package)
 
 Served locally so the story does not depend on an external runtime CDN.
