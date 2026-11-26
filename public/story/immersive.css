@@ -1,8 +1,8 @@
-.world-portfolio { position: relative; width: 100%; height: 100svh; overflow: hidden; color: #344c40; font-family: 'DM Sans', sans-serif; background: #e4eade; }
+.world-portfolio { position: relative; width: 100%; height: 100svh; overflow: hidden; color: #344c40; font-family: 'DM Sans', sans-serif; background: #2b2259; }
 .world-portfolio .story-world { inset: 0; }
 .world-portfolio .story-sky, .world-portfolio .story-sunset { transition: opacity 2s; }
 .world-dom { overflow: hidden; }
-.world-threshold { position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, #273c30, #15271e); }
+.world-threshold { position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, #ffd9c4 0%, #b58ad8 18%, #3a2a78 48%, #120d2b 100%); }
 .room-music { font: 21px Georgia, serif; color: #f8eacb; background: #607652; border: 2px solid #b6a47b; padding: 14px 20px; white-space: nowrap; cursor: pointer; pointer-events: auto; }
 .skill-plant-label { width: 260px; padding: 9px 12px; border: 2px solid #b79770; border-radius: 4px; background: #f2dfb3; color: #405c40; cursor: pointer; pointer-events: auto; text-align: center; }
 .skill-plant-label strong { display: block; font: 29px Georgia, serif; }
@@ -91,7 +91,7 @@
 .world-fallback h1 { font-size: 44px; font-family: Georgia, serif; margin-bottom: 20px; }
 .world-fallback button { padding: 12px; color: #344c40; background: #fff8e9; border: 1px solid #c4c5a7; margin: 5px; border-radius: 8px; cursor: pointer; }
 .world-fallback .world-book { position: static; width: 100%; max-width: 520px; max-height: none; margin: 20px auto; }
-.world-hint { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; pointer-events: none; font-size: 11px; color: #5a705b; letter-spacing: .07em; opacity: .75; animation: hint-away 12s forwards; }
+.world-hint { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; pointer-events: none; font-size: 11px; color: #fbe9d6; text-shadow: 0 1px 8px #1d143f; letter-spacing: .07em; opacity: .85; animation: hint-away 12s forwards; }
 @keyframes hint-away { 0%, 70% { opacity: .75; } 100% { opacity: 0; visibility: hidden; } }
 @media (max-width: 600px) {
   .world-book { width: 420px; max-height: 680px; padding: 26px 27px 24px 34px; }
@@ -109,3 +109,40 @@
   .book-row p { font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .world-hint { animation: none; } .world-portfolio .story-sky, .world-portfolio .story-sunset { transition: none; } }
+
+/* Dream dusk: the CSS sky matches the WebGL sky so loading never flashes daylight. */
+.world-portfolio .story-sky { background: radial-gradient(ellipse at 30% 62%, #ffd9a880 0%, transparent 45%), linear-gradient(180deg, #2b2163 0%, #6f5bb0 48%, #f2a9b0 78%, #ffdcaa 100%); }
+.world-portfolio .story-sunset { background: linear-gradient(180deg, #0e0b27 0%, #3c2872 50%, #d26a83 80%, #ff9e6b 100%); }
+.world-portfolio .story-loading { color: #fbe9d6; text-shadow: 0 1px 10px #1d143f; }
+.world-portfolio .story-grain { mix-blend-mode: overlay; opacity: .09; }
+.world-portfolio::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 85% 75% at 50% 48%, transparent 58%, #120b2e66 100%); }
+
+/* Graphics quality switch for the photoreal garden. */
+.world-quality { position: absolute; left: 18px; bottom: 18px; z-index: 6; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 100px; background: #fff8e9e6; border: 1px solid #f6ead1; box-shadow: 0 8px 26px #1d143f33; font-family: 'DM Sans', sans-serif; }
+.world-quality span { padding: 0 8px 0 10px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6c7563; }
+.world-quality button { border: 0; border-radius: 100px; padding: 7px 13px; background: transparent; color: #344c40; font-size: 12px; cursor: pointer; }
+.world-quality button:hover { background: #344c4012; }
+.world-quality button[aria-pressed="true"] { background: #4b6a50; color: #fbf6e6; }
+.world-quality button:focus-visible { outline: 2px solid #9aaf78; outline-offset: 2px; }
+@media (max-width: 600px) { .world-quality { left: 10px; bottom: 10px; } .world-quality span { display: none; } .world-quality button { padding: 6px 10px; } }
+
+/* Cinematic pass: place names set like film titles, no cards. The film grade (vignette,
+   grain) now happens in the renderer, so the CSS versions step aside. */
+.world-portfolio::after, .world-portfolio .story-grain { display: none; }
+.world-place { min-width: 0; padding: 6px 10px; border: 0; border-radius: 0; background: none; box-shadow: none; color: #fff; text-shadow: 0 1px 2px #000b, 0 2px 20px #000c; }
+.world-place strong { font-family: 'Instrument Serif', Georgia, serif; font-size: 34px; letter-spacing: -.01em; color: #fff; transition: color .3s ease; }
+.world-place span { margin-top: 3px; font: 400 11px/1.2 'Geist Mono', monospace; letter-spacing: .18em; text-transform: uppercase; color: #fff; opacity: .92; text-shadow: 0 0 3px #000, 0 1px 10px #000d; }
+.world-place:hover, .world-place:focus-visible { background: none; outline: none; }
+.world-place:hover strong, .world-place:focus-visible strong { color: #ffd9a3; font-style: italic; }
+.world-place:focus-visible { outline: 1px solid #ffd9a3; outline-offset: 2px; }
+.world-quality { background: none; border: 0; box-shadow: none; padding: 0; }
+.world-quality span { color: #ffffffb0; text-shadow: 0 1px 8px #000a; }
+.world-quality button { color: #ffffffcc; text-shadow: 0 1px 8px #000a; font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: .08em; padding: 6px 10px; }
+.world-quality button:hover { background: none; color: #fff; }
+.world-quality button[aria-pressed="true"] { background: none; color: #ffd9a3; box-shadow: inset 0 -1px 0 #ffd9a3; border-radius: 0; }
+.world-hint { color: #fff; text-shadow: 0 1px 8px #000c; font-family: 'Geist Mono', monospace; }
+@media (max-width: 760px) {
+  .world-place { padding: 4px 6px; }
+  .world-place strong { font-size: 21px; }
+  .world-place span { font-size: 8px; letter-spacing: .14em; }
+}

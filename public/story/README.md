@@ -45,12 +45,39 @@ monitor provide mute controls, and the preference is remembered. No audio assets
 or copyrighted recordings are downloaded. Verify the audio lifecycle with
 `node --test tests/world-audio.test.mjs`.
 
-All scenery is modeled procedurally. Three.js 0.180.0 and its controls/renderers
-are vendored locally with their MIT license. There is no build step; serve the
-existing `public` directory.
+The outdoor garden is photoreal (`realism.js`). Scanned CC0 trees, shrubs, ferns,
+flowers, grass, moss and rocks, PBR materials for the island and buildings, and a
+dusk HDRI sky all come from Poly Haven and live in `assets/` (see its README). The
+buildings keep their modeled shapes with real plaster, clay-tile, wood, brass and
+copper materials. Below the horizon a calm sea reflects the sky. Brass rings, mirror
+orbs, rising droplets from the pond, bubbles and an upside-down islet keep it
+dreamlike. Fireflies blink among the plants, golden motes drift in the air,
+windows glow as if someone is home, and lanterns throw pools of light; a soft
+bloom pass makes them glow. The evening toggle turns golden hour into magic hour:
+a deeper sky with stars, brighter windows, lanterns and fireflies. The rooms are realistic too (`rooms-real.js`): wood floors and timber ceilings,
+plaster walls, woven fabrics, brass and ceramic, scanned plants in every pot, a
+real wishing tree hung with fairy lights, a starry painted dome in the
+observatory, glass that reflects the sky in the greenhouse (each skill is a real
+potted plant), glowing paper lanterns and daylight pouring through the window.
+The ServiceNow prologue keeps the original stylized look. If any asset fails to load, the stylized garden is shown.
+
+A Quality switch (bottom-left, remembered in localStorage as `garden-quality`)
+offers Auto (bloom, adaptive resolution), Sharp (bloom with 2x MSAA, full
+resolution even if frames slow) and Fast (no bloom, about a third of the grass,
+moss and flowers, lower resolution).
+
+Performance: in Auto, render resolution adapts to the measured frame rate, shadows refresh
+every third frame, and small screens or machines with 4 or fewer cores get a
+lighter planting. Add `?debug` to the URL to expose `window.__storyDebug`
+(renderer, scene, camera) for profiling.
+
+Three.js 0.180.0, its controls, renderers and loaders are vendored locally with
+their MIT license. There is no build step; serve the existing `public` directory.
 # Two ways to visit
 
-The main portfolio opens in Explore 3D by default. The persistent mode switch
+The main portfolio opens with the film (`/film`, see its README). The 3D garden is
+one click away in the mode switch; its own links (`#projects`, `#world`, `?project=`)
+still open it directly. The persistent mode switch
 opens Quick View (`/?view=quick`), a scrollable cream-and-sage layout. Quick View
 can be bookmarked and linked to individual sections, for example
 `/?view=quick#experience`. It does not create a WebGL world or start room audio.
