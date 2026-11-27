@@ -133,6 +133,9 @@
   .film-beat::before { inset: -18% -12% -14% -12%; }
   .film-rows li { grid-template-columns: 1fr; gap: 4px; }
   .film-rows-compact { grid-template-columns: 1fr; } .film-rows-compact li:nth-child(n + 7) { display: none; }
+  /* Every award stays listed on phones, just tighter. */
+  .film-rows-awards li, .film-rows-awards li:nth-child(n + 7) { display: grid; padding: 6px 0; }
+  .film-rows-awards strong { font-size: 18px; } .film-rows-awards span { font-size: 11.5px; }
   .film-list li:nth-child(n + 3) { display: none; }
   .film-numeral { font-size: 70vw; }
   .film-cue { display: none; }

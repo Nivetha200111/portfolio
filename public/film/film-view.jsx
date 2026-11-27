@@ -109,7 +109,7 @@ const FilmView = ({ profile, projects = [], experience = [], skills = [], certif
 
             {/* 05 · Recognition: the moon on the sea */}
             {beat(4, .04, .25, 'film-panel', <>{eyebrow(5, 'Recognition')}<Title plain="Awards &" italic="credentials." /></>)}
-            {beat(4, .28, .58, 'film-panel film-wide', <><p className="film-eyebrow"><span className="film-dot" aria-hidden="true" />Awards</p><ul className="film-rows">{achievements.map((item, i) => <li key={item.title} style={{ '--i': i }}><strong>{item.title}</strong><span>{item.desc}</span></li>)}</ul></>)}
+            {beat(4, .28, .58, 'film-panel film-wide', <><p className="film-eyebrow"><span className="film-dot" aria-hidden="true" />Awards</p><ul className="film-rows film-rows-compact film-rows-awards">{achievements.map((item, i) => <li key={item.title} style={{ '--i': i }}><strong>{item.title}</strong><span>{item.desc}</span></li>)}</ul></>)}
             {beat(4, .61, .88, 'film-panel film-wide', <><p className="film-eyebrow"><span className="film-dot" aria-hidden="true" />Credentials</p><ul className="film-rows film-rows-compact">{certifications.map((item, i) => {
                 const name = item.name.replace(/^ServiceNow /, '').replace(/^Micro-Certification - /, '').replace(/^Suite Certification - /, '').replace(/^Anthropic courses:.*$/, 'Anthropic courses (7)');
                 return <li key={item.name} style={{ '--i': i }}><strong>{name}</strong><span>{item.category === 'Micro' ? 'ServiceNow micro-cert' : item.category === 'Anthropic' ? 'Claude, Claude Code, agents' : `ServiceNow ${item.category.toLowerCase()}`}</span></li>;
