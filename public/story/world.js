@@ -3,7 +3,7 @@ import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createInterior } from './interiors.js?v=2';
 import { createWorldAudio } from './audio.js';
-import { createRealism } from './realism.js?v=20';
+import { createRealism } from './realism.js?v=23';
 
 // The buildings and rooms are modeled here. In the full-screen world, realism.js swaps the
 // outdoor scenery for scanned CC0 plants, rock, materials and sky served from ./assets.
@@ -403,7 +403,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   if (realism) exterior.visible = false;
   if (immersive && new URLSearchParams(window.location.search).has('debug')) window.__storyDebug = { renderer, scene, camera, exterior, realism };
 
-  let progress = 0, current = 0, playing = true, visible = true, disposed = false, localTime = 0, lastTime = 0, inFrame = false;
+  let progress = 0, current = 0, playing = true, visible = true, disposed = false, localTime = 0, lastTime = 0, inFrame = false, warming = false;
   const pointer = new THREE.Vector2(), smoothPointer = new THREE.Vector2();
   const views = [
     { position: [16, 11, 20], target: [0, .2, 0] },
@@ -414,7 +414,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   const pA = new THREE.Vector3(), pB = new THREE.Vector3(), target = new THREE.Vector3();
   const bookTilt = new THREE.Quaternion(), bookEuler = new THREE.Euler();
   function render(time = 0) {
-    if (disposed || inFrame) return;
+    if (disposed || inFrame || warming) return;
     inFrame = true;
     const elapsed = Math.max(0, (time - lastTime) / 1000);
     const delta = Math.min(elapsed, .05); lastTime = time;
@@ -803,9 +803,15 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   resize(); loop(); if (audio) onSoundChange?.(audio.muted, audio.ready);
   // Hold the loading message until the scanned garden is in place. If an asset fails,
   // the stylized garden is still complete, so it is shown instead.
-  if (realism) realism.ready.catch(error => { console.warn('Realistic garden unavailable', error); return false; }).then(() => {
+  if (realism) realism.ready.catch(error => { console.warn('Realistic garden unavailable', error); return false; }).then(async () => {
     if (disposed) return;
     if (!insideRoom) exterior.visible = true;
+    // Compile shaders and upload textures in the background before the first frame.
+    // Left to that frame, the work freezes the page for several seconds.
+    warming = true;
+    try { await realism.warm(camera); } catch (error) { console.warn('Shader warm-up skipped', error); }
+    warming = false;
+    if (disposed) return;
     render(lastTime); onReady?.();
   });
   else onReady?.();

@@ -466,8 +466,7 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     composer = null; composerSize.set(-1, -1);
   }
   const composerSize = new THREE.Vector2(-1, -1), drawSize = new THREE.Vector2();
-  function render(camera) {
-    if (!loaded || !settings.bloom) return false;
+  function ensureComposer(camera) {
     if (!composer) {
       // Multisampling a half-float target is costly on integrated GPUs, so only Sharp uses it.
       const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: settings.msaa });
@@ -495,6 +494,10 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
       });
       composer.addPass(grade);
     }
+  }
+  function render(camera) {
+    if (!loaded || !settings.bloom) return false;
+    ensureComposer(camera);
     renderer.getSize(drawSize);
     const ratio = renderer.getPixelRatio();
     if (drawSize.x !== composerSize.x || drawSize.y !== composerSize.y || ratio !== composer._pixelRatio) {
@@ -615,8 +618,33 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     return true;
   });
 
+  // Compile the island's shaders in the background, for the buffer they will really be
+  // drawn into (the bloom pipeline renders to a linear half-float target, which needs
+  // different shader variants from the screen).
+  async function warm(camera) {
+    if (!loaded) return;
+    const previous = renderer.getRenderTarget();
+    if (settings.bloom) { ensureComposer(camera); renderer.setRenderTarget(composer.renderTarget1); }
+    const compiling = renderer.compileAsync(scene, camera);
+    renderer.setRenderTarget(previous);
+    await compiling;
+    // Upload textures a few at a time between frames; all at once, the first frame stalls.
+    const textures = new Set();
+    scene.traverse(object => {
+      if (!object.material) return;
+      for (const material of [object.material].flat()) for (const value of Object.values(material)) if (value?.isTexture && value.image) textures.add(value);
+    });
+    let budget = performance.now() + 12;
+    for (const texture of textures) {
+      if (disposed) return;
+      renderer.initTexture(texture);
+      if (performance.now() > budget) { await new Promise(resolve => requestAnimationFrame(resolve)); budget = performance.now() + 12; }
+    }
+  }
+
   return {
     ready,
+    warm,
     get loaded() { return loaded; },
     setOutdoors(value, kind = null) { outdoors = value; room = value ? null : kind; applyLighting(); },
     enchantRoom,

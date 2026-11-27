@@ -95,6 +95,8 @@ const PortfolioExperience = ({ profile, projects, experience, skills, certificat
         if (next === 'explore') setWorldVisit(value => value + 1);
         if (next !== 'quick') window.scrollTo({ top: 0, behavior: 'instant' });
     };
+    // The app is up: the static poster in the raw HTML has done its job.
+    React.useEffect(() => { document.getElementById('boot')?.remove(); }, []);
     React.useEffect(() => {
         const back = () => { setMode(readMode()); setWorldVisit(value => value + 1); };
         window.addEventListener('popstate', back);

@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="/story/story.css">
     <link rel="stylesheet" href="/story/immersive.css?v=6">
     <link rel="stylesheet" href="/story/quick-view.css?v=1">
-    <link rel="stylesheet" href="/film/film.css?v=10">
+    <link rel="stylesheet" href="/film/film.css?v=12">
+    <link rel="preload" as="image" href="/film/poster-wide.webp" media="(min-aspect-ratio: 3/4)" fetchpriority="high">
+    <link rel="preload" as="image" href="/film/poster-tall.webp" media="(max-aspect-ratio: 3/4)" fetchpriority="high">
     <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
     <!-- Link previews (Slack, WhatsApp, LinkedIn, X, iMessage) -->
     <link rel="canonical" href="https://nivetha.info/">
@@ -48,50 +50,6 @@
         })();
     </script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Framer Motion -->
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        background: 'var(--bg)',
-                        surface: 'var(--surface)',
-                        card: 'var(--card)',
-                        primary: 'var(--text-primary)',
-                        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
-                        border: 'var(--border)'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-15px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
@@ -343,10 +301,65 @@
     </style>
 </head>
 <body>
+    <!-- Shown the instant the page arrives: the film's opening frame, until the app replaces it. -->
+    <div id="boot" aria-hidden="true"></div>
+    <script>
+        (function () {
+            var params = new URLSearchParams(location.search);
+            var film = !params.get('view') && !params.has('project') && (!location.hash || location.hash === '#top') && document.documentElement.dataset.site !== 'servicenow';
+            if (!film) document.getElementById('boot').remove();
+        })();
+    </script>
     <div id="root"></div>
 
-    <script type="text/babel" src="/film/film-view.jsx?v=13"></script>
-    <script type="text/babel" src="/story/quick-view.jsx?v=12"></script>
+    <!-- Loaded after the poster has painted, so the page never sits on a blank screen. -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--bg)',
+                        surface: 'var(--surface)',
+                        card: 'var(--card)',
+                        primary: 'var(--text-primary)',
+                        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+                        border: 'var(--border)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script type="text/babel" src="/film/film-view.jsx?v=17"></script>
+    <script type="text/babel" src="/story/quick-view.jsx?v=13"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         const { motion, useScroll, AnimatePresence, useMotionValue, useMotionTemplate, useReducedMotion } = window.Motion;
@@ -1645,7 +1658,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=29').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1789,7 +1802,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=29').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
