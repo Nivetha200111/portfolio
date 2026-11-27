@@ -46,7 +46,7 @@ const FilmView = ({ profile, projects = [], experience = [], skills = [], certif
             setChapter(c);
         };
         let islandShot = () => ({ position: [-6, 30, 74], target: [0, 3, 0], fov: 36, offset: 0 });
-        Promise.all([import('/story/world.js?v=39'), import('/film/island-shots.js?v=2')]).then(([{ createStoryWorld }, shots]) => {
+        Promise.all([import('/story/world.js?v=40'), import('/film/island-shots.js?v=2')]).then(([{ createStoryWorld }, shots]) => {
             if (cancelled) return;
             islandShot = shots.islandShot;
             try {

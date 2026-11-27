@@ -49,50 +49,146 @@ function glowTexture(inner, outer) {
 }
 const clockText = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 
-// Small synthesized sound effects: no files to download.
+// Sound, synthesized on the spot (no files): soft and airy to suit the island. Wind,
+// breath, grass and glass bells, all in C major pentatonic to match the island's
+// music, through a gentle hall reverb with the top end rounded off.
 function createSounds() {
-  let context = null, master = null, on = localStorage.getItem('island-hop-sound') !== 'off';
-  const ready = () => {
+  let context = null, out = null, verb = null, on = localStorage.getItem('island-hop-sound') !== 'off';
+  let noiseBuffer = null, ambient = null, glideLayer = null, draftLayer = null;
+  const PENTATONIC = [0, 2, 4, 7, 9];
+  // Step 0 is C5; each step moves one note along the pentatonic scale.
+  const note = step => 523.25 * 2 ** ((Math.floor(step / 5) * 12 + PENTATONIC[((step % 5) + 5) % 5]) / 12);
+  function ready() {
     if (!on) return null;
     if (!context) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return null;
-      context = new AudioContext(); master = context.createGain(); master.gain.value = .2; master.connect(context.destination);
+      context = new AudioContext();
+      const soft = context.createBiquadFilter(); soft.type = 'lowpass'; soft.frequency.value = 5200; soft.Q.value = .4;
+      const level = context.createGain(); level.gain.value = 1;
+      soft.connect(level).connect(context.destination);
+      // A hall: a couple of seconds of decaying stereo noise as the impulse.
+      verb = context.createConvolver();
+      const length = Math.floor(context.sampleRate * 2.4), impulse = context.createBuffer(2, length, context.sampleRate);
+      for (let channel = 0; channel < 2; channel++) {
+        const data = impulse.getChannelData(channel);
+        for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 3;
+      }
+      verb.buffer = impulse;
+      const wet = context.createGain(); wet.gain.value = .55; verb.connect(wet).connect(soft);
+      out = soft;
+      noiseBuffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
+      const data = noiseBuffer.getChannelData(0); let brown = 0;
+      for (let i = 0; i < data.length; i++) { brown = (brown + (Math.random() * 2 - 1) * .02) / 1.02; data[i] = brown * 3.5; }
+      startLayers();
     }
     if (context.state === 'suspended') context.resume();
     return context;
-  };
-  function tone(from, to, duration, type = 'sine', volume = .5, delay = 0) {
-    const c = ready(); if (!c) return;
-    const t = c.currentTime + delay, osc = c.createOscillator(), gain = c.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(from, t); osc.frequency.exponentialRampToValueAtTime(to, t + duration);
-    gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(volume, t + .012); gain.gain.exponentialRampToValueAtTime(.0001, t + duration);
-    osc.connect(gain).connect(master); osc.start(t); osc.stop(t + duration + .02);
   }
-  function whoosh(duration, volume, from, to) {
-    const c = ready(); if (!c) return;
-    const t = c.currentTime, buffer = c.createBuffer(1, Math.ceil(c.sampleRate * duration), c.sampleRate), data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    const source = c.createBufferSource(), filter = c.createBiquadFilter(), gain = c.createGain();
-    source.buffer = buffer; filter.type = 'bandpass'; filter.Q.value = 1.2;
-    filter.frequency.setValueAtTime(from, t); filter.frequency.exponentialRampToValueAtTime(to, t + duration);
-    gain.gain.setValueAtTime(volume, t); gain.gain.exponentialRampToValueAtTime(.0001, t + duration);
-    source.connect(filter).connect(gain).connect(master); source.start(t);
+  // Part dry, part reverb.
+  function send(gainNode, reverb = .5) {
+    gainNode.connect(out);
+    const amount = context.createGain(); amount.gain.value = reverb; gainNode.connect(amount).connect(verb);
   }
-  const SCALE = [0, 2, 4, 7, 9, 12, 14, 16, 19];
+  // Looping noise through a band-pass: wind, breath, water.
+  function noiseLayer(frequency, q, volume) {
+    const source = context.createBufferSource(), filter = context.createBiquadFilter(), gain = context.createGain();
+    source.buffer = noiseBuffer; source.loop = true; source.playbackRate.value = .7 + Math.random() * .6;
+    filter.type = 'bandpass'; filter.frequency.value = frequency; filter.Q.value = q; gain.gain.value = volume;
+    source.connect(filter).connect(gain); send(gain, .6); source.start();
+    return { source, filter, gain };
+  }
+  function startLayers() {
+    // A faint wind bed, with slow gusts.
+    ambient = noiseLayer(420, .6, .05);
+    const gusts = context.createOscillator(), gustDepth = context.createGain();
+    gusts.frequency.value = .07; gustDepth.gain.value = .035; gusts.connect(gustDepth).connect(ambient.gain.gain); gusts.start();
+    const sweep = context.createOscillator(), sweepDepth = context.createGain();
+    sweep.frequency.value = .05; sweepDepth.gain.value = 180; sweep.connect(sweepDepth).connect(ambient.filter.frequency); sweep.start();
+    ambient.lfos = [gusts, sweep];
+    glideLayer = noiseLayer(900, .9, 0);   // air rushing past while gliding
+    draftLayer = noiseLayer(1400, 1.4, 0); // the water column pouring upward
+  }
+  // A short shaped burst of the same noise.
+  function puff({ from, to, duration, volume, q = 1, delay = 0, reverb = .4, type = 'bandpass' }) {
+    const c = ready(); if (!c) return;
+    const t = c.currentTime + delay, source = c.createBufferSource(), filter = c.createBiquadFilter(), gain = c.createGain();
+    source.buffer = noiseBuffer; source.playbackRate.value = .9 + Math.random() * .2;
+    filter.type = type; filter.Q.value = q; filter.frequency.setValueAtTime(from, t); filter.frequency.exponentialRampToValueAtTime(to, t + duration);
+    gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(volume, t + Math.min(.04, duration * .3)); gain.gain.exponentialRampToValueAtTime(.0001, t + duration);
+    source.connect(filter).connect(gain); send(gain, reverb);
+    source.start(t, Math.random() * 1.5); source.stop(t + duration + .05);
+  }
+  // A glass bell: a few inharmonic partials that ring out at different rates.
+  function bell(frequency, { volume = .16, duration = 1.8, delay = 0, reverb = .7 } = {}) {
+    const c = ready(); if (!c) return;
+    const t = c.currentTime + delay;
+    [[1, 1, 1], [2.76, .42, .55], [5.4, .2, .32], [8.93, .08, .2]].forEach(([ratio, amount, length]) => {
+      const osc = c.createOscillator(), gain = c.createGain();
+      osc.frequency.value = frequency * ratio;
+      gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(volume * amount, t + .006);
+      gain.gain.exponentialRampToValueAtTime(.0001, t + duration * length);
+      osc.connect(gain); send(gain, reverb); osc.start(t); osc.stop(t + duration * length + .05);
+    });
+  }
+  // A kalimba-like pluck: a quick, woody attack and a short warm tail.
+  function pluck(frequency, { volume = .12, delay = 0, reverb = .35 } = {}) {
+    const c = ready(); if (!c) return;
+    const t = c.currentTime + delay;
+    [[1, 1, .7], [2, .18, .25], [3.01, .06, .12]].forEach(([ratio, amount, length]) => {
+      const osc = c.createOscillator(), gain = c.createGain();
+      osc.frequency.value = frequency * ratio;
+      gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(volume * amount, t + .004);
+      gain.gain.exponentialRampToValueAtTime(.0001, t + length);
+      osc.connect(gain); send(gain, reverb); osc.start(t); osc.stop(t + length + .05);
+    });
+  }
+  // A soft, low thump for the hardest landings.
+  function thud(volume) {
+    const c = ready(); if (!c) return;
+    const t = c.currentTime, osc = c.createOscillator(), gain = c.createGain();
+    osc.frequency.setValueAtTime(110, t); osc.frequency.exponentialRampToValueAtTime(48, t + .18);
+    gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(volume, t + .01); gain.gain.exponentialRampToValueAtTime(.0001, t + .22);
+    osc.connect(gain); send(gain, .15); osc.start(t); osc.stop(t + .25);
+  }
+  const fadeTo = (layer, value, time) => { if (layer && context) layer.gain.gain.setTargetAtTime(value, context.currentTime, time); };
+  let gliding = false, drafting = false;
   return {
     get on() { return on; },
-    toggle() { on = !on; localStorage.setItem('island-hop-sound', on ? 'on' : 'off'); if (!on && context) context.suspend(); return on; },
-    jump: () => tone(380, 640, .13, 'triangle', .3),
-    air: () => { tone(620, 1180, .16, 'sine', .28); tone(930, 1760, .12, 'sine', .12, .03); },
-    land: force => whoosh(.12, Math.min(.45, .08 + force * .025), 700, 160),
-    bounce: () => { tone(160, 760, .34, 'sine', .42); tone(240, 1140, .26, 'triangle', .14, .02); },
-    dash: () => whoosh(.26, .32, 500, 2600),
-    seed: n => { const base = 523.25 * 2 ** (SCALE[Math.min(n, SCALE.length - 1)] / 12); tone(base, base, .5, 'sine', .32); tone(base * 2, base * 2, .35, 'sine', .1, .04); tone(base * 1.5, base * 1.5, .4, 'triangle', .12, .09); },
-    golden: () => [0, 4, 7, 12, 16].forEach((s, i) => tone(784 * 2 ** (s / 12), 784 * 2 ** (s / 12), .35, 'sine', .22, i * .06)),
-    fall: () => tone(520, 110, .55, 'sine', .25),
-    finish: () => [0, 4, 7, 12, 7, 12, 16, 19].forEach((s, i) => tone(523.25 * 2 ** (s / 12), 523.25 * 2 ** (s / 12), .45, i % 2 ? 'triangle' : 'sine', .2, i * .09)),
-    dispose() { context?.close(); context = null; }
+    start: () => ready(),
+    toggle() {
+      on = !on; localStorage.setItem('island-hop-sound', on ? 'on' : 'off');
+      if (context) { if (on) context.resume(); else context.suspend(); } else if (on) ready();
+      return on;
+    },
+    // Continuous layers, called every frame with what the wisp is doing.
+    layers(glide, draft) {
+      if (!context || !on) return;
+      if (glide !== gliding) { gliding = glide; fadeTo(glideLayer, glide ? .2 : 0, glide ? .15 : .35); }
+      if (draft !== drafting) { drafting = draft; fadeTo(draftLayer, draft ? .24 : 0, draft ? .2 : .5); }
+    },
+    jump: () => { puff({ from: 380, to: 1300, duration: .2, volume: .07, q: .8 }); pluck(note(4) / 2, { volume: .07 }); },
+    air: () => { puff({ from: 700, to: 2600, duration: .24, volume: .06 }); bell(note(7), { volume: .07, duration: 1.1 }); },
+    land: force => {
+      puff({ from: 3200, to: 1600, duration: .09 + Math.min(.08, force * .006), volume: Math.min(.09, .02 + force * .005), q: .6, type: 'highpass', reverb: .1 });
+      if (force > 13) thud(Math.min(.18, force * .008));
+    },
+    bounce: () => { [0, 2, 4, 5, 7].forEach((step, i) => pluck(note(step), { volume: .09, delay: i * .045, reverb: .5 })); puff({ from: 500, to: 1800, duration: .45, volume: .05 }); },
+    dash: () => puff({ from: 260, to: 1500, duration: .34, volume: .38, q: .7, reverb: .5 }),
+    seed: n => { bell(note(n), { volume: .16, duration: 2.2 }); bell(note(n + 5), { volume: .05, duration: 1.4, delay: .07 }); },
+    golden: () => [9, 7, 5, 4, 2, 0].forEach((step, i) => bell(note(step), { volume: .1, duration: 1.8, delay: i * .08 })),
+    fall: () => { puff({ from: 1200, to: 180, duration: 1.1, volume: .08, q: .7, reverb: .7 }); bell(note(-3), { volume: .05, duration: 1.6, delay: .1 }); },
+    respawn: () => bell(note(2), { volume: .07, duration: 1.4 }),
+    finish: () => {
+      [0, 2, 4, 5, 7, 9, 10].forEach((step, i) => bell(note(step), { volume: .11, duration: 2.6, delay: i * .11 }));
+      puff({ from: 300, to: 900, duration: 2.2, volume: .06, q: .5, reverb: .8 });
+    },
+    dispose() {
+      if (!context) return;
+      [ambient, glideLayer, draftLayer].forEach(layer => { try { layer?.source.stop(); } catch {} });
+      ambient?.lfos?.forEach(lfo => { try { lfo.stop(); } catch {} });
+      context.close().catch(() => {}); context = null;
+    }
   };
 }
 
@@ -100,7 +196,7 @@ export function createIslandGame({ scene, camera, host, world, kit, heightAt, so
   const owned = [], ownedTextures = [];
   const own = thing => { owned.push(thing); return thing; };
   const root = new THREE.Group(); scene.add(root);
-  const sounds = createSounds();
+  const sounds = createSounds(); sounds.start();
 
   // ------------------------------------------------------------------ platforms
   const platforms = [];
@@ -314,7 +410,7 @@ export function createIslandGame({ scene, camera, host, world, kit, heightAt, so
     $('.hop-medal').textContent = `${medal} medal`;
     $('.hop-medal').dataset.medal = medal.toLowerCase();
     $('.hop-result').textContent = `${clockText(total)}${bonus ? ' (golden seed −5 s)' : ''} · ${record ? 'a new best' : `best ${clockText(best)}`}`;
-    card.hidden = false; sounds.finish();
+    card.hidden = false; sounds.finish(); sounds.layers(false, false);
     for (let i = 0; i < 5; i++) setTimeout(() => !disposed && burst(probe.set(position.x + (Math.random() - .5) * 3, position.y + 2 + Math.random() * 2, position.z + (Math.random() - .5) * 3), { count: 28, map: i % 2 ? goldGlow : seedGlow, color: i % 2 ? '#ffe3a0' : '#c8fff2', speed: 4, lift: 3, size: .3, life: 1.2, gravity: 3 }), i * 180);
   }
   let disposed = false;
@@ -385,6 +481,7 @@ export function createIslandGame({ scene, camera, host, world, kit, heightAt, so
     gliding = jumpHeld && !grounded && velocity.y < 0 && dashTime <= 0 && !frozen;
     if (gliding) velocity.y = Math.max(velocity.y, -GLIDE_FALL);
     velocity.y = Math.max(velocity.y, -26);
+    sounds.layers(gliding, inDraft);
     if (inDraft) {
       velocity.y = Math.min(UPDRAFT.max, velocity.y + UPDRAFT.lift * dt); airJumps = 1; dashReady = true; grounded = false; launched = true;
       if (Math.random() < .3) burst(here.set(position.x, position.y + .2, position.z), { count: 1, map: seedGlow, color: '#d8fff8', speed: .4, lift: 3, size: .18, life: .5, gravity: -2 });
@@ -432,7 +529,7 @@ export function createIslandGame({ scene, camera, host, world, kit, heightAt, so
     if (position.y < FALL_LIMIT && respawning <= 0) { respawning = .9; fade.classList.add('hop-fade-on'); sounds.fall(); }
     if (respawning > 0) {
       respawning -= dt;
-      if (respawning <= .45 && fade.classList.contains('hop-fade-on')) { place(checkpoint); fade.classList.remove('hop-fade-on'); }
+      if (respawning <= .45 && fade.classList.contains('hop-fade-on')) { place(checkpoint); fade.classList.remove('hop-fade-on'); sounds.respawn(); }
     }
 
     // Seeds.
