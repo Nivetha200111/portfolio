@@ -774,7 +774,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     if (!immersive || cinematic || insideRoom || journey || game || gameLoading || !realism?.loaded || !realism.kit) return false;
     gameLoading = true;
     try {
-      const { createIslandGame } = await import('./game.js?v=5');
+      const { createIslandGame } = await import('./game.js?v=6');
       if (disposed || insideRoom) return false;
       selectedPlace = null; book.visible = false; flying = false;
       if (controls) { controls.enabled = false; controls.autoRotate = false; }

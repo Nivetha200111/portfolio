@@ -358,7 +358,7 @@
         }
     </script>
 
-    <script type="text/babel" src="/film/film-view.jsx?v=25"></script>
+    <script type="text/babel" src="/film/film-view.jsx?v=26"></script>
     <script type="text/babel" src="/story/quick-view.jsx?v=14"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
@@ -1682,7 +1682,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=39').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=40').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1828,7 +1828,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=39').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=40').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
