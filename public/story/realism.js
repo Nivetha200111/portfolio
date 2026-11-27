@@ -380,6 +380,7 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
   }));
   const dropletMatrix = new THREE.Matrix4(), dropletPosition = new THREE.Vector3(), dropletScale = new THREE.Vector3(), dropletQuaternion = new THREE.Quaternion(), stretch = new THREE.Vector3(0, 1, 0);
   const islets = [];
+  let kit = null; // what the island-hop game builds its stepping stones from
 
   // The sky: a physically based atmosphere (see atmosphere.js) with the sun's disc,
   // stars at magic hour, and a sea of cloud tops far below the island.
@@ -611,6 +612,7 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     const upright = new THREE.Group(); const smallTop = isletTop.clone(); upright.add(smallTop); place(searsia[2], 0, 0, .9, 1.2, upright); upright.children[1].position.y = .2;
     upright.position.set(10.5, -3.6, -6.5); upright.scale.setScalar(1.2); floating.add(upright);
     islets.push({ group: upright, y: -3.6, phase: 2.1 });
+    kit = { isletTop, upright, inverted, floating };
 
     hide.forEach(object => { object.visible = false; });
     created.visible = floating.visible = true; loaded = true; applyLighting(); applyQuality();
@@ -638,13 +640,16 @@ export function createRealism({ renderer, scene, exterior, world, hemisphere, su
     for (const texture of textures) {
       if (disposed) return;
       renderer.initTexture(texture);
-      if (performance.now() > budget) { await new Promise(resolve => requestAnimationFrame(resolve)); budget = performance.now() + 12; }
+      // Yield a frame between batches (a timer too, since background tabs pause frames).
+      if (performance.now() > budget) { await new Promise(resolve => { requestAnimationFrame(resolve); setTimeout(resolve, 50); }); budget = performance.now() + 12; }
     }
   }
 
   return {
     ready,
     warm,
+    heightAt,
+    get kit() { return kit; },
     get loaded() { return loaded; },
     setOutdoors(value, kind = null) { outdoors = value; room = value ? null : kind; applyLighting(); },
     enchantRoom,

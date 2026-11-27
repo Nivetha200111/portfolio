@@ -3,7 +3,7 @@ import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from './vendor/CSS3DRenderer.
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createInterior } from './interiors.js?v=2';
 import { createWorldAudio } from './audio.js';
-import { createRealism } from './realism.js?v=23';
+import { createRealism } from './realism.js?v=25';
 
 // The buildings and rooms are modeled here. In the full-screen world, realism.js swaps the
 // outdoor scenery for scanned CC0 plants, rock, materials and sky served from ./assets.
@@ -306,8 +306,9 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
 
   // Small magical doorways connect the outdoor landmarks to their larger rooms.
   const doors = { projects: cottageDoor, experience: millDoor, certifications: observatoryDoor };
+  const porches = [];
   for (const [id, x, z, color] of [['skills', 2.9, 3.6, '#68866a'], ['contact', 4.55, 3.7, '#a7775d'], ['achievements', -1.1, -.1, '#b29665'], ['story', -4.9, 3.5, '#6a8871']]) {
-    const porch = new THREE.Group(); porch.position.set(x, .45, z); porch.userData.place = id; world.add(porch);
+    const porch = new THREE.Group(); porch.position.set(x, .45, z); porch.userData.place = id; world.add(porch); porches.push(porch);
     doors[id] = hingedDoor(porch, 0, 0, 0, .65, 1.55, color);
     roof(porch, .98, .55, 1.65, id === 'skills' ? '#a6be9b' : palette.roof);
     block('#bca379', 0, -.015, .3, 1.1, .09, .9, porch);
@@ -470,6 +471,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
         const w = host.clientWidth || 1, h = host.clientHeight || 1;
         camera.setViewOffset(w, h, -shotOffset * w, 0, w, h);
         camera.lookAt(shotTarget);
+      } else if (game) {
+        game.update(elapsed);
       } else {
         controls.autoRotate = playing && !selectedPlace && !flying && !journey;
         if (!flying && !journey) controls.update(delta);
@@ -486,8 +489,8 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
           book.scale.setScalar(scale);
         }
       }
-      labels.forEach(label => { label.visible = !selectedPlace && !journey && !cinematic; });
-      if (!selectedPlace && !journey && !cinematic) {
+      labels.forEach(label => { label.visible = !selectedPlace && !journey && !cinematic && !game; });
+      if (!selectedPlace && !journey && !cinematic && !game) {
         world.updateMatrixWorld(true); camera.updateMatrixWorld();
         const focal = host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
         const rectangles = [];
@@ -578,7 +581,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     const rect = host.getBoundingClientRect();
     pointer.set((event.clientX - rect.left) / rect.width - .5, .5 - (event.clientY - rect.top) / rect.height);
   }
-  function loop() { renderer.setAnimationLoop(playing && visible && !document.hidden ? render : null); render(lastTime); }
+  function loop() { renderer.setAnimationLoop((playing || game) && visible && !document.hidden ? render : null); render(lastTime); }
   function ensureRoom(id) {
     if (!rooms.has(id)) {
       const room = createInterior(id, { material: mat, projectCount, skills, onExit: () => onSelect?.(null), onNavigate: onSelect, onPlant: focusPlant, onSound: setSound, muted: audio.muted, audioReady: audio.ready });
@@ -745,7 +748,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   }
   function pick(event) {
     lookDown = null;
-    if (!immersive || cinematic || journey || flying || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
+    if (!immersive || cinematic || journey || flying || game || !pointerDown || Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 8) return;
     const rect = renderer.domElement.getBoundingClientRect();
     raycaster.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1), camera);
     const hit = raycaster.intersectObjects(insideRoom ? insideRoom.pickable : interactiveObjects, true)[0];
@@ -764,6 +767,29 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     }
     while (object && !object.userData.place) object = object.parent;
     if (object) onSelect?.(object.userData.place);
+  }
+  // Island hop: a small platform game across the floating islands, loaded on demand.
+  let game = null, gameLoading = false;
+  async function startGame({ onExit } = {}) {
+    if (!immersive || cinematic || insideRoom || journey || game || gameLoading || !realism?.loaded || !realism.kit) return false;
+    gameLoading = true;
+    try {
+      const { createIslandGame } = await import('./game.js?v=5');
+      if (disposed || insideRoom) return false;
+      selectedPlace = null; book.visible = false; flying = false;
+      if (controls) { controls.enabled = false; controls.autoRotate = false; }
+      const solids = [cottage, observatory, mailbox, ...porches, ...mill.children.filter(child => child !== rotor)];
+      game = createIslandGame({ scene, camera, host, world, kit: realism.kit, heightAt: realism.heightAt, solids, onExit: () => { stopGame(); onExit?.(); } });
+      loop();
+      return true;
+    } finally { gameLoading = false; }
+  }
+  function stopGame() {
+    if (!game) return;
+    game.dispose(); game = null;
+    if (controls) controls.enabled = true;
+    destinationTarget.set(0, 1.8, 0); destination.set(17, 6, 21).normalize().multiplyScalar(fitDistance); flying = true;
+    loop();
   }
   const controlsChanged = () => { if (!playing) render(lastTime); };
   const keyDown = event => {
@@ -817,7 +843,10 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
   else onReady?.();
   return {
     panelElement: bookElement,
-    setLocation(id) { if (immersive && (id === null || places[id] || id === 'map')) focus(id); },
+    setLocation(id) { if (game && id !== null) stopGame(); if (immersive && (id === null || places[id] || id === 'map')) focus(id); },
+    startGame,
+    stopGame,
+    get gameActive() { return !!game; },
     focusStation,
     setMuted: setSound,
     setQuality(value) { realism?.setQuality(value); if (!playing) render(lastTime); },
@@ -830,7 +859,7 @@ export function createStoryWorld(host, { onReady, onError, immersive = false, on
     setProgress(value) { progress = THREE.MathUtils.clamp(value, 0, 1); if (!playing || !visible) render(lastTime); },
     setPlaying(value) { playing = value; loop(); },
     dispose() {
-      disposed = true; audio?.dispose(); realism?.dispose(); veil.remove(); renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
+      game?.dispose(); game = null; disposed = true; audio?.dispose(); realism?.dispose(); veil.remove(); renderer.setAnimationLoop(null); resizeObserver.disconnect(); visibilityObserver.disconnect();
       host.removeEventListener('pointermove', move); document.removeEventListener('visibilitychange', loop);
       renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointerup', pick);
       renderer.domElement.removeEventListener('pointermove', look); document.removeEventListener('keydown', keyDown); document.removeEventListener('keyup', keyUp); window.removeEventListener('blur', blur);
