@@ -81,7 +81,7 @@ const FilmView = ({ profile, projects = [], experience = [], skills = [], certif
         <div className="film-stage">
             {/* 01 · Code alchemist: the prism over the dunes */}
             {beat(0, 0, .3, 'film-hero', <><p className="film-eyebrow"><span className="film-dot" aria-hidden="true" />{profile.location || 'Portfolio'} · 2026</p><h1 aria-label={profile.name}><span><K t={first} /></span> <em><K t={rest.join(' ') + '.'} start={first.length} /></em></h1><p className="film-lede">{profile.role}</p></>)}
-            {beat(0, .42, .86, 'film-panel', <>{eyebrow(1, profile.tagline)}<Title plain="Code" italic="alchemist." /><p className="film-lede">{profile.introduction}</p><div className="film-links"><a href={profile.resume} target="_blank" rel="noopener noreferrer">Résumé ↗</a><a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={`mailto:${profile.email}`}>Email ↗</a></div></>)}
+            {beat(0, .42, .86, 'film-panel', <>{eyebrow(1, profile.tagline)}<Title plain="Code" italic="alchemist." /><p className="film-lede">{profile.introduction}</p><div className="film-links"><a href={profile.resume} target="_blank" rel="noopener noreferrer">Résumé ↗</a><a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={`mailto:${profile.email}`}>Email ↗</a>{profile.serviceNow && <a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a>}</div></>)}
 
             {/* 02 · Experience: the staircase above the clouds */}
             {beat(1, .04, .26, 'film-panel', <>{eyebrow(2, 'Experience')}<Title plain="Big" italic="systems." /><p className="film-lede">{experience.map(job => job.company).join(', then ')}.</p></>)}
@@ -113,12 +113,12 @@ const FilmView = ({ profile, projects = [], experience = [], skills = [], certif
             {beat(4, .61, .88, 'film-panel film-wide', <><p className="film-eyebrow"><span className="film-dot" aria-hidden="true" />Credentials</p><ul className="film-rows film-rows-compact">{certifications.map((item, i) => {
                 const name = item.name.replace(/^ServiceNow /, '').replace(/^Micro-Certification - /, '').replace(/^Suite Certification - /, '').replace(/^Anthropic courses:.*$/, 'Anthropic courses (7)');
                 return <li key={item.name} style={{ '--i': i }}><strong>{name}</strong><span>{item.category === 'Micro' ? 'ServiceNow micro-cert' : item.category === 'Anthropic' ? 'Claude, Claude Code, agents' : `ServiceNow ${item.category.toLowerCase()}`}</span></li>;
-            })}</ul></>)}
+            })}</ul>{profile.serviceNow && <div className="film-links"><a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">Every badge on my ServiceNow portfolio ↗</a></div>}</>)}
 
             {/* 06 · Contact: back to the dunes at sunset */}
             {beat(5, .12, 1, 'film-panel film-contact', <>{eyebrow(6, 'Contact')}<Title plain="Let's" italic="talk." />
                 <a className="film-email" href={`mailto:${profile.email}`}>{profile.email}</a>
-                <div className="film-links"><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">Résumé ↗</a><a href="?view=quick#top" onClick={event => { event.preventDefault(); onQuick(); }}>Quick View ↗</a></div><a className="film-enter" href="#world" onClick={event => { event.preventDefault(); onExplore(); }}>Walk around the island yourself <span aria-hidden="true">→</span></a></>)}
+                <div className="film-links"><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">Résumé ↗</a>{profile.serviceNow && <a href={profile.serviceNow} target="_blank" rel="noopener noreferrer">ServiceNow portfolio ↗</a>}<a href="?view=quick#top" onClick={event => { event.preventDefault(); onQuick(); }}>Quick View ↗</a></div><a className="film-enter" href="#world" onClick={event => { event.preventDefault(); onExplore(); }}>Walk around the island yourself <span aria-hidden="true">→</span></a></>)}
             <p className="film-cue" aria-hidden="true" data-hidden={chapter > 0 ? 'true' : 'false'}>Scroll</p>
         </div>
         {state === 'error' && <p className="film-error" role="status">This device can't play the film. <a href="?view=quick#top" onClick={event => { event.preventDefault(); onQuick(); }}>Open the quick view</a>.</p>}
