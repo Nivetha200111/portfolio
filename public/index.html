@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Nivetha Sivakumar, ServiceNow developer and former Systems Engineer at TCS. A short film in six chapters: experience, projects, skills, awards and contact.">
     <link rel="stylesheet" href="/story/story.css">
-    <link rel="stylesheet" href="/story/immersive.css?v=6">
+    <link rel="stylesheet" href="/story/immersive.css?v=8">
     <link rel="stylesheet" href="/story/quick-view.css?v=1">
     <link rel="stylesheet" href="/film/film.css?v=13">
     <link rel="preload" as="image" href="/film/poster-wide.webp" media="(min-aspect-ratio: 3/4)" fetchpriority="high">
@@ -358,7 +358,7 @@
         }
     </script>
 
-    <script type="text/babel" src="/film/film-view.jsx?v=19"></script>
+    <script type="text/babel" src="/film/film-view.jsx?v=25"></script>
     <script type="text/babel" src="/story/quick-view.jsx?v=14"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
@@ -1682,7 +1682,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=39').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1815,6 +1815,8 @@
             const [embeddedScreen, setEmbeddedScreen] = useState(null);
             const [screenReload, setScreenReload] = useState(0);
             const [soundMuted, setSoundMuted] = useState(false);
+            const [gaming, setGaming] = useState(false);
+            const startGame = async () => { if (await engine.current?.startGame({ onExit: () => setGaming(false) })) setGaming(true); };
             const [quality, setQuality] = useState(() => { try { return localStorage.getItem('garden-quality') || 'auto'; } catch { return 'auto'; } });
             const [audioReady, setAudioReady] = useState(false);
             const projectsRef = useRef(projects);
@@ -1826,7 +1828,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=39').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
@@ -1910,11 +1912,12 @@
                     {!fallback && <div className="book-nav"><button onClick={() => engine.current?.setMuted(audioReady ? !soundMuted : false)} aria-pressed={audioReady && !soundMuted}>{soundMuted || !audioReady ? 'Play room music ♫' : 'Mute room music ♫'}</button></div>}
                 </article>
             );
-            return <main className="world-portfolio" aria-label="Nivetha Sivakumar’s interactive 3D portfolio">
+            return <main className={`world-portfolio${gaming ? ' world-gaming' : ''}`} aria-label="Nivetha Sivakumar’s interactive 3D portfolio">
                 <div className="story-sky" /><div className="story-sunset" style={{opacity: evening ? 1 : 0}} />
                 <div className="story-world" ref={host} />
                 <div className="story-grain" />
-                {!fallback && !status && !roomInfo.kind && <div className="world-quality" role="group" aria-label="Graphics quality">
+                {!fallback && !status && !roomInfo.kind && !gaming && <button className="world-play" type="button" onClick={startGame}><span aria-hidden="true">▷</span> Play island hop</button>}
+                {!fallback && !status && !roomInfo.kind && !gaming && <div className="world-quality" role="group" aria-label="Graphics quality">
                     <span aria-hidden="true">Quality</span>
                     {[['auto', 'Auto', 'Adjusts sharpness to keep motion smooth'], ['sharp', 'Sharp', 'Full resolution, even if motion slows'], ['fast', 'Fast', 'Fewer small plants and lower resolution for slower devices']].map(([id, label, hint]) => <button key={id} title={hint} aria-label={`${label} quality`} aria-pressed={quality === id} onClick={() => setQuality(id)}>{label}</button>)}
                 </div>}
