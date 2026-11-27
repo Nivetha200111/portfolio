@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="/story/story.css">
     <link rel="stylesheet" href="/story/immersive.css?v=6">
     <link rel="stylesheet" href="/story/quick-view.css?v=1">
-    <link rel="stylesheet" href="/film/film.css?v=10">
+    <link rel="stylesheet" href="/film/film.css?v=12">
+    <link rel="preload" as="image" href="/film/poster-wide.webp" media="(min-aspect-ratio: 3/4)" fetchpriority="high">
+    <link rel="preload" as="image" href="/film/poster-tall.webp" media="(max-aspect-ratio: 3/4)" fetchpriority="high">
     <title>Nivetha Sivakumar | Code Alchemist & Systems Tinkerer</title>
     <!-- Link previews (Slack, WhatsApp, LinkedIn, X, iMessage) -->
     <link rel="canonical" href="https://nivetha.info/">
@@ -48,50 +50,6 @@
         })();
     </script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Framer Motion -->
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        background: 'var(--bg)',
-                        surface: 'var(--surface)',
-                        card: 'var(--card)',
-                        primary: 'var(--text-primary)',
-                        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
-                        border: 'var(--border)'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-15px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
@@ -343,10 +301,65 @@
     </style>
 </head>
 <body>
+    <!-- Shown the instant the page arrives: the film's opening frame, until the app replaces it. -->
+    <div id="boot" aria-hidden="true"></div>
+    <script>
+        (function () {
+            var params = new URLSearchParams(location.search);
+            var film = !params.get('view') && !params.has('project') && (!location.hash || location.hash === '#top') && document.documentElement.dataset.site !== 'servicenow';
+            if (!film) document.getElementById('boot').remove();
+        })();
+    </script>
     <div id="root"></div>
 
-    <script type="text/babel" src="/film/film-view.jsx?v=13"></script>
-    <script type="text/babel" src="/story/quick-view.jsx?v=12"></script>
+    <!-- Loaded after the poster has painted, so the page never sits on a blank screen. -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--bg)',
+                        surface: 'var(--surface)',
+                        card: 'var(--card)',
+                        primary: 'var(--text-primary)',
+                        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+                        border: 'var(--border)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script type="text/babel" src="/film/film-view.jsx?v=18"></script>
+    <script type="text/babel" src="/story/quick-view.jsx?v=14"></script>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         const { motion, useScroll, AnimatePresence, useMotionValue, useMotionTemplate, useReducedMotion } = window.Motion;
@@ -556,6 +569,7 @@
             "ServiceNow Developer",
             "Workflow Builder",
             "Certified System Administrator",
+            "Certified Application Developer",
             "Automation Engineer",
             "Platform Experience Builder",
             "ServiceNow Problem Solver"
@@ -580,7 +594,7 @@
 
         const SERVICENOW_STATS = [
             { label: "Credentials", value: "11" },
-            { label: "Accreditations", value: "0" },
+            { label: "Mainline certs", value: "2" },
             { label: "Skills Earned", value: "27" },
             { label: "Badges", value: "27" }
         ];
@@ -719,6 +733,27 @@
                     "Balanced the profile across admin fundamentals, build workflows, integration, UI, testing, and AI exposure."
                 ],
                 awards: ["CSA", "Reports", "Mainline", "CMP"]
+            },
+            {
+                company: "KeenStack · Software Engineer (AI Track)",
+                title: "Building agents and applications on ServiceNow",
+                dates: "Apr 2026 to Present",
+                bullets: [
+                    EXPERIENCE[0].bullets[0],
+                    EXPERIENCE[0].bullets[2],
+                    EXPERIENCE[0].bullets[3]
+                ],
+                awards: ["Scripted REST APIs", "Script Includes", "Business Rules", "Update sets"]
+            },
+            {
+                company: "Developer Track",
+                title: "Certified Application Developer, then Contract Management Pro",
+                dates: "Jul to Oct 2026",
+                bullets: [
+                    "Passed the mainline Certified Application Developer (CAD) exam in July 2026.",
+                    "Earned Contract Management Pro in October 2026, while building a contract lifecycle proof of concept on it at work."
+                ],
+                awards: ["CAD", "Contract Management Pro", "Mainline"]
             }
         ];
 
@@ -753,12 +788,12 @@
         ];
 
         const SERVICENOW_HIGHLIGHTS = [
-            { title: "Admin Depth", desc: "Mainline CSA plus admin and reports badges create a strong platform-administration base." },
-            { title: "Build Track", desc: "Suite App Developer Core Skills paired with UI Builder keeps the portfolio builder-oriented." },
-            { title: "Workflow Coverage", desc: "Flows, subflows, and automation fundamentals are covered through both badges and micro-certifications." },
-            { title: "Testing Discipline", desc: "Automated Test Framework shows repeated attention to verification and platform quality." },
-            { title: "Integration Breadth", desc: "IntegrationHub work includes fundamentals, store spokes, and new spoke creation." },
-            { title: "AI Signals", desc: "Predictive Intelligence, Agent Intelligence, and Agentic AI show a clear AI-adjacent platform direction." }
+            { title: "Shipped at work", desc: "At KeenStack: an instance setup agent, an SPM staffing agent, and a Contract Management Pro proof of concept the client approved for implementation." },
+            { title: "Development", desc: "Certified Application Developer and Suite App Developer Core Skills, with UI Builder for the front end." },
+            { title: "Administration", desc: "Certified System Administrator, plus admin and reporting badges." },
+            { title: "Workflows and testing", desc: "Flows and subflows in Flow Designer, and Automated Test Framework for regression tests." },
+            { title: "Integration", desc: "IntegrationHub fundamentals, store spokes and building new spokes; Scripted REST APIs at work." },
+            { title: "AI on the platform", desc: "Predictive Intelligence, Agent Intelligence and Agentic AI, put to use in the agents I build at KeenStack." }
         ];
 
         const ACTIVE_ROLES = IS_SERVICENOW
@@ -1645,7 +1680,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=29').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engineRef.current = createStoryWorld(worldRef.current, {
                         onReady: () => setStatus(''),
@@ -1789,7 +1824,7 @@
 
             useEffect(() => {
                 let cancelled = false;
-                import('/story/world.js?v=29').then(({ createStoryWorld }) => {
+                import('/story/world.js?v=33').then(({ createStoryWorld }) => {
                     if (cancelled) return;
                     engine.current = createStoryWorld(host.current, {
                         immersive: true,
@@ -1918,7 +1953,7 @@
 
             // --- TIME-AWARE GREETING ---
             const timeGreeting = useMemo(() => {
-                if (IS_SERVICENOW) return "ServiceNow track: 9 credentials • 27 skills • 27 badges";
+                if (IS_SERVICENOW) return "ServiceNow track: 11 credentials • 27 skills • 27 badges";
                 const hour = new Date().getHours();
                 if (hour >= 6 && hour < 12) return "Good morning — I'm available for opportunities";
                 if (hour >= 12 && hour < 18) return "Good afternoon — open to new roles";
@@ -2062,7 +2097,7 @@
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-2xl md:text-3xl dark:text-gray-400 text-gray-600 font-light mb-6 font-mono"><TypingRole /></motion.p>
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
                                     {IS_SERVICENOW
-                                        ? <>11 credentials, 27 skills and 27 badges across admin, development, integration, testing and AI. <span className="dark:text-gray-300 text-gray-700">CSA and CAD certified, with Contract Management Pro and hands-on work in flows, ATF and IntegrationHub.</span></>
+                                        ? <>ServiceNow developer at KeenStack. 11 credentials, 27 skills and 27 badges across admin, development, integration, testing and AI. <span className="dark:text-gray-300 text-gray-700">CSA and CAD certified, with Contract Management Pro and hands-on work in flows, ATF and IntegrationHub.</span></>
                                         : <>Building ServiceNow applications and full-stack software. <span className="dark:text-gray-300 text-gray-700">ServiceNow developer at KeenStack, previously a Systems Engineer at TCS.</span></>}
                                 </motion.p>
                                 {IS_SERVICENOW && (
@@ -2173,7 +2208,7 @@
                                 <div className="mb-20">
                                     <h2 className="text-4xl md:text-6xl font-bold mb-4"><ScrambleText text={IS_SERVICENOW ? "ServiceNow Journey" : "Experience"} /></h2>
                                     <div className="h-1 w-24 bg-accent rounded-full"></div>
-                                    {IS_SERVICENOW && <p className="mt-4 text-gray-500 max-w-2xl">Platform milestones from July 2025 through March 2026.</p>}
+                                    {IS_SERVICENOW && <p className="mt-4 text-gray-500 max-w-2xl">Platform milestones from July 2025 to today, including my ServiceNow work at KeenStack.</p>}
                                 </div>
                                 <div className="relative border-l-2 border-border ml-4 space-y-16">
                                     {activeExperience.map((job, idx) => (
@@ -2259,12 +2294,13 @@
                                     <h2 className="text-4xl md:text-6xl font-bold mb-6"><ScrambleText text={IS_SERVICENOW ? "Let's build better workflows." : "Let's build something cool."} /></h2>
                                     <p className="text-gray-500 max-w-2xl mx-auto mb-10">
                                         {IS_SERVICENOW
-                                            ? "Open to ServiceNow administration, workflow automation, integration, and platform-focused roles."
+                                            ? "ServiceNow developer at KeenStack. Happy to talk about ServiceNow development, workflow automation and integrations."
                                             : "Open to software engineering, automation, platform, and product-minded full-stack roles."}
                                     </p>
                                     <div className="flex flex-col sm:flex-row justify-center gap-6">
                                         <a href="mailto:nnivetha373@gmail.com" className="px-8 py-4 bg-accent text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3 accent-button-shadow"><Icon name="mail" size={20} /> nnivetha373@gmail.com</a>
                                         <a href="https://www.linkedin.com/in/nivetha-sivakumar2001/" target="_blank" rel="noopener noreferrer" className="px-8 py-4 dark:bg-white/5 bg-black/5 border border-border dark:text-white text-gray-900 font-bold rounded-full dark:hover:bg-white/10 hover:bg-black/10 transition-colors flex items-center justify-center gap-3"><Icon name="linkedin" size={20} /> LinkedIn</a>
+                                        {IS_SERVICENOW && <a href="https://nivetha.info" className="px-8 py-4 dark:bg-white/5 bg-black/5 border border-border dark:text-white text-gray-900 font-bold rounded-full dark:hover:bg-white/10 hover:bg-black/10 transition-colors flex items-center justify-center gap-3">Main portfolio ↗</a>}
                                     </div>
                                 </motion.div>
                             </div>
